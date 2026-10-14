@@ -34,3 +34,4 @@ export default function Home(){
   </div>
   <div className="rh-home-note"><ShieldCheck size={18}/><span>O CSV é processado no próprio navegador. O site não envia nomes, matrículas ou remunerações individuais ao GitHub ou ao Render. Apenas estatísticas agregadas ficam nesta sessão do navegador.</span></div>
  </div>;
+}
