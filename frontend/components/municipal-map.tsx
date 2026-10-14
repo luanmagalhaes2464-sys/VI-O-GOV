@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
-import {api} from '@/lib/api';
+import {api} from '../lib/api';
 type Feature={type:string,geometry:{type:string,coordinates:number[]},properties:{nome:string,tipo:string,endereco?:string}};
 export default function MunicipalMap(){
  const el=useRef<HTMLDivElement>(null);

@@ -3,10 +3,10 @@ import {useEffect,useMemo,useState,Suspense} from 'react';
 import Link from 'next/link';
 import {useParams} from 'next/navigation';
 import {ExternalLink,Filter,Search,ArrowUpRight,MapPinned,ShieldAlert,Layers3,CheckCircle2} from 'lucide-react';
-import {api,brl,num} from '@/lib/api';
-import {PageTitle,Panel,Placeholder,Notice,SourceLink,UnderConstruction} from '@/components/ui';
-import MunicipalMap from '@/components/municipal-map';
-import Assistant from '@/components/assistant';
+import {api,brl,num} from '../../lib/api';
+import {PageTitle,Panel,Placeholder,Notice,SourceLink,UnderConstruction} from '../../components/ui';
+import MunicipalMap from '../../components/municipal-map';
+import Assistant from '../../components/assistant';
 
 type Fonte={id:string,tema:string,nome:string,instituicao:string,situacao:string,formato:string,periodicidade:string,prioridade:string,fase:string,cuidado:string,url:string};
 type FontesResponse={total:number,items:Fonte[]};

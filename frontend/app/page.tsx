@@ -2,8 +2,8 @@
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import {ArrowRight,ArrowUpRight,CalendarDays,CheckCircle2,Database,FileText,Landmark,Lightbulb,MapPinned,ShieldAlert,Users,Wallet} from 'lucide-react';
-import {api,brl,num} from '@/lib/api';
-import {PageTitle,Panel,Notice,Placeholder} from '@/components/ui';
+import {api,brl,num} from '../lib/api';
+import {PageTitle,Panel,Notice,Placeholder} from '../components/ui';
 
 type Resumo={ano:number,receita_arrecadada:number|null,despesa_paga:number|null,servidores:number|null,emendas_recebidas:number|null,qualidade:string,aviso:string};
 type Cosip={items:{ano:number,valor:number}[]};

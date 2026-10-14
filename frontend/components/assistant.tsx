@@ -2,7 +2,7 @@
 import {useEffect,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import {Bot,Send,UserRound,ExternalLink,AlertCircle} from 'lucide-react';
-import {api} from '@/lib/api';
+import {api} from '../lib/api';
 type Resposta={resposta:string,tipo:string,fontes?:string[],dados?:unknown[]};
 type Message={role:'user'|'assistant',text:string,fontes?:string[],error?:boolean};
 const suggestions=['Quanto a Prefeitura recebeu de CIP?','Qual secretaria tem mais servidores?','Quantas fontes de dados estão previstas?','Quanto foi gasto em 2026?'];

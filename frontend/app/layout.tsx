@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import Shell from '@/components/shell';
+import Shell from '../components/shell';
 import './globals.css';
 import 'leaflet/dist/leaflet.css';
 export const metadata:Metadata={title:'VIÇO GOV | Inteligência Municipal',description:'Plataforma demonstrativa de inteligência municipal e dados públicos de Viçosa/MG, desenvolvida pela VIÇO Engenharia.'};
