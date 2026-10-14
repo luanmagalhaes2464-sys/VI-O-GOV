@@ -1,0 +1,24 @@
+'use client';
+import {useEffect,useState} from 'react';
+import Link from 'next/link';
+import {ArrowRight,ArrowUpRight,CalendarDays,CheckCircle2,Database,FileText,Landmark,Lightbulb,MapPinned,ShieldAlert,Users,Wallet} from 'lucide-react';
+import {api,brl,num} from '@/lib/api';
+import {PageTitle,Panel,Notice,Placeholder} from '@/components/ui';
+
+type Resumo={ano:number,receita_arrecadada:number|null,despesa_paga:number|null,servidores:number|null,emendas_recebidas:number|null,qualidade:string,aviso:string};
+type Cosip={items:{ano:number,valor:number}[]};
+export default function Home(){
+ const [ano,setAno]=useState(2026); const [data,setData]=useState<Resumo|null>(null);const [cosip,setCosip]=useState<Cosip|null>(null);const [error,setError]=useState<string|null>(null);
+ useEffect(()=>{let valid=true;api<Resumo>(`/api/v1/dashboard/resumo?ano=${ano}`).then(r=>{if(valid){setData(r.data);setError(r.error)}});return()=>{valid=false}},[ano]);
+ useEffect(()=>{api<Cosip>('/api/v1/infraestrutura/cosip').then(r=>setCosip(r.data))},[]);
+ const cards=[{label:'Receita arrecadada',value:brl(data?.receita_arrecadada),icon:Wallet,tone:'blue'},{label:'Despesa paga',value:brl(data?.despesa_paga),icon:Landmark,tone:'purple'},{label:'Emendas recebidas',value:brl(data?.emendas_recebidas),icon:FileText,tone:'green'},{label:'Servidores',value:num(data?.servidores),icon:Users,tone:'orange'}];
+ return <><PageTitle title="Visão executiva" subtitle="Dados, território e recursos públicos para decisões mais bem fundamentadas."><div className="select-wrap"><CalendarDays size={16}/><select aria-label="Ano de referência" value={ano} onChange={e=>setAno(Number(e.target.value))}>{[2026,2025,2024,2023].map(v=><option key={v}>{v}</option>)}</select></div></PageTitle>
+   <div className="hero-intro"><div><div className="mini-label"><span className="pulse"/> Panorama municipal</div><h2>Inteligência que aproxima <br/><em>dados e decisões.</em></h2><p>Um ambiente para organizar indicadores, localizar serviços e acompanhar recursos com transparência.</p><Link href="/mapa" className="hero-link">Explorar território <ArrowRight size={17}/></Link></div><div className="hero-art"><span className="circle circle-one"/><span className="circle circle-two"/><div className="hero-center"><MapPinned size={47}/><span>VIÇOSA <b>MG</b></span></div></div></div>
+   {error&&<Notice>{error}</Notice>}
+   <div className="metrics">{cards.map((c)=><div className="metric" key={c.label}><div className="metric-top"><span>{c.label}</span><span className={'metric-icon '+c.tone}><c.icon size={18}/></span></div><strong>{c.value}</strong><div className="metric-desc"><span className="status-dot"/> {c.value==='—'?'Aguardando carga validada':'Base importada'} · {ano}</div></div>)}</div>
+   <div className="dashboard-columns"><Panel title="Visão financeira" description={`Receitas e despesas do exercício ${ano}`} extra={<Link href="/financas" className="panel-link">Detalhar <ArrowUpRight size={15}/></Link>}><Placeholder text="A importação das receitas e das despesas do Portal da Transparência será necessária para montar o gráfico por competência."/></Panel>
+   <Panel title="Indicador documental" description="Arrecadação histórica da CIP/COSIP (2015–2017)" extra={<Link href="/cosip" className="panel-link">Ver origem <ArrowUpRight size={15}/></Link>}><div className="historical-chart">{(cosip?.items||[]).map(r=><div key={r.ano} className="chart-row"><span>{r.ano}</span><div className="bar-track"><div className="bar-fill" style={{width:`${r.valor/4500000*100}%`}}/></div><b>{brl(r.valor)}</b></div>)}{!cosip?.items.length&&<Placeholder text="Série histórica indisponível."/>}</div><p className="chart-warning"><ShieldAlert size={14}/> Valores históricos. Não são a arrecadação de 2026.</p></Panel></div>
+   <div className="action-grid"><Link href="/mapa" className="action-card"><MapPinned size={25}/><strong>Território</strong><span>Camadas e localização de serviços</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/recursos" className="action-card"><Landmark size={25}/><strong>Rastrear recursos</strong><span>Da indicação à aplicação comprovada</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/fontes" className="action-card"><Database size={25}/><strong>47 fontes catalogadas</strong><span>Inventário e prioridade de integração</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/agente" className="action-card"><Lightbulb size={25}/><strong>Consultar assistente</strong><span>Perguntas com fonte e limites claros</span><ArrowUpRight className="action-arrow" size={17}/></Link></div>
+   <Notice><b>Transparência metodológica:</b> “—” significa ausência de dado validado, e não valor zero. Receitas, empenhos, liquidações e pagamentos são tratados separadamente.</Notice>
+ </>
+}

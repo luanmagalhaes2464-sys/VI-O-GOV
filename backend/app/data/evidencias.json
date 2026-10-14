@@ -1,0 +1,58 @@
+[
+  {
+    "nome": "CIP/COSIP 2015 (receita histórica)",
+    "ano": 2015,
+    "valor": 3023874.08,
+    "natureza": "Arrecadação anual",
+    "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx/Anexo_II__Termo_de_Referencia?arquivo=%7BC2E1BCC5-71DC-C8BC-5A70-A8BDEB04C5E7%7D.pdf&cdLocal=2",
+    "ressalva": "Não é valor atual"
+  },
+  {
+    "nome": "CIP/COSIP 2016 (receita histórica)",
+    "ano": 2016,
+    "valor": 3110632.83,
+    "natureza": "Arrecadação anual",
+    "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx/Anexo_II__Termo_de_Referencia?arquivo=%7BC2E1BCC5-71DC-C8BC-5A70-A8BDEB04C5E7%7D.pdf&cdLocal=2",
+    "ressalva": "Não é valor atual"
+  },
+  {
+    "nome": "CIP/COSIP 2017 (receita histórica)",
+    "ano": 2017,
+    "valor": 4261812.45,
+    "natureza": "Arrecadação anual",
+    "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx/Anexo_II__Termo_de_Referencia?arquivo=%7BC2E1BCC5-71DC-C8BC-5A70-A8BDEB04C5E7%7D.pdf&cdLocal=2",
+    "ressalva": "Não é valor atual"
+  },
+  {
+    "nome": "Pontos iluminação novembro/2017",
+    "ano": 2017,
+    "valor": 7336,
+    "natureza": "Pontos técnicos",
+    "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx/Anexo_II__Termo_de_Referencia?arquivo=%7BC2E1BCC5-71DC-C8BC-5A70-A8BDEB04C5E7%7D.pdf&cdLocal=2",
+    "ressalva": "Não é inventário atual"
+  },
+  {
+    "nome": "Emendas federais 2025 (Câmara relata)",
+    "ano": 2025,
+    "valor": 15197030.32,
+    "natureza": "Emendas recebidas conforme audiência",
+    "url": "https://www.vicosa.mg.leg.br/comunicacao/noticias/2026/maio/audiencia-publica-detalha-mais-de-r-35-milhoes-em-recursos-destinados-a-vicosa-em-2025",
+    "ressalva": "Comparar critérios e reconciliar com exercício"
+  },
+  {
+    "nome": "Emendas estaduais 2025 (Câmara relata)",
+    "ano": 2025,
+    "valor": 12887168.67,
+    "natureza": "Emendas recebidas conforme audiência",
+    "url": "https://www.vicosa.mg.leg.br/comunicacao/noticias/2026/maio/audiencia-publica-detalha-mais-de-r-35-milhoes-em-recursos-destinados-a-vicosa-em-2025",
+    "ressalva": "Comparar critérios e reconciliar com exercício"
+  },
+  {
+    "nome": "Emendas + convênios e programas 2025, aproximado",
+    "ano": 2025,
+    "valor": 35050000,
+    "natureza": "Valor arredondado em notícia",
+    "url": "https://www.vicosa.mg.leg.br/comunicacao/noticias/2026/maio/audiencia-publica-detalha-mais-de-r-35-milhoes-em-recursos-destinados-a-vicosa-em-2025",
+    "ressalva": "Não somar com as duas linhas acima"
+  }
+]

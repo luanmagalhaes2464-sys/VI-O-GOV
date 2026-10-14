@@ -1,0 +1,26 @@
+# Blueprint opcional. Ajuste os valores e o workspace no Render antes de publicar.
+services:
+  - type: web
+    name: vico-gov-api
+    runtime: python
+    plan: free
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_API_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ENVIRONMENT
+        value: production
+  - type: web
+    name: vico-gov-web
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        sync: false
