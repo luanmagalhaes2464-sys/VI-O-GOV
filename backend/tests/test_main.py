@@ -1,22 +1,15 @@
-from app.main import normalizar,resposta_agente,load_local
+from app.rh_data import FAIXAS, resumo, analise, snapshot
+from app.main import health
 
-def test_acento():
-    assert normalizar('Iluminação PÚBLICA')=='iluminacao publica'
+def test_api_rh():
+    assert health()['status']=='ok'
+    assert len(FAIXAS)==7
+    assert [f[0] for f in FAIXAS]==['ate_2','2_4','4_6','6_8','8_10','10_12','acima_12']
 
-def test_catalogo():
-    assert len(load_local('fontes.json'))==47
+def test_sem_inventar_quantitativo():
+    if snapshot() is None:
+        assert resumo()['total_matriculas'] is None
+        assert analise()['quantidade'] is None
 
-def test_sem_dados_nao_inventa():
-    r=resposta_agente('Qual o tempo médio dos ônibus?',2026)
-    assert r['tipo']=='sem_dados'
-
-
-def test_perfil_municipal_fontes():
-    from app.main import perfil_municipal
-    perfil=perfil_municipal()
-    assert perfil['codigo_ibge']=='3171303'
-    assert perfil['populacao_estimada']['ano']==2026
-    assert perfil['populacao_estimada']['valor']==79797
-    assert perfil['hospitais_gerais_identificados']['valor']==2
-    assert {x['cnes'] for x in perfil['hospitais_gerais_identificados']['unidades']}=={'2099454','2099438'}
-    assert perfil['caixa_disponivel'] is None
+def test_remuneracao_documental():
+    assert resumo()['total_bruto_fonte_2026_01']==11822334.05
