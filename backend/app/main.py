@@ -259,3 +259,25 @@ def resumo_secretaria(sigla:str, ano:int=Query(2026,ge=2000,le=2200)):
       'servidores':int(total_servidores) if total_servidores is not None else None,
       'registros_financeiros':int(despesas[0]['registros']) if despesas else 0,
       'nota':'Totais dependem da cobertura da carga validada e do mapeamento oficial entre unidade orçamentária e órgão. Ausência de registros não é valor zero.'}
+
+
+# Referências públicas revisadas em 14/10/2026.
+# Esta rota contém uma fotografia documental, não consulta online ao CNES.
+@app.get('/api/v1/municipio/perfil')
+def perfil_municipal():
+    return {
+      'municipio': 'Viçosa', 'uf':'MG', 'codigo_ibge':'3171303',
+      'populacao_censo': {'valor':76430,'ano':2022,'tipo':'censo','fonte':'IBGE','url':'https://www.ibge.gov.br/cidades-e-estados/mg/vicosa.html'},
+      'populacao_estimada': {'valor':79797,'ano':2026,'tipo':'estimativa','fonte':'IBGE','url':'https://www.ibge.gov.br/cidades-e-estados/mg/vicosa.html'},
+      'escolarizacao_6a14':{'valor':99.34,'ano':2022,'unidade':'%','fonte':'IBGE','url':'https://www.ibge.gov.br/cidades-e-estados/mg/vicosa.html'},
+      'hospitais_gerais_identificados': {
+        'valor':2,'competencia_referencia':'10/2026','fonte':'CNES/DATASUS',
+        'nota':'Dois hospitais gerais com cadastro individual conferido. Não representa contagem automatizada de todos os estabelecimentos de saúde do município.',
+        'unidades':[
+           {'nome':'Hospital São Sebastião','cnes':'2099454','atualizacao_cnes':'2026-10-06','url':'https://cnes2.datasus.gov.br/Mod_Conjunto.asp?VCo_Unidade=3171302099454'},
+           {'nome':'Hospital São João Batista','cnes':'2099438','atualizacao_cnes':'2026-10-06','url':'https://cnes2.datasus.gov.br/Mod_Conjunto.asp?VCo_Unidade=3171302099438'}]
+      },
+      'caixa_disponivel':None,
+      'nota_caixa':'Saldo de caixa não equivale à receita arrecadada nem ao orçamento previsto. Depende de demonstrativo de disponibilidade de caixa conciliado por fonte e competência.',
+      'dados_revisados_em':'2026-10-14'
+    }
