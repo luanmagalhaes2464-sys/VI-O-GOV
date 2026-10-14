@@ -1,24 +1,25 @@
 'use client';
-import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {ArrowRight,ArrowUpRight,CalendarDays,CheckCircle2,Database,FileText,Landmark,Lightbulb,MapPinned,ShieldAlert,Users,Wallet} from 'lucide-react';
-import {api,brl,num} from '../lib/api';
-import {PageTitle,Panel,Notice,Placeholder} from '../components/ui';
+import {useMemo,useState} from 'react';
+import {ArrowRight,BookOpen,ExternalLink,Landmark,MapPinned,Search,ShieldCheck,Users,Info} from 'lucide-react';
+import {secretarias,outrasUnidades,contextoMunicipal,fontesGerais} from '../lib/secretarias';
+import {PageTitle,Panel,Notice} from '../components/ui';
 
-type Resumo={ano:number,receita_arrecadada:number|null,despesa_paga:number|null,servidores:number|null,emendas_recebidas:number|null,qualidade:string,aviso:string};
-type Cosip={items:{ano:number,valor:number}[]};
 export default function Home(){
- const [ano,setAno]=useState(2026); const [data,setData]=useState<Resumo|null>(null);const [cosip,setCosip]=useState<Cosip|null>(null);const [error,setError]=useState<string|null>(null);
- useEffect(()=>{let valid=true;api<Resumo>(`/api/v1/dashboard/resumo?ano=${ano}`).then(r=>{if(valid){setData(r.data);setError(r.error)}});return()=>{valid=false}},[ano]);
- useEffect(()=>{api<Cosip>('/api/v1/infraestrutura/cosip').then(r=>setCosip(r.data))},[]);
- const cards=[{label:'Receita arrecadada',value:brl(data?.receita_arrecadada),icon:Wallet,tone:'blue'},{label:'Despesa paga',value:brl(data?.despesa_paga),icon:Landmark,tone:'purple'},{label:'Emendas recebidas',value:brl(data?.emendas_recebidas),icon:FileText,tone:'green'},{label:'Servidores',value:num(data?.servidores),icon:Users,tone:'orange'}];
- return <><PageTitle title="Visão executiva" subtitle="Dados, território e recursos públicos para decisões mais bem fundamentadas."><div className="select-wrap"><CalendarDays size={16}/><select aria-label="Ano de referência" value={ano} onChange={e=>setAno(Number(e.target.value))}>{[2026,2025,2024,2023].map(v=><option key={v}>{v}</option>)}</select></div></PageTitle>
-   <div className="hero-intro"><div><div className="mini-label"><span className="pulse"/> Panorama municipal</div><h2>Inteligência que aproxima <br/><em>dados e decisões.</em></h2><p>Um ambiente para organizar indicadores, localizar serviços e acompanhar recursos com transparência.</p><Link href="/mapa" className="hero-link">Explorar território <ArrowRight size={17}/></Link></div><div className="hero-art"><span className="circle circle-one"/><span className="circle circle-two"/><div className="hero-center"><MapPinned size={47}/><span>VIÇOSA <b>MG</b></span></div></div></div>
-   {error&&<Notice>{error}</Notice>}
-   <div className="metrics">{cards.map((c)=><div className="metric" key={c.label}><div className="metric-top"><span>{c.label}</span><span className={'metric-icon '+c.tone}><c.icon size={18}/></span></div><strong>{c.value}</strong><div className="metric-desc"><span className="status-dot"/> {c.value==='—'?'Aguardando carga validada':'Base importada'} · {ano}</div></div>)}</div>
-   <div className="dashboard-columns"><Panel title="Visão financeira" description={`Receitas e despesas do exercício ${ano}`} extra={<Link href="/financas" className="panel-link">Detalhar <ArrowUpRight size={15}/></Link>}><Placeholder text="A importação das receitas e das despesas do Portal da Transparência será necessária para montar o gráfico por competência."/></Panel>
-   <Panel title="Indicador documental" description="Arrecadação histórica da CIP/COSIP (2015–2017)" extra={<Link href="/cosip" className="panel-link">Ver origem <ArrowUpRight size={15}/></Link>}><div className="historical-chart">{(cosip?.items||[]).map(r=><div key={r.ano} className="chart-row"><span>{r.ano}</span><div className="bar-track"><div className="bar-fill" style={{width:`${r.valor/4500000*100}%`}}/></div><b>{brl(r.valor)}</b></div>)}{!cosip?.items.length&&<Placeholder text="Série histórica indisponível."/>}</div><p className="chart-warning"><ShieldAlert size={14}/> Valores históricos. Não são a arrecadação de 2026.</p></Panel></div>
-   <div className="action-grid"><Link href="/mapa" className="action-card"><MapPinned size={25}/><strong>Território</strong><span>Camadas e localização de serviços</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/recursos" className="action-card"><Landmark size={25}/><strong>Rastrear recursos</strong><span>Da indicação à aplicação comprovada</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/fontes" className="action-card"><Database size={25}/><strong>47 fontes catalogadas</strong><span>Inventário e prioridade de integração</span><ArrowUpRight className="action-arrow" size={17}/></Link><Link href="/agente" className="action-card"><Lightbulb size={25}/><strong>Consultar assistente</strong><span>Perguntas com fonte e limites claros</span><ArrowUpRight className="action-arrow" size={17}/></Link></div>
-   <Notice><b>Transparência metodológica:</b> “—” significa ausência de dado validado, e não valor zero. Receitas, empenhos, liquidações e pagamentos são tratados separadamente.</Notice>
- </>
+ const [busca,setBusca]=useState('');
+ const filtradas=useMemo(()=>secretarias.filter(s=>(s.nome+' '+s.sigla+' '+s.curto+' '+s.tema).toLocaleLowerCase('pt-BR').includes(busca.toLocaleLowerCase('pt-BR'))),[busca]);
+ return <div className="gov-home">
+   <PageTitle eyebrow="VIÇO GOV / VISÃO DO PREFEITO" title="Gestão por secretaria" subtitle="Um ponto de partida para cada área do município, com indicadores definidos e fontes rastreáveis."/>
+   <section className="gov-welcome"><div><div className="gov-welcome-label">VIÇOSA · MINAS GERAIS</div><h2>Informação organizada por quem <span>toma a decisão.</span></h2><p>Explore cada secretaria para entender suas responsabilidades, dados essenciais e o que ainda precisa ser integrado. Não tratamos base ausente como valor zero.</p><a href={fontesGerais.prefeitura} target="_blank" rel="noreferrer" className="gov-link-light">Consultar estrutura municipal <ExternalLink size={14}/></a></div><div className="gov-welcome-emblem"><Landmark size={48}/><b>12</b><span>Secretarias</span></div></section>
+   <div className="gov-small-title"><b>Contexto municipal</b><span>Dados oficiais de referência — não são resultados de nenhuma secretaria isoladamente.</span></div>
+   <div className="gov-context-grid">{contextoMunicipal.map(item=><a key={item.rotulo} className="gov-context" href={item.url} target="_blank" rel="noopener noreferrer"><div>{item.rotulo}</div><strong>{item.valor}</strong><span>{item.fonte} · {item.periodo} <ExternalLink size={11}/></span></a>)}</div>
+   <div className="gov-directory-head"><div><h2>Secretarias municipais <span>{secretarias.length}</span></h2><p>Selecione uma secretaria para abrir seu painel de gestão.</p></div><div className="gov-search"><Search size={17}/><input aria-label="Filtrar secretarias" placeholder="Buscar secretaria..." value={busca} onChange={e=>setBusca(e.target.value)}/></div></div>
+   <div className="gov-directory">{filtradas.map((s,i)=><Link href={'/secretarias/'+s.slug} key={s.sigla} className="gov-dept">
+     <div className="gov-dept-top"><span className="gov-dept-mark">{s.sigla.slice(0,2)}</span><span className="gov-dept-sigla">{s.sigla}</span></div>
+     <strong>{s.curto}</strong><p>{s.missao}</p><div className="gov-dept-bottom"><span>{s.indicadores.length} indicadores prioritários</span><ArrowRight size={17}/></div>
+   </Link>)}</div>
+   {filtradas.length===0&&<div className="gov-empty">Nenhuma secretaria corresponde à sua busca.</div>}
+   <Panel title="Órgãos e unidades relacionados" description="Estruturas importantes para o sistema, mas não classificadas como secretarias."><div className="gov-related">{outrasUnidades.map(x=><a key={x.sigla} href={x.url} target="_blank" rel="noreferrer"><span>{x.sigla}</span>{x.nome}<ExternalLink size={13}/></a>)}</div></Panel>
+   <Notice><ShieldCheck size={17}/><div><b>Qualidade dos dados:</b> os nomes das secretarias seguem o menu institucional da Prefeitura de Viçosa/MG. Os indicadores setoriais são propostas de acompanhamento; valores financeiros e operacionais só aparecerão após importação e validação. <a href={fontesGerais.transparencia} target="_blank" rel="noopener noreferrer">Portal da Transparência <ExternalLink size={12}/></a></div></Notice>
+ </div>
 }

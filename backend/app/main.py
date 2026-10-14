@@ -230,3 +230,32 @@ def indicador(codigo:str):
     if not rows: raise HTTPException(404,'Indicador ainda não cadastrado')
     values=safe_query('SELECT ano,valor,referencia,fonte_url,qualidade,observacao FROM indicador_valores WHERE indicador_codigo=%s ORDER BY ano',(codigo,))
     return {'indicador':serial(rows[0]),'historico':[serial(v) for v in values]}
+
+
+# Painéis por secretaria: somente registros vinculados ao código oficial do órgão.
+# A existência do cadastro de um órgão NÃO significa que dados tenham sido carregados.
+SECRETARIAS_MUNICIPAIS={'SEGOV','SEMAD','SEMAS','SEMAG','SEMCULTJ','SEMDEI',
+ 'SEMEE','SEMGF','SEMSI','SEMSA','SEPLAG','SEMABIO'}
+
+@app.get('/api/v1/secretarias/{sigla}/resumo')
+def resumo_secretaria(sigla:str, ano:int=Query(2026,ge=2000,le=2200)):
+    sigla=sigla.upper()
+    if sigla not in SECRETARIAS_MUNICIPAIS:
+        raise HTTPException(404,'Secretaria não cadastrada no VIÇO GOV')
+    despesas=safe_query('''SELECT SUM(r.valor) AS total, COUNT(*) AS registros
+      FROM registros_financeiros r JOIN orgaos o ON r.orgao_id=o.id
+      WHERE o.codigo=%s AND r.ano=%s AND r.tipo='pagamento' AND r.qualidade='validado' ''',(sigla,ano))
+    pessoal=safe_query('''SELECT SUM(s.total_servidores) AS total
+      FROM servidores_agregado s JOIN orgaos o ON s.orgao_id=o.id
+      WHERE o.codigo=%s AND s.ano=%s
+        AND s.mes IS NOT DISTINCT FROM
+        (SELECT MAX(s2.mes) FROM servidores_agregado s2
+         JOIN orgaos o2 ON o2.id=s2.orgao_id
+         WHERE o2.codigo=%s AND s2.ano=%s)''',(sigla,ano,sigla,ano))
+    total_despesa=despesas[0]['total'] if despesas else None
+    total_servidores=pessoal[0]['total'] if pessoal else None
+    return {'sigla':sigla,'ano':ano,
+      'despesa_paga':float(total_despesa) if total_despesa is not None else None,
+      'servidores':int(total_servidores) if total_servidores is not None else None,
+      'registros_financeiros':int(despesas[0]['registros']) if despesas else 0,
+      'nota':'Totais dependem da cobertura da carga validada e do mapeamento oficial entre unidade orçamentária e órgão. Ausência de registros não é valor zero.'}

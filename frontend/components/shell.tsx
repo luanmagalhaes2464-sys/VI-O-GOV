@@ -4,6 +4,7 @@ import {usePathname} from 'next/navigation';
 import {useState} from 'react';
 import {PanelLeftClose, Menu, Search, ShieldCheck, ArrowUpRight, Bot, X, UserRound} from 'lucide-react';
 import {menu} from './navigation';
+import {secretarias} from '../lib/secretarias';
 
 export default function Shell({children}:{children:React.ReactNode}){
   const pathname=usePathname();
@@ -22,7 +23,7 @@ export default function Shell({children}:{children:React.ReactNode}){
     </aside>
     <div className="main-layout">
       <header className="topbar"><div className="top-left"><button aria-label="Abrir menu" className="icon-button mobile-only" onClick={()=>setOpen(true)}><Menu size={23}/></button><span className="breadcrumb">Plataforma de Inteligência Municipal</span></div>
-        <div className="top-actions"><div className="searchbox"><Search size={17}/><input placeholder="Buscar módulo..." value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>{if(e.key==='Enter' && search.trim()) {const q=encodeURIComponent(search);window.location.href=`/agente?q=${q}`}}}/></div><span className="prototype-pill">PROTÓTIPO</span><span className="avatar"><UserRound size={17}/></span></div>
+        <div className="top-actions"><div className="searchbox"><Search size={17}/><input placeholder="Buscar secretaria..." value={search} onChange={e=>setSearch(e.target.value)} onKeyDown={e=>{if(e.key==='Enter' && search.trim()) {const s=secretarias.find(x=>(x.nome+' '+x.sigla+' '+x.curto).toLowerCase().includes(search.trim().toLowerCase()));if(s){window.location.href='/secretarias/'+s.slug}else{const q=encodeURIComponent(search);window.location.href='/agente?q='+q}}}}/></div><span className="prototype-pill">PROTÓTIPO</span><span className="avatar"><UserRound size={17}/></span></div>
       </header>
       <main className="content">{children}<footer className="main-footer"><span>VIÇO GOV • Plataforma demonstrativa, não oficial</span><span>Desenvolvimento: VIÇO Engenharia <ArrowUpRight size={12}/></span></footer></main>
     </div>
