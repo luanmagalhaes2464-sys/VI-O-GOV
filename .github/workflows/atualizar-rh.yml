@@ -1,12 +1,8 @@
 name: Atualizar painel RH - Viçosa MG
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'scripts/importar_rh.py'
-      - '.github/workflows/atualizar-rh.yml'
-  schedule:
-    - cron: '20 10 8 * *'
+  # Execução automática desativada: portal respondeu HTTP 403 ao GitHub Actions.
+  # Reativar somente com forma de acesso permitida pela Prefeitura.
 permissions:
   contents: write
 jobs:
