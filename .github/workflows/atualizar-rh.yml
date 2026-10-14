@@ -1,0 +1,40 @@
+name: Atualizar painel RH - Viçosa MG
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/importar_rh.py'
+      - '.github/workflows/atualizar-rh.yml'
+  schedule:
+    - cron: '20 10 8 * *'
+permissions:
+  contents: write
+jobs:
+  atualizar-folha:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar Playwright e navegador
+        run: |
+          pip install playwright==1.55.0
+          python -m playwright install --with-deps chromium
+      - name: Exportar folha oficial e validar dados
+        env:
+          RH_ANO: '2026'
+          RH_MES: '1'
+        run: python scripts/importar_rh.py
+      - name: Publicar apenas dados agregados (sem nomes nem matrículas)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/data/rh_latest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(rh): atualizar estatísticas agregadas da folha oficial"
+            git push
+          else
+            echo "Nenhuma alteração de dados"
+          fi
