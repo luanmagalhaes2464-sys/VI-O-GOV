@@ -13,9 +13,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "lucide-react": "^0.468.0",
-    "leaflet": "^1.9.4"
-  },
-  "devDependencies": {
+    "leaflet": "^1.9.4",
     "@types/node": "^22.14.0",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",
