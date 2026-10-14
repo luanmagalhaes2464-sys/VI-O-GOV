@@ -11,6 +11,7 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
 from .config import settings
@@ -49,6 +50,11 @@ def serial(v):
     if isinstance(v,list): return [serial(item) for item in v]
     if isinstance(v,dict): return {k:serial(x) for k,x in v.items()}
     return v
+
+@app.get('/', include_in_schema=False)
+def inicio():
+    """Quem abre a URL da API no navegador é encaminhado à interface do VIÇO GOV."""
+    return RedirectResponse(url='https://vico-gov-web-vicosa.onrender.com/', status_code=307)
 
 @app.get('/health')
 def health():
