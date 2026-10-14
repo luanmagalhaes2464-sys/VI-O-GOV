@@ -27,12 +27,12 @@ export default function RecursosHumanos(){
   (!f.cargo||x.cargo===f.cargo)&&
   (!f.vinculo||x.vinculo===f.vinculo)&&
   (!f.situacao||x.situacao===f.situacao)&&
-  (!f.faixa||x['faixa_'+f.tipo]===f.faixa)
+  (!f.faixa||(f.tipo==='bruto'?x.faixa_bruto:x.faixa_liquido)===f.faixa)
  ),[linhas,f]);
  const quantidade=filtrado.reduce((n,x)=>n+x.quantidade,0);
  const bruto=filtrado.reduce((n,x)=>n+x.bruto,0);
  const liquido=filtrado.reduce((n,x)=>n+x.liquido,0);
- const serie=FAIXAS.map(b=>({nome:b.label,codigo:b.value,quantidade:filtrado.filter(x=>x['faixa_'+f.tipo]===b.value).reduce((n,x)=>n+x.quantidade,0)}));
+ const serie=FAIXAS.map(b=>({nome:b.label,codigo:b.value,quantidade:filtrado.filter(x=>(f.tipo==='bruto'?x.faixa_bruto:x.faixa_liquido)===b.value).reduce((n,x)=>n+x.quantidade,0)}));
  const max=Math.max(1,...serie.map(x=>x.quantidade));
  function update(key:keyof Filtro,value:string){setF(prev=>({...prev,[key]:value}))}
  async function processar(file:File|undefined){
