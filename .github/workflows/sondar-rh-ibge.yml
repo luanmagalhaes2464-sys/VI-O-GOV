@@ -1,0 +1,19 @@
+name: Verificar API IBGE - RH Viçosa
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/probe_sidra_vicosa.py
+      - .github/workflows/sondar-rh-ibge.yml
+permissions:
+  contents: read
+jobs:
+  sondagem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python scripts/probe_sidra_vicosa.py
