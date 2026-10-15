@@ -38,7 +38,7 @@ export function normalizarIBGE(raw:unknown):RHIBGE{
   const escopo=registro.D2C==='1872'?'direta':registro.D2C==='1874'?'indireta':null;
   if(!escopo)throw new Error('Classificação administrativa não reconhecida.');
   const valor=String(registro.V);
-  if(valor!=='-'&&!/^\\d+$/.test(valor))throw new Error('Valor de RH inválido do IBGE.');
+  if(valor!=='-'&&!/^[0-9]+$/.test(valor))throw new Error('Valor de RH inválido do IBGE.');
   const parsed=valor==='-'?null:Number(valor);
   const target=out.origens.find(x=>x.tipo===escopo)!;
   if(registro.D4N==='Total'&&parsed!==null)target.total=parsed;
