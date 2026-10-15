@@ -1,133 +1,151 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {AlertTriangle,ArrowLeft,ArrowRight,BarChart3,CalendarDays,ExternalLink,Filter,Info,Search,Users,Wallet,X} from 'lucide-react';
-import {api,brl,num} from '../../lib/api';
-import RHMultiplos from '../../components/rh-multiplos';
-
-type RHResumo={mes:string;disponivel:boolean;matriculas:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number;divergencia:number;conciliado:boolean;};
-type Opcoes={mes:string;departamentos:string[];cargos:string[];vinculos:string[];locais:string[];jornadas:string[]};
-type Grupo={nome:string;quantidade:number;bruto:number;liquido:number};
-type Faixa={codigo:string;nome:string;quantidade:number};
-type RHAnalise={mes:string;quantitativos:{matriculas:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number;media:number};faixas:Faixa[];por_departamento:Grupo[];por_cargo:Grupo[];por_vinculo:Grupo[];por_local:Grupo[]};
-type Pessoa={matricula:string;nome:string;admissao:string|null;desligamento:string|null;jornada:string;cargo:string;vinculo:string;departamento:string;local_trabalho:string;bruto:number;liquido:number;descontos:number;quinquenio:number;pagina_pdf:number;salario_base:number|null};
-type Pessoas={mes:string;total:number;pagina:number;tamanho:number;pessoas:Pessoa[]};
-type Detalhe={registro:Pessoa&{rubricas:{codigo:string;rubrica:string;valor:number}[];competencia:string}};
-type FilterState={departamento:string;cargo:string;vinculo:string;local:string;jornada:string;situacao:string;faixa:string;base:string;busca:string};
-const defaults:FilterState={departamento:'',cargo:'',vinculo:'',local:'',jornada:'',situacao:'',faixa:'',base:'bruto',busca:''};
-const source='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
+import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X} from 'lucide-react';
+import {brl,num} from '../../lib/api';
+type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
+type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
+type Grupo={nome:string;quantidade:number;bruto?:number;media_bruta?:number;maior_remuneracao?:number};
+type Row={id:number;mes:string;matricula:string;nome:string;admissao:string|null;cargo:string;vinculo:string;departamento:string;local:string;jornada:string;bruto:number;liquido:number;quinquenio:number;inclusoes_pagamento:number};
+type Painel={meses:string[];competencias:Mes[];cobertura:number;totais:KPIs;por_departamento:Grupo[];por_cargo:Grupo[];maiores_salarios:Grupo[];por_vinculo:Grupo[];pessoas:Row[];pagina:number;opcoes:Record<string,string[]>;criterio_salario:string;aviso:string};
+const portal='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
 const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
-const todasFaixas=[['ate_2','Até R$ 2 mil'],['2_4','R$ 2 a R$ 4 mil'],['4_6','R$ 4 a R$ 6 mil'],['6_8','R$ 6 a R$ 8 mil'],['8_10','R$ 8 a R$ 10 mil'],['10_12','R$ 10 a R$ 12 mil'],['acima_12','Acima de R$ 12 mil']];
-const empty:Opcoes={mes:'2026-01',departamentos:[],cargos:[],vinculos:[],locais:[],jornadas:[]};
-export default function RHPage(){
- const [mes,setMes]=useState('2026-01'),[selecionados,setSelecionados]=useState<string[]>(['2026-01']),[f,setF]=useState<FilterState>(defaults),[pagina,setPagina]=useState(1);
- const [resumo,setResumo]=useState<RHResumo|null>(null),[filtros,setFiltros]=useState<Opcoes>(empty);
- const [analise,setAnalise]=useState<RHAnalise|null>(null),[pessoas,setPessoas]=useState<Pessoas|null>(null);
- const [erro,setErro]=useState(''),[loading,setLoading]=useState(true);
- const [detalhe,setDetalhe]=useState<Detalhe|null>(null),[carregandoDetalhe,setCarregandoDetalhe]=useState(false);
- const qs=useMemo(()=>{const p=new URLSearchParams({mes});for(const [chave,valor] of Object.entries(f))if(valor)p.set(chave,valor);return p.toString()},[mes,f]);
- useEffect(()=>{if(selecionados.length>1){setErro('');setLoading(false);return;}
-  let active=true;setLoading(true);setErro('');setDetalhe(null);
-  const p=qs+'&pagina='+pagina+'&tamanho=20';
-  Promise.all([api<RHResumo>('/api/v1/rh/folha/resumo?mes='+mes),
-               api<Opcoes>('/api/v1/rh/folha/filtros?mes='+mes),
-               api<RHAnalise>('/api/v1/rh/folha/analise?'+qs),
-               api<Pessoas>('/api/v1/rh/folha/pessoas?'+p)])
-   .then(([r,o,a,n])=>{if(!active)return;setResumo(r.data);setFiltros(o.data||empty);setAnalise(a.data);setPessoas(n.data);
-    setErro(r.error||o.error||a.error||n.error||'')})
-   .finally(()=>{if(active)setLoading(false)});
-  return()=>{active=false};
- },[mes,qs,pagina,selecionados.length]);
- function update(key:keyof FilterState,value:string){setF(prev=>({...prev,[key]:value}));setPagina(1)}
- function alternarMes(value:string){
-  const next=selecionados.includes(value)?selecionados.filter(x=>x!==value):[...selecionados,value].sort();
-  if(next.length===0)return;
-  setSelecionados(next);setMes(next[0]);setF({...defaults});setPagina(1);
- }
- function selecionarTodos(){setSelecionados(meses.map((_,i)=>`2026-${String(i+1).padStart(2,'0')}`));setMes('2026-01');setF({...defaults});setPagina(1)}
- function abrir(p:Pessoa){setDetalhe(null);setCarregandoDetalhe(true);
-   api<Detalhe>('/api/v1/rh/folha/pessoas/'+encodeURIComponent(p.matricula)+'?mes='+mes)
-     .then(r=>{if(r.data)setDetalhe(r.data);else setErro(r.error||'Falha ao abrir matrícula.')})
-     .finally(()=>setCarregandoDetalhe(false));
- }
- const disponivel=resumo?.disponivel===true;
- const total=analise?.quantitativos;
- const max=Math.max(1,...(analise?.faixas||[]).map(x=>x.quantidade));
- const podeAvancar=!!pessoas&&pagina*20<pessoas.total;
- return <div className="rh-page rhx-page">
-  <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
-  <div className="rh-page-title"><div><h1>Dashboard da folha de pagamento</h1><p>Prefeitura Municipal de Viçosa · dados individuais, cargos, departamento, vínculo, jornada e quinquênio.</p></div><a href={source} target="_blank" rel="noopener noreferrer">Fonte oficial <ExternalLink size={15}/></a></div>
-  <div className="rhx-month-choice">
-    <div className="rhx-month-choice-head"><div><CalendarDays size={17}/><strong>Escolha um ou vários meses de 2026</strong></div>
-      <button type="button" onClick={selecionarTodos}>Selecionar janeiro a julho</button></div>
-    <div className="rhx-month-choice-grid" role="group" aria-label="Competências da folha">
-      {meses.map((label,i)=>{
-        const value=`2026-${String(i+1).padStart(2,'0')}`;
-        return <label key={value} className={selecionados.includes(value)?'selected':''}>
-          <input type="checkbox" checked={selecionados.includes(value)} onChange={()=>alternarMes(value)}
-            disabled={selecionados.length===1&&selecionados[0]===value}/>
-          <span>{label}</span>
-        </label>
-      })}
-    </div>
-    <p>{selecionados.length} {selecionados.length===1?'competência selecionada':'competências selecionadas'}.
-       {selecionados.length>1?' A comparação mostra os meses disponíveis e identifica os pendentes; nenhum mês é estimado.':' Use os filtros abaixo para analisar a competência escolhida.'}</p>
+const codigo=(i:number)=>'2026-'+String(i+1).padStart(2,'0');
+const abreviado=(m:string)=>meses[Number(m.slice(5))-1].slice(0,3);
+const cores=['#2458db','#117f79','#7a41e9','#d45d12','#d32d58','#258ca5','#edaf3a','#8795a9'];
+type Filtros={departamento:string;cargo:string;vinculo:string;local:string;jornada:string;situacao:string;faixa:string;base:string;busca:string};
+const vazio: Filtros={departamento:'',cargo:'',vinculo:'',local:'',jornada:'',situacao:'',faixa:'',base:'bruto',busca:''};
+const faixas=[['','Todas as faixas'],['ate_2','Até R$ 2 mil'],['2_4','R$ 2 a 4 mil'],['4_6','R$ 4 a 6 mil'],['6_8','R$ 6 a 8 mil'],['8_10','R$ 8 a 10 mil'],['10_12','R$ 10 a 12 mil'],['acima_12','Acima de R$ 12 mil']];
+function Barras({dados,medida,moeda=false}:{dados:Grupo[];medida:'quantidade'|'media_bruta';moeda?:boolean}){
+ const lista=dados.filter(x=>Number(x[medida]||0)>0).slice(0,12);
+ const maximo=Math.max(1,...lista.map(x=>Number(x[medida]||0)));
+ return <div className="rh26-bars">{lista.map((x,i)=><div key={x.nome} className="rh26-bar-item" title={x.nome+' — '+(moeda?brl(x.media_bruta):num(x.quantidade))}>
+  <div className="rh26-bar-label"><span>{x.nome}</span><b>{moeda?brl(x.media_bruta):num(x.quantidade)}</b></div>
+  <div className="rh26-bar-track"><div style={{width:(Number(x[medida]||0)/maximo*100)+'%',background:cores[i%cores.length]}}/></div>
+ </div>)}{!lista.length&&<p className="rh26-muted">Sem valores para os filtros escolhidos.</p>}</div>;
+}
+function Rosca({dados}:{dados:Grupo[]}){
+ const [ativo,setAtivo]=useState(0);
+ const top=dados.filter(x=>x.quantidade>0).slice(0,7);
+ const restantes=dados.slice(7).reduce((s,x)=>s+x.quantidade,0);
+ const items=[...top,...(restantes?[{nome:'Outros departamentos',quantidade:restantes}]:[])];
+ const total=items.reduce((s,x)=>s+x.quantidade,0);
+ let pos=0;
+ const gradient=items.map((x,i)=>{const init=pos;pos+=x.quantidade/Math.max(total,1)*100;return cores[i%cores.length]+' '+init+'% '+pos+'%';}).join(', ');
+ const selected=items[ativo]||items[0];
+ return <div className="rh26-donut-layout">
+  <div className="rh26-ring" role="img" aria-label="Distribuição percentual por departamento" style={{background:total?'conic-gradient('+gradient+')':'#edf1f5'}}>
+   <div className="rh26-ring-hole"><strong>{selected?((selected.quantidade/total)*100).toFixed(1).replace('.',',')+'%':'—'}</strong><small>{selected?num(selected.quantidade)+' vínculos-mês':'Sem dados'}</small></div>
   </div>
-  {selecionados.length===1&&<div className="rhx-status"><CalendarDays size={17}/><strong>Competência: {meses[Number(mes.slice(-2))-1]} de 2026</strong><span className={disponivel?'rhx-available':'rhx-pending'}>{disponivel?'Dados carregados no Neon':'Sem base carregada'}</span></div>}
-  {selecionados.length===1&&disponivel&&<div className="rhx-caution"><AlertTriangle size={17}/><span>Janeiro/2026: PDF com {num(resumo!.matriculas)} matrículas. A soma bruta do PDF difere {brl(resumo!.divergencia)} do total exibido no portal. Os valores permanecem identificados como <b>não conciliados</b>, e não são projetados para outros meses.</span></div>}
-  {selecionados.length===1&&erro&&<div className="rh-import-error"><Info size={17}/>{erro}</div>}
-  {selecionados.length>1 ? <RHMultiplos meses={selecionados}/> : disponivel?
-   <>
-    <div className="rhx-filters">
-      <div className="rhx-filters-heading"><div><Filter size={17}/><strong>Filtros de pessoal</strong></div><button onClick={()=>{setF({...defaults});setPagina(1)}}>Limpar filtros</button></div>
-      <div className="rhx-grid">
-       <label>Nome ou matrícula<div className="rhx-search"><Search size={15}/><input value={f.busca} onChange={e=>update('busca',e.target.value)} placeholder="Pesquisar..." aria-label="Pesquisar nome ou matrícula"/></div></label>
-       <label>Departamento / secretaria<select value={f.departamento} onChange={e=>update('departamento',e.target.value)}><option value="">Todos</option>{filtros.departamentos.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-       <label>Cargo / função<select value={f.cargo} onChange={e=>update('cargo',e.target.value)}><option value="">Todos</option>{filtros.cargos.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-       <label>Vínculo<select value={f.vinculo} onChange={e=>update('vinculo',e.target.value)}><option value="">Todos</option>{filtros.vinculos.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-       <label>Tipo de vínculo<select value={f.situacao} onChange={e=>update('situacao',e.target.value)}><option value="">Todos</option><option value="efetivo">Efetivo</option><option value="estavel">Estável</option><option value="comissionado">Comissionado</option><option value="aposentado">Aposentado</option><option value="estagiario">Estagiário</option></select></label>
-       <label>Local de trabalho<select value={f.local} onChange={e=>update('local',e.target.value)}><option value="">Todos</option>{filtros.locais.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-       <label>Jornada semanal<select value={f.jornada} onChange={e=>update('jornada',e.target.value)}><option value="">Todas</option>{filtros.jornadas.map(x=><option key={x} value={x}>{x}</option>)}</select></label>
-       <label>Faixa salarial<select value={f.faixa} onChange={e=>update('faixa',e.target.value)}><option value="">Todas as faixas</option>{todasFaixas.map(([v,n])=><option key={v} value={v}>{n}</option>)}</select></label>
-       <label>Base da faixa<select value={f.base} onChange={e=>update('base',e.target.value)}><option value="bruto">Bruto</option><option value="liquido">Líquido</option></select></label>
+  <div className="rh26-legend">{items.map((x,i)=><button key={x.nome} className={ativo===i?'active':''} type="button" onClick={()=>setAtivo(i)}>
+   <span className="rh26-dot" style={{background:cores[i%cores.length]}}/><span title={x.nome}>{x.nome}</span><b>{(x.quantidade/total*100).toFixed(1).replace('.',',')}%</b>
+  </button>)}</div>
+ </div>;
+}
+export default function RecursosHumanos(){
+ const [selecionados,setSelecionados]=useState<string[]>(['2026-01']);
+ const [aberto,setAberto]=useState(false),[f,setF]=useState<Filtros>(vazio),[pagina,setPagina]=useState(1);
+ const [dados,setDados]=useState<Painel|null>(null),[carregando,setCarregando]=useState(true),[erro,setErro]=useState('');
+ const [pessoa,setPessoa]=useState<Row|null>(null);
+ const consulta=useMemo(()=>{
+  const qs=new URLSearchParams({meses:[...selecionados].sort().join(','),pagina:String(pagina)});
+  for(const [key,value] of Object.entries(f))if(value)qs.set(key,value);
+  return qs.toString();
+ },[selecionados,f,pagina]);
+ useEffect(()=>{
+  let active=true;setCarregando(true);setErro('');
+  fetch('/api/rh/painel?'+consulta,{cache:'no-store'}).then(async r=>{const obj=await r.json();if(!r.ok)throw new Error(obj.error||'Erro HTTP '+r.status);return obj as Painel})
+   .then(x=>{if(active)setDados(x)})
+   .catch(e=>{if(active)setErro(e instanceof Error?e.message:'Não foi possível carregar os dados.')})
+   .finally(()=>{if(active)setCarregando(false)});
+  return ()=>{active=false};
+ },[consulta]);
+ const itens=dados?.competencias||[];
+ const filtrados=dados?.totais;
+ const labelSelecionados=selecionados.length===7?'Janeiro a julho de 2026':selecionados.length===1?meses[Number(selecionados[0].slice(-2))-1]+' de 2026':selecionados.map(abreviado).join(', ')+'/2026';
+ function alterar(mes:string){setSelecionados(prev=>{
+  if(prev.includes(mes))return prev.length===1?prev:prev.filter(x=>x!==mes);
+  return [...prev,mes].sort();
+ });setPagina(1)}
+ function update(key:keyof Filtros,v:string){setF(old=>({...old,[key]:v}));setPagina(1)}
+ const options=dados?.opcoes||{};
+ const optionsFor=(name:keyof Filtros,placeholder:string)=><select value={f[name]} onChange={e=>update(name,e.target.value)}>
+  <option value="">{placeholder}</option>{(options[name]||[]).map(s=><option key={s} value={s}>{s}</option>)}
+ </select>;
+ const top=itens.reduce((v,x)=>Math.max(v,x.indicadores?.bruto||0),1);
+ return <div className="rh-page rh26-page">
+  <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
+  <div className="rh-page-title"><div><h1>Inteligência de Recursos Humanos</h1><p>Prefeitura de Viçosa/MG · folha de pagamento de janeiro a julho de 2026</p></div>
+    <a href={portal} target="_blank" rel="noopener noreferrer">Portal oficial <ExternalLink size={14}/></a></div>
+  <section className="rh26-months">
+    <div className="rh26-month-title"><CalendarDays size={18}/><div><strong>Competências da folha</strong><span>Escolha um ou vários meses para analisar e comparar.</span></div></div>
+    <div className="rh26-dropdown-wrap"><button type="button" className="rh26-dropdown-trigger" onClick={()=>setAberto(v=>!v)} aria-expanded={aberto} aria-label="Selecionar meses">
+      <span>{labelSelecionados}</span><span className="rh26-count">{selecionados.length} {selecionados.length===1?'mês':'meses'}</span><ChevronDown size={17}/></button>
+      {aberto&&<div className="rh26-dropdown-pop"><div className="rh26-dropdown-tools">
+       <button onClick={()=>{setSelecionados(meses.map((_,i)=>codigo(i)));setPagina(1)}} type="button">Selecionar todos</button>
+       <button onClick={()=>{setSelecionados(['2026-01']);setPagina(1)}} type="button">Somente janeiro</button>
       </div>
+      {meses.map((nome,i)=><label key={nome}><input type="checkbox" checked={selecionados.includes(codigo(i))}
+        onChange={()=>alterar(codigo(i))} disabled={selecionados.length===1&&selecionados[0]===codigo(i)}/><span>{nome} / 2026</span></label>)}
+      <button className="rh26-dropdown-close" type="button" onClick={()=>setAberto(false)}>Aplicar seleção</button></div>}
     </div>
-    <div className="rhx-stats">
-      <div><span><Users size={16}/> Matrículas no filtro</span><strong>{loading?'…':num(total?.matriculas)}</strong><small>{mes} · valores do PDF</small></div>
-      <div><span><Wallet size={16}/> Total bruto</span><strong>{loading?'…':brl(total?.bruto)}</strong><small>Valor mensal filtrado</small></div>
-      <div><span>Valor líquido</span><strong>{loading?'…':brl(total?.liquido)}</strong><small>Valor mensal filtrado</small></div>
-      <div><span>Quinquênio (rubrica 105)</span><strong>{loading?'…':brl(total?.quinquenio)}</strong><small>Somatório filtrado</small></div>
-    </div>
-    <div className="rhx-charts">
-     <section className="rhx-panel"><div className="rhx-panel-title"><BarChart3 size={17}/><h2>Distribuição por faixa salarial</h2></div><p>Remuneração {f.base==='bruto'?'bruta':'líquida'} · contagem por matrícula</p><div className="rhx-bars">{(analise?.faixas||[]).map(x=><div className="rhx-bar" key={x.codigo}><span>{x.nome}</span><div><i style={{width:x.quantidade/max*100+'%'}}/></div><b>{num(x.quantidade)}</b></div>)}</div></section>
-     <section className="rhx-panel"><div className="rhx-panel-title"><Users size={17}/><h2>Distribuição por departamento</h2></div><p>Departamentos com mais matrículas na seleção.</p><div className="rhx-breakdown">{(analise?.por_departamento||[]).slice(0,14).map(x=><div key={x.nome}><span title={x.nome}>{x.nome}</span><b>{num(x.quantidade)}</b></div>)}</div></section>
-     <section className="rhx-panel"><div className="rhx-panel-title"><Users size={17}/><h2>Vínculos</h2></div><p>Classificações conforme a folha municipal.</p><div className="rhx-breakdown">{(analise?.por_vinculo||[]).map(x=><div key={x.nome}><span>{x.nome}</span><b>{num(x.quantidade)}</b></div>)}</div></section>
-     <section className="rhx-panel"><div className="rhx-panel-title"><Users size={17}/><h2>Cargos com mais matrículas</h2></div><p>Cargos e funções da base selecionada.</p><div className="rhx-breakdown">{(analise?.por_cargo||[]).slice(0,15).map(x=><div key={x.nome}><span>{x.nome}</span><b>{num(x.quantidade)}</b></div>)}</div></section>
-    </div>
-    <section className="rhx-panel rhx-table">
-      <div className="rhx-table-heading"><div><h2>Pessoas e matrículas</h2><p>Selecione um registro para ver admissão, local, jornada e rubricas de pagamento.</p></div><span>{num(pessoas?.total)} registros</span></div>
-      <div className="rhx-table-scroll"><table><thead><tr><th>Nome / matrícula</th><th>Cargo</th><th>Departamento</th><th>Admissão</th><th>Bruto</th><th>Quinquênio</th><th></th></tr></thead><tbody>
-      {(pessoas?.pessoas||[]).map(x=><tr key={x.matricula}><td><strong>{x.nome}</strong><small>Matrícula {x.matricula}</small></td><td>{x.cargo||'Não informado'}</td><td>{x.departamento}</td><td>{x.admissao?x.admissao.split('-').reverse().join('/'):'—'}</td><td>{brl(x.bruto)}</td><td>{brl(x.quinquenio)}</td><td><button className="rhx-detail-btn" onClick={()=>abrir(x)}>Detalhar</button></td></tr>)}
-      </tbody></table></div>
-      {pessoas?.total===0&&<div className="rhx-empty">Nenhum registro corresponde aos filtros.</div>}
-      <div className="rhx-pages"><span>Página {pagina} de {Math.max(1,Math.ceil((pessoas?.total||0)/20))}</span><div><button disabled={pagina<=1} onClick={()=>setPagina(p=>p-1)}><ArrowLeft size={15}/> Anterior</button><button disabled={!podeAvancar} onClick={()=>setPagina(p=>p+1)}>Próxima <ArrowRight size={15}/></button></div></div>
-    </section>
-   </>:
-   <div className="rh-data-wait"><CalendarDays size={32}/><h2>Sem folha disponível para {meses[Number(mes.slice(-2))-1]} de 2026</h2><p>O arquivo recebido contém somente janeiro/2026. Fevereiro a julho não foram estimados e só aparecerão quando as bases mensais forem obtidas e validadas.</p></div>}
-  <div className="rhx-note"><Info size={16}/><span>Dados públicos de remuneração por matrícula, extraídos do PDF informado. O total de matrículas não equivale à quantidade de funcionários ativos; folhas podem conter rescisões, aposentados e estagiários. A fonte original deverá ser consultada para auditoria.</span></div>
-  {selecionados.length===1&&carregandoDetalhe&&<div className="rhx-dialog-back"><div className="rhx-dialog"><p>Carregando os detalhes da matrícula…</p></div></div>}
-  {selecionados.length===1&&detalhe&&<div className="rhx-dialog-back" onClick={()=>setDetalhe(null)}><div className="rhx-dialog" role="dialog" aria-modal="true" aria-label="Detalhes da folha" onClick={e=>e.stopPropagation()}>
-   <div className="rhx-dialog-head"><div><h2>{detalhe.registro.nome}</h2><p>Matrícula {detalhe.registro.matricula} · {mes}</p></div><button aria-label="Fechar" onClick={()=>setDetalhe(null)}><X size={19}/></button></div>
-   <div className="rhx-detail-grid">{[
-      ['Cargo/função',detalhe.registro.cargo],['Vínculo',detalhe.registro.vinculo],
-      ['Departamento',detalhe.registro.departamento],['Local',detalhe.registro.local_trabalho],
-      ['Admissão',detalhe.registro.admissao?detalhe.registro.admissao.split('-').reverse().join('/'):'—'],
-      ['Jornada semanal',detalhe.registro.jornada],['Salário-base (rubrica 100)',brl(detalhe.registro.salario_base)],
-      ['Quinquênio (rubrica 105)',brl(detalhe.registro.quinquenio)],
-      ['Total bruto',brl(detalhe.registro.bruto)],['Descontos',brl(detalhe.registro.descontos)],
-      ['Total líquido',brl(detalhe.registro.liquido)],['Página do PDF',String(detalhe.registro.pagina_pdf)]
-    ].map(([k,v])=><div key={k}><span>{k}</span><strong>{v||'—'}</strong></div>)}</div>
-   <h3>Rubricas desta competência</h3><div className="rhx-rubricas">{detalhe.registro.rubricas.map((r,i)=><div key={i}><span>{r.codigo} — {r.rubrica}</span><b>{brl(r.valor)}</b></div>)}</div>
-   <a href={source} target="_blank" rel="noopener noreferrer">Conferir no Portal da Transparência <ExternalLink size={14}/></a>
+  </section>
+  <div className="rh26-source"><Info size={16}/><span><b>7 competências no banco.</b> Os dados de fevereiro a julho foram importados dos CSVs fornecidos; a coleta automática do portal ainda não está habilitada. A folha de janeiro mantém ressalva de conciliação.</span></div>
+  {erro&&<div className="rh-import-error"><AlertTriangle size={17}/>{erro}</div>}
+  <section className="rh26-filter-box">
+   <div className="rh26-box-head"><div><Filter size={17}/><h2>Filtros de análise</h2></div><button type="button" onClick={()=>{setF({...vazio});setPagina(1)}}><RefreshCcw size={14}/> Limpar filtros</button></div>
+   <div className="rh26-filters">
+    <label>Pesquisar servidor ou matrícula<div className="rh26-search"><Search size={14}/><input value={f.busca} placeholder="Nome ou matrícula" onChange={e=>update('busca',e.target.value)}/></div></label>
+    <label>Secretaria / departamento{optionsFor('departamento','Todos os departamentos')}</label>
+    <label>Cargo / função{optionsFor('cargo','Todos os cargos')}</label>
+    <label>Vínculo{optionsFor('vinculo','Todos os vínculos')}</label>
+    <label>Local de trabalho{optionsFor('local','Todos os locais')}</label>
+    <label>Jornada semanal{optionsFor('jornada','Todas as jornadas')}</label>
+    <label>Categoria<select value={f.situacao} onChange={e=>update('situacao',e.target.value)}>
+     <option value="">Todas as categorias</option><option value="efetivo">Efetivos</option><option value="comissionado">Comissionados</option>
+     <option value="aposentado">Aposentados identificados</option><option value="estagiario">Estagiários</option><option value="contratado">Contratados</option>
+    </select></label>
+    <label>Faixa salarial<select value={f.faixa} onChange={e=>update('faixa',e.target.value)}>{faixas.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+    <label>Base salarial<select value={f.base} onChange={e=>update('base',e.target.value)}><option value="bruto">Remuneração bruta</option><option value="liquido">Remuneração líquida</option></select></label>
+   </div>
+  </section>
+  <div className="rh26-cards">
+    <article><span><Users size={16}/> Vínculos-mês</span><strong>{carregando?'…':num(filtrados?.vinculos_mes)}</strong><small>Soma dos vínculos nos meses selecionados</small></article>
+    <article><span><Users size={16}/> Vínculos distintos</span><strong>{carregando?'…':num(filtrados?.vinculos_distintos)}</strong><small>Sem repetir o mesmo nome e matrícula entre meses</small></article>
+    <article><span><Wallet size={16}/> Remuneração bruta</span><strong>{carregando?'…':brl(filtrados?.bruto)}</strong><small>Acumulado de {selecionados.length} {selecionados.length===1?'mês':'meses'}</small></article>
+    <article><span><Wallet size={16}/> Quinquênios</span><strong>{carregando?'…':brl(filtrados?.quinquenio)}</strong><small>Rubrica de quinquênio · acumulada</small></article>
+  </div>
+  <div className="rh26-chart-grid">
+   <section className="rh26-panel rh26-dept"><div className="rh26-panel-head"><h2>Distribuição por departamento</h2><p>Percentual de vínculos-mês em cada secretaria ou departamento.</p></div>
+    <Rosca dados={dados?.por_departamento||[]}/></section>
+   <section className="rh26-panel"><div className="rh26-panel-head"><h2>Cargos com mais matrículas</h2><p>Vínculos-mês por cargo, em ordem decrescente.</p></div>
+    <Barras dados={dados?.por_cargo||[]} medida="quantidade"/></section>
+   <section className="rh26-panel"><div className="rh26-panel-head"><h2>Cargos com maiores salários</h2><p>Média da remuneração bruta por vínculo-mês, do maior ao menor.</p></div>
+    <Barras dados={dados?.maiores_salarios||[]} medida="media_bruta" moeda/></section>
+  </div>
+  <section className="rh26-panel rh26-trend"><div className="rh26-panel-head"><h2>Evolução da folha por mês</h2><p>Remuneração bruta mensal; valores de cada competência selecionada.</p></div>
+    <div className="rh26-trend-bars">{itens.map((m,i)=><div key={m.mes} className="rh26-trend-item" title={m.mes+' • '+brl(m.indicadores?.bruto)}>
+      <strong>{brl(m.indicadores?.bruto)}</strong><div className="rh26-trend-track"><div style={{height:Math.max(5,(Number(m.indicadores?.bruto||0)/top*100))+'%',background:cores[i%cores.length]}}/></div>
+      <span>{abreviado(m.mes)}</span></div>)}</div>
+  </section>
+  <section className="rh26-panel rh26-table-panel">
+   <div className="rh26-box-head"><div><Users size={17}/><h2>Servidores e remunerações</h2></div><span>Detalhamento por competência</span></div>
+   <div className="rh26-table-scroll"><table><thead><tr><th>Competência</th><th>Servidor / matrícula</th><th>Cargo e departamento</th><th>Bruto</th><th>Líquido</th><th>Quinquênio</th><th></th></tr></thead>
+     <tbody>{(dados?.pessoas||[]).map(r=><tr key={r.id}>
+      <td>{r.mes.slice(-2)+'/2026'}</td><td><b>{r.nome}</b><small>Matrícula {r.matricula}</small></td>
+      <td>{r.cargo}<small>{r.departamento}</small></td>
+      <td>{brl(r.bruto)}</td><td>{brl(r.liquido)}</td><td>{brl(r.quinquenio)}</td>
+      <td><button type="button" onClick={()=>setPessoa(r)} className="rh26-view">Ver <ChevronRight size={14}/></button></td></tr>)}</tbody></table></div>
+   <div className="rh26-pagination"><button onClick={()=>setPagina(x=>Math.max(1,x-1))} disabled={pagina===1}><ChevronLeft size={15}/>Anterior</button><span>Página {pagina}</span><button onClick={()=>setPagina(x=>x+1)} disabled={!dados||dados.pessoas.length<20}>Próxima<ChevronRight size={15}/></button></div>
+  </section>
+  <div className="rh26-method"><Info size={17}/>{dados?.aviso||'Dados extraídos dos relatórios oficiais, com agrupamento de inclusões de pagamento por vínculo e competência.'}</div>
+  {pessoa&&<div className="rh26-overlay" onClick={()=>setPessoa(null)}><div className="rh26-modal" role="dialog" aria-modal="true" aria-label="Ficha do vínculo" onClick={e=>e.stopPropagation()}>
+   <div className="rh26-modal-head"><div><h2>{pessoa.nome}</h2><small>{pessoa.mes.slice(-2)+'/2026'} · matrícula {pessoa.matricula}</small></div><button aria-label="Fechar" onClick={()=>setPessoa(null)}><X size={19}/></button></div>
+   <div className="rh26-details">{[
+    ['Cargo',pessoa.cargo],['Vínculo',pessoa.vinculo],['Departamento',pessoa.departamento],['Local',pessoa.local],
+    ['Admissão',pessoa.admissao||'Não informado'],['Jornada semanal',pessoa.jornada],['Bruto',brl(pessoa.bruto)],
+    ['Líquido',brl(pessoa.liquido)],['Quinquênio',brl(pessoa.quinquenio)],['Inclusões de pagamento',num(pessoa.inclusoes_pagamento)]
+   ].map(([key,value])=><div key={key}><span>{key}</span><strong>{value}</strong></div>)}</div>
+   <p className="rh26-muted">Informações referentes exclusivamente à competência selecionada. Os valores são públicos no relatório de folha.</p>
   </div></div>}
  </div>;
 }
