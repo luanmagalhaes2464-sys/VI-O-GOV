@@ -74,7 +74,7 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
  const [carregandoPessoa,setCarregandoPessoa]=useState(false);
  const filtroBase=useMemo(()=>{const p=new URLSearchParams(consulta);p.delete('pagina');return p},[consulta]);
  useEffect(()=>{setSelecionado(null);setResultado(null);setDetalhe(null);setErro('');setPagina(1)},[consulta]);
- const carregarGrupo=useCallback(async(grupo:Selecionado,page:number)=>{
+ const carregarGrupo=useCallback(async(grupo:Selecionado,page:number,autoPessoa=false)=>{
   if(grupo.outros){setResultado(null);setCarregando(false);return}
   const params=new URLSearchParams(filtroBase.toString());
   params.set('modo',grupo.tipo);params.set('valor',grupo.nome);params.set('pagina',String(page));
@@ -84,6 +84,7 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
    const obj=await res.json();
    if(!res.ok)throw Error(obj.error||'Consulta não disponível');
    setResultado(obj as GrupoResposta);
+   if(autoPessoa&&(obj as GrupoResposta).pessoas[0])void abrirPessoa((obj as GrupoResposta).pessoas[0]);
   }catch(error){setErro(error instanceof Error?error.message:'Erro ao consultar pessoas.')}
   finally{setCarregando(false)}
  },[filtroBase]);
@@ -97,10 +98,10 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
   }catch(e){setErro(e instanceof Error?e.message:'Erro ao consultar rubricas.')}
   finally{setCarregandoPessoa(false)}
  }
- function abrirCargo(x:Grupo){
+ function abrirCargo(x:Grupo,autoPessoa=false){
   const grupo:Selecionado={tipo:'cargo',nome:x.nome,quantidade:x.quantidade,bruto:Number(x.bruto||0),media:Number(x.media_bruta||0)};
   setSelecionado(grupo);setDetalhe(null);setPagina(1);
-  void carregarGrupo(grupo,1);
+  void carregarGrupo(grupo,1,autoPessoa);
  }
  function abrirSetor(x:Selecionado){
   setSelecionado(x);setDetalhe(null);setResultado(null);setErro('');setPagina(1);
@@ -124,7 +125,7 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
    </section>
    <section className="rh26-panel">
     <div className="rh26-panel-head"><h2>Cargos com maiores salários</h2><p>Média bruta por vínculo-mês, do maior para o menor. Clique para ver servidores e rubricas.</p></div>
-    <ListaBarras dados={dados?.maiores_salarios||[]} medida="media_bruta" onSelect={abrirCargo}/>
+    <ListaBarras dados={dados?.maiores_salarios||[]} medida="media_bruta" onSelect={x=>abrirCargo(x,true)}/>
    </section>
   </div>
   {selecionado&&<div className="rh26-overlay" onClick={fechar}>
@@ -155,21 +156,6 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
       <div><span>Vínculos-mês / distintos</span><strong>{num(resultado.resumo.vinculos_mes)} / {num(resultado.resumo.vinculos_distintos)}</strong></div>
      </div>}
      {selecionado.tipo==='cargo'&&<p className="rh27-note">A média inclui todos os pagamentos brutos da competência, não somente o salário-base. Pagamentos extraordinários podem elevar o valor.</p>}
-     <div className="rh27-records">
-      <h3>{selecionado.tipo==='cargo'?'Servidores e remuneração individual':'Servidores vinculados ao departamento'}</h3>
-      <p className="rh27-note">Valores por matrícula e competência, em ordem decrescente de remuneração bruta. Clique na pessoa para ver as rubricas.</p>
-      {resultado.pessoas.map(row=><button type="button" className={'rh27-person '+(detalhe?.pessoa.id===row.id?'selected':'')} key={row.id} onClick={()=>void abrirPessoa(row)}>
-       <div><b>{row.nome}</b><small>{labelMes(row.mes)} · matrícula {row.matricula}{selecionado.tipo==='departamento'?' · '+row.cargo:''}</small></div>
-       <strong>{money(row.bruto)} <ChevronRight size={14}/></strong>
-      </button>)}
-      {resultado.pessoas.length===0&&<p className="rh27-note">Não há pessoas com os filtros selecionados.</p>}
-     </div>
-     <div className="rh27-pages">
-      <button disabled={pagina===1||carregando} onClick={()=>navegar(pagina-1)}><ArrowLeft size={14}/>Anterior</button>
-      <small>Página {pagina}</small>
-      <button disabled={carregando||resultado.pessoas.length<25} onClick={()=>navegar(pagina+1)}>Próxima<ArrowRight size={14}/></button>
-     </div>
-    </>}
     {carregandoPessoa&&<p className="rh27-busy">Carregando composição da remuneração…</p>}
     {detalhe&&<div className="rh27-pay-detail">
      <div className="rh27-detail-head"><div><span className="rh27-eyebrow">COMPOSIÇÃO DA REMUNERAÇÃO</span><h3>{detalhe.pessoa.nome}</h3>
@@ -195,6 +181,22 @@ export default function RHExploracao({dados,consulta}:{dados:Dataset|null;consul
      })}
      <p className="rh27-note"><Info size={14}/> As rubricas explicam a <b>composição do valor</b>, não a justificativa legal ou administrativa de cada pagamento. {detalhe.explicacao}</p>
     </div>}
+
+     <div className="rh27-records">
+      <h3>{selecionado.tipo==='cargo'?'Servidores e remuneração individual':'Servidores vinculados ao departamento'}</h3>
+      <p className="rh27-note">Valores por matrícula e competência, em ordem decrescente de remuneração bruta. Clique na pessoa para ver as rubricas.</p>
+      {resultado.pessoas.map(row=><button type="button" className={'rh27-person '+(detalhe?.pessoa.id===row.id?'selected':'')} key={row.id} onClick={()=>void abrirPessoa(row)}>
+       <div><b>{row.nome}</b><small>{labelMes(row.mes)} · matrícula {row.matricula}{selecionado.tipo==='departamento'?' · '+row.cargo:''}</small></div>
+       <strong>{money(row.bruto)} <ChevronRight size={14}/></strong>
+      </button>)}
+      {resultado.pessoas.length===0&&<p className="rh27-note">Não há pessoas com os filtros selecionados.</p>}
+     </div>
+     <div className="rh27-pages">
+      <button disabled={pagina===1||carregando} onClick={()=>navegar(pagina-1)}><ArrowLeft size={14}/>Anterior</button>
+      <small>Página {pagina}</small>
+      <button disabled={carregando||resultado.pessoas.length<25} onClick={()=>navegar(pagina+1)}>Próxima<ArrowRight size={14}/></button>
+     </div>
+    </>}
    </div>
   </div>}
  </>;
