@@ -1,37 +1,34 @@
 'use client';
-import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {Users,Wallet,ArrowUpRight,ExternalLink,ShieldCheck,FileUp} from 'lucide-react';
-import {lerSessao,PainelRH,numero,moeda,FONTE_RH,BRUTO_OFICIAL_JAN_2026} from '../lib/rh-import';
+import {useEffect,useState} from 'react';
+import {Users,Wallet,Landmark,ArrowUpRight,ExternalLink,RefreshCw,Info} from 'lucide-react';
+import {IBGE_RH_VALIDADO,RHIBGE,PORTAL_RH,API_SIDRA_RH} from '../lib/ibge-rh';
 
+const numero=(x:number)=>new Intl.NumberFormat('pt-BR').format(x);
 export default function Home(){
- const [data,setData]=useState<PainelRH|null>(null);
- useEffect(()=>setData(lerSessao()),[]);
- const referencia=data?.referencia??'2026-01';
+ const [data,setData]=useState<RHIBGE>(IBGE_RH_VALIDADO),[loading,setLoading]=useState(true);
+ useEffect(()=>{let active=true;fetch('/api/rh/ibge',{cache:'no-store'}).then(r=>r.json()).then((r:RHIBGE)=>{if(active&&r.codigo_ibge==='3171303')setData(r)}).catch(()=>{}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
+ const direta=data.origens.find(x=>x.tipo==='direta')!.total;
+ const indireta=data.origens.find(x=>x.tipo==='indireta')!.total;
  return <div className="rh-home">
   <div className="rh-kicker">VIÇO GOV / VISÃO GERAL</div>
-  <h1>Recursos Humanos de Viçosa</h1>
-  <p className="rh-subtitle">Dois números essenciais para acompanhar o quadro de pessoal da Prefeitura Municipal de Viçosa/MG.</p>
-  <section className="rh-home-figures">
-   <article className="rh-home-figure rh-home-figure-people">
-    <span className="rh-home-tag"><Users size={19}/> QUANTIDADE DE FUNCIONÁRIOS</span>
-    <strong>{data?numero(data.pessoas):'—'}</strong>
-    <h2>{data?'Nomes distintos na folha · '+referencia:'Total de pessoas a confirmar'}</h2>
-    <p>{data?'Estimativa por nomes distintos. A folha possui '+numero(data.matriculas)+' matrículas/vínculos; pessoas com nomes iguais podem afetar a contagem.':'O portal mostra dez registros por página. Preciso da exportação completa para calcular a quantidade sem inventar um número.'}</p>
-    <Link href="/rh"><FileUp size={15}/>{data?'Explorar a distribuição de RH':'Carregar CSV da folha'} <ArrowUpRight size={15}/></Link>
-   </article>
-   <article className="rh-home-figure rh-home-figure-payroll">
-    <span className="rh-home-tag"><Wallet size={19}/> VALOR BRUTO DA FOLHA</span>
-    <strong>{moeda(data?.bruto??BRUTO_OFICIAL_JAN_2026)}</strong>
-    <h2>{data?'Folha importada · '+referencia:'Folha de pagamento · janeiro de 2026'}</h2>
-    <p>{data?'Valor calculado sobre a exportação CSV oficial selecionada nesta sessão.':'Valor bruto exibido pelo Portal da Transparência, na aba Folha de Pagamento. Não inclui automaticamente as abas de agentes políticos e estagiários.'}</p>
-    <a href={FONTE_RH} target="_blank" rel="noopener noreferrer">Conferir valor oficial <ExternalLink size={15}/></a>
-   </article>
+  <h1>Pessoal da Prefeitura de Viçosa</h1>
+  <p className="rh-subtitle">Indicadores de recursos humanos com dados oficiais e referência identificada, sem necessidade de importar arquivos.</p>
+  <div className="rha-status"><RefreshCw size={15}/>{loading?'Consultando a API IBGE…':data.modo==='api'?'Dados obtidos automaticamente do IBGE':'Cópia oficial validada; conexão IBGE em verificação'} <span>IBGE MUNIC · 2023</span></div>
+  <section className="rha-overview">
+   <div className="rha-lead">
+    <div className="rha-label"><Users size={19}/> PESSOAL OCUPADO · IBGE MUNIC 2023</div>
+    <strong>{numero(data.total)}</strong>
+    <h2>Administrações direta e indireta</h2>
+    <p>Dado oficial de 2023. Não é o total de funcionários ativos em outubro de 2026, nem a contagem mensal da folha atual.</p>
+    <Link href="/rh">Analisar tipos de vínculo <ArrowUpRight size={16}/></Link>
+   </div>
+   <div className="rha-two">
+    <div><span>Administração direta</span><b>{numero(direta)}</b><small>IBGE · 2023</small></div>
+    <div><span>Administração indireta</span><b>{numero(indireta)}</b><small>IBGE · 2023</small></div>
+   </div>
   </section>
-  <div className="rh-overview-next">
-   <div><h2>Análises de RH</h2><p>Depois de importar a folha oficial, consulte distribuição salarial, vínculos, secretarias e cargos.</p></div>
-   <Link href="/rh">Abrir dashboard de RH <ArrowUpRight size={16}/></Link>
-  </div>
-  <div className="rh-home-note"><ShieldCheck size={18}/><span>O CSV é processado no próprio navegador. O site não envia nomes, matrículas ou remunerações individuais ao GitHub ou ao Render. Apenas estatísticas agregadas ficam nesta sessão do navegador.</span></div>
+  <div className="rha-financial"><div className="rha-finance-head"><Wallet size={19}/><span>FOLHA DE PAGAMENTO · JANEIRO/2026</span></div><div className="rha-payroll"><div><small>Remuneração bruta total</small><strong>R$ 11.822.334,05</strong></div><div><small>Remuneração líquida total</small><strong>R$ 9.307.582,03</strong></div></div><p>Valores exibidos pela Prefeitura na aba Folha de Pagamento. Não abrangem automaticamente agentes políticos e estagiários de outras abas.</p><a href={PORTAL_RH} target="_blank" rel="noopener noreferrer">Conferir no Portal da Transparência <ExternalLink size={14}/></a></div>
+  <div className="rha-method"><Info size={18}/><div><b>Por que os períodos são diferentes?</b><p>A API IBGE fornece estatísticas de vínculos da pesquisa MUNIC de 2023; o portal municipal confirma os valores totais de folha em janeiro de 2026, mas bloqueou nossa coleta automática dos registros individuais. Não combinamos essas fontes como se fossem o mesmo mês. A atualização da consulta ao IBGE ocorre automaticamente.</p><a href={API_SIDRA_RH} target="_blank" rel="noopener noreferrer">Consultar dados abertos do IBGE <ExternalLink size={13}/></a></div></div>
  </div>;
 }
