@@ -1,0 +1,47 @@
+name: Confirmar RH direto Neon em produção
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/testar-rh-direto.yml']
+permissions: {contents: read}
+jobs:
+  confirmar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Verificar cinco rotas RH sem segundo Render
+        run: |
+          python - <<'PY'
+          import json,time,urllib.request,urllib.error
+          base='https://vico-gov-web-vicosa.onrender.com/api/rh/folha'
+          def get(path):
+              error=None
+              for i in range(3):
+                  start=time.monotonic()
+                  try:
+                      r=urllib.request.urlopen(urllib.request.Request(base+path,headers={'User-Agent':'VicoGovRH-API-Test/1.0'}),timeout=120)
+                      data=json.load(r)
+                      print('OK HTTP',r.status,'rota:',path,'segundos:',round(time.monotonic()-start,2))
+                      return data
+                  except urllib.error.HTTPError as e:
+                      print('Falha HTTP',e.code,'rota:',path,'body:',e.read(800).decode(errors='replace'))
+                      error=e
+                  except Exception as e:
+                      print('Falha',type(e).__name__,str(e)[:200]);error=e
+                  time.sleep(5)
+              raise error
+          a=get('/resumo?mes=2026-01')
+          assert a['matriculas']==2151,a
+          assert abs(float(a['bruto'])-11806743.9)<.01
+          b=get('/filtros?mes=2026-01')
+          assert len(b['departamentos'])>=10 and len(b['cargos'])>=100
+          c=get('/analise?mes=2026-01&situacao=aposentado')
+          assert c['quantitativos']['matriculas']==3,c
+          d=get('/pessoas?mes=2026-01&pagina=1&tamanho=20')
+          assert d['total']==2151 and len(d['pessoas'])==20,d
+          e=get('/pessoas/15?mes=2026-01')
+          assert e['registro']['matricula']=='15' and e['registro']['salario_base'] is not None
+          print('SUCESSO: consultas diretas Neon pelo site com 2151 matriculas e filtros.')
+          PY
