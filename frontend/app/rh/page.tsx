@@ -1,98 +1,33 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import Link from 'next/link';
-import {Upload,ExternalLink,Users,Wallet,Filter,RotateCcw,ShieldCheck,AlertCircle,FileCheck2,X} from 'lucide-react';
-import {importarCSV,lerSessao,salvarSessao,limparSessao,PainelRH,GrupoRH,FAIXAS,FONTE_RH,BRUTO_OFICIAL_JAN_2026,moeda,numero} from '../../lib/rh-import';
-
-type Filtro={secretaria:string,cargo:string,vinculo:string,situacao:string,faixa:string,tipo:'bruto'|'liquido'};
-const limpar:Filtro={secretaria:'',cargo:'',vinculo:'',situacao:'',faixa:'',tipo:'bruto'};
-const oficialLiquido=9307582.03;
-function group(rows:GrupoRH[],key:'secretaria'|'cargo'|'vinculo'|'situacao'){
- const m=new Map<string,number>();
- for(const row of rows)m.set(row[key],(m.get(row[key])||0)+row.quantidade);
- return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(([nome,valor])=>({nome,valor}));
-}
-export default function RecursosHumanos(){
- const [dados,setDados]=useState<PainelRH|null>(null),[f,setF]=useState<Filtro>(limpar);
- const [erro,setErro]=useState(''),[carregando,setCarregando]=useState(false);
- useEffect(()=>setDados(lerSessao()),[]);
- const linhas=dados?.grupos??[];
- const opcoes=useMemo(()=>({
-  secretarias:[...new Set(linhas.map(x=>x.secretaria))].sort((a,b)=>a.localeCompare(b,'pt-BR')),
-  cargos:[...new Set(linhas.map(x=>x.cargo))].sort((a,b)=>a.localeCompare(b,'pt-BR')),
-  vinculos:[...new Set(linhas.map(x=>x.vinculo))].sort((a,b)=>a.localeCompare(b,'pt-BR'))
- }),[linhas]);
- const filtrado=useMemo(()=>linhas.filter(x=>
-  (!f.secretaria||x.secretaria===f.secretaria)&&
-  (!f.cargo||x.cargo===f.cargo)&&
-  (!f.vinculo||x.vinculo===f.vinculo)&&
-  (!f.situacao||x.situacao===f.situacao)&&
-  (!f.faixa||(f.tipo==='bruto'?x.faixa_bruto:x.faixa_liquido)===f.faixa)
- ),[linhas,f]);
- const quantidade=filtrado.reduce((n,x)=>n+x.quantidade,0);
- const bruto=filtrado.reduce((n,x)=>n+x.bruto,0);
- const liquido=filtrado.reduce((n,x)=>n+x.liquido,0);
- const serie=FAIXAS.map(b=>({nome:b.label,codigo:b.value,quantidade:filtrado.filter(x=>(f.tipo==='bruto'?x.faixa_bruto:x.faixa_liquido)===b.value).reduce((n,x)=>n+x.quantidade,0)}));
- const max=Math.max(1,...serie.map(x=>x.quantidade));
- function update(key:keyof Filtro,value:string){setF(prev=>({...prev,[key]:value}))}
- async function processar(file:File|undefined){
-  if(!file)return;setCarregando(true);setErro('');
-  try{
-   if(file.size>35_000_000)throw new Error('O arquivo deve ter no máximo 35 MB.');
-   if(!/\.(csv|txt)$/i.test(file.name))throw new Error('Selecione um arquivo CSV (ou TXT delimitado) exportado pelo portal.');
-   const resultado=importarCSV(await file.text());
-   salvarSessao(resultado);setDados(resultado);setF({...limpar});
-  }catch(e){setErro(e instanceof Error?e.message:'Não foi possível processar o arquivo.');}
-  finally{setCarregando(false)}
- }
- return <div className="rh-page">
-  <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
-  <div className="rh-page-title"><div><h1>Dashboard de Recursos Humanos</h1><p>Distribuição salarial, cargos, secretarias e vínculos da folha de pagamento municipal.</p></div><a href={FONTE_RH} target="_blank" rel="noopener noreferrer">Portal oficial <ExternalLink size={14}/></a></div>
-
-  <section className="rh-import-zone">
-   <div className="rh-import-icon">{dados?<FileCheck2 size={24}/>:<Upload size={24}/>}</div>
-   <div className="rh-import-copy">
-    <strong>{dados?'Folha de '+dados.referencia+' carregada':'Carregar a folha oficial para ativar os gráficos'}</strong>
-    <p>{dados?'Foram analisadas '+numero(dados.matriculas)+' matrículas. Os dados estão disponíveis somente nesta sessão.': 'No portal, escolha Folha de Pagamento → janeiro/2026 → Exportar CSV → Baixar Arquivo CSV. Depois selecione o arquivo aqui.'}</p>
-    {dados?.aviso&&<small>{dados.aviso}</small>}
+import {ExternalLink,Users,Wallet,Info,RefreshCw,BarChart3,Lock} from 'lucide-react';
+import {IBGE_RH_VALIDADO,RHIBGE,TipoAdministracao,VinculoIBGE,PORTAL_RH,API_SIDRA_RH,FAIXAS_RH} from '../../lib/ibge-rh';
+const numero=(n:number)=>new Intl.NumberFormat('pt-BR').format(n);
+export default function RH(){
+ const [data,setData]=useState<RHIBGE>(IBGE_RH_VALIDADO);
+ const [scope,setScope]=useState<'todas'|TipoAdministracao>('todas');
+ const [vinculo,setVinculo]=useState<'todos'|VinculoIBGE>('todos');
+ const [loading,setLoading]=useState(true);
+ useEffect(()=>{let ativo=true;fetch('/api/rh/ibge',{cache:'no-store'}).then(r=>r.json()).then((obj:RHIBGE)=>{if(ativo&&obj.codigo_ibge==='3171303')setData(obj)}).catch(()=>{}).finally(()=>{if(ativo)setLoading(false)});return()=>{ativo=false}},[]);
+ const scopes=useMemo(()=>scope==='todas'?data.origens:data.origens.filter(x=>x.tipo===scope),[scope,data]);
+ const names=IBGE_RH_VALIDADO.origens[0].vinculos.map(x=>x.nome);
+ const serie=names.map(name=>({name,value:scopes.reduce((n,s)=>n+(s.vinculos.find(x=>x.nome===name)?.total||0),0),
+   missing:scopes.some(s=>s.vinculos.find(x=>x.nome===name)?.total==null)}));
+ const total=vinculo==='todos'?scopes.reduce((n,s)=>n+s.total,0):serie.find(x=>x.name===vinculo)?.value||0;
+ const max=Math.max(...serie.map(x=>x.value),1);
+ return <div className="rh-page rha-dashboard">
+   <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
+   <div className="rh-page-title"><div><h1>Dashboard de Recursos Humanos</h1><p>Quadro de pessoal da administração municipal de Viçosa, com atualização automática da consulta ao IBGE.</p></div><a href={API_SIDRA_RH} target="_blank" rel="noopener noreferrer">API IBGE <ExternalLink size={15}/></a></div>
+   <div className="rha-status"><RefreshCw size={15}/>{loading?'Consultando SIDRA/IBGE…':data.modo==='api'?'Fonte consultada automaticamente':'Dados históricos verificados; sincronização temporariamente indisponível'}<span>Referência: 2023</span></div>
+   <section className="rha-filters"><div><label htmlFor="tipo">Tipo de administração</label><select id="tipo" value={scope} onChange={e=>setScope(e.target.value as typeof scope)}><option value="todas">Direta + indireta</option><option value="direta">Somente administração direta</option><option value="indireta">Somente administração indireta</option></select></div><div><label htmlFor="vin">Vínculo empregatício</label><select id="vin" value={vinculo} onChange={e=>setVinculo(e.target.value as typeof vinculo)}><option value="todos">Todos os vínculos</option>{names.map(x=><option key={x} value={x}>{x}</option>)}</select></div></section>
+   <div className="rha-metrics">
+     <article><span><Users size={17}/> Pessoas ocupadas</span><strong>{numero(total)}</strong><small>MUNIC 2023 · filtro aplicado</small></article>
+     <article><span>Administração direta</span><strong>{numero(data.origens[0].total)}</strong><small>IBGE · 2023 · sem filtro</small></article>
+     <article><span>Administração indireta</span><strong>{numero(data.origens[1].total)}</strong><small>IBGE · 2023 · sem filtro</small></article>
    </div>
-   <div className="rh-import-actions">
-    <label className="rh-upload-button"><Upload size={16}/>{carregando?'Processando…':dados?'Trocar CSV':'Selecionar arquivo CSV'}
-      <input type="file" accept=".csv,.txt,text/csv,text/plain" disabled={carregando} onChange={e=>{void processar(e.target.files?.[0]);e.currentTarget.value=''}}/>
-    </label>
-    {dados&&<button className="rh-clear-data" onClick={()=>{limparSessao();setDados(null);setF({...limpar});setErro('')}}><X size={14}/> Limpar dados desta sessão</button>}
-   </div>
-  </section>
-  {erro&&<div className="rh-import-error" role="alert"><AlertCircle size={18}/>{erro}</div>}
-
-  <section className="rh-filter-panel">
-   <div className="rh-filter-head"><div><Filter size={16}/><strong>Filtros da folha</strong><span className="rh-filter-status">{dados?'Competência '+dados.referencia:'Aguardando CSV completo'}</span></div><button onClick={()=>setF({...limpar})} disabled={!dados}><RotateCcw size={14}/> Limpar filtros</button></div>
-   <div className="rh-filter-grid">
-    <label>Secretaria / departamento<select disabled={!dados} value={f.secretaria} onChange={e=>update('secretaria',e.target.value)}><option value="">Todas</option>{opcoes.secretarias.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
-    <label>Cargo / função<select disabled={!dados} value={f.cargo} onChange={e=>update('cargo',e.target.value)}><option value="">Todos</option>{opcoes.cargos.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
-    <label>Vínculo declarado<select disabled={!dados} value={f.vinculo} onChange={e=>update('vinculo',e.target.value)}><option value="">Todos</option>{opcoes.vinculos.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
-    <label>Situação / categoria<select disabled={!dados} value={f.situacao} onChange={e=>update('situacao',e.target.value)}><option value="">Todos</option><option value="efetivo">Efetivos</option><option value="comissionado">Comissionados</option><option value="aposentado">Aposentados identificados</option><option value="outro">Outros vínculos</option></select></label>
-    <label>Faixa salarial<select disabled={!dados} value={f.faixa} onChange={e=>update('faixa',e.target.value)}><option value="">Todas as faixas</option>{FAIXAS.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></label>
-    <label>Base da faixa<select disabled={!dados} value={f.tipo} onChange={e=>update('tipo',e.target.value)}><option value="bruto">Remuneração bruta</option><option value="liquido">Remuneração líquida</option></select></label>
-   </div>
-  </section>
-
-  <div className="rh-metrics">
-    <article><span><Users size={16}/> Matrículas / vínculos</span><strong>{dados?numero(quantidade):'—'}</strong><small>{dados?'Filtradas da folha '+dados.referencia:'Quantidade depende do CSV completo'}</small></article>
-    <article><span><Wallet size={16}/> Total bruto</span><strong>{moeda(dados?bruto:BRUTO_OFICIAL_JAN_2026)}</strong><small>{dados?'Somatório filtrado · '+dados.referencia:'Oficial · janeiro/2026 · sem filtros'}</small></article>
-    <article><span><Wallet size={16}/> Total líquido</span><strong>{moeda(dados?liquido:oficialLiquido)}</strong><small>{dados?'Somatório filtrado · '+dados.referencia:'Oficial · janeiro/2026 · sem filtros'}</small></article>
-  </div>
-
-  {!dados?
-    <div className="rh-data-wait"><FileCheck2 size={32}/><h2>Valores oficiais já identificados. Falta apenas o detalhamento.</h2><p>O portal confirma os totais bruto e líquido de janeiro/2026, mas apresenta somente parte das matrículas na tela inicial. Carregue a exportação CSV integral para obter contagem, gráficos e filtros reais sem informações inventadas.</p><a href={FONTE_RH} target="_blank" rel="noopener noreferrer">Abrir Folha de Pagamento <ExternalLink size={14}/></a></div>:
-    <div className="rh-analysis">
-      <section className="rh-chart-panel"><h2>Distribuição por faixa salarial</h2><p>Vínculos por remuneração {f.tipo==='bruto'?'bruta':'líquida'} da competência {dados.referencia}.</p><div className="rh-chart">{serie.map(s=><div key={s.codigo} className="rh-bar-row"><span>{s.nome}</span><div className="rh-bar-bg"><div style={{width:s.quantidade/max*100+'%'}}/></div><strong>{numero(s.quantidade)}</strong></div>)}</div></section>
-      <section className="rh-chart-panel"><h2>Por secretaria / departamento</h2><p>Quantidade de matrículas para os filtros selecionados.</p><div className="rh-breakdown">{group(filtrado,'secretaria').map(x=><div key={x.nome}><span>{x.nome}</span><strong>{numero(x.valor)}</strong></div>)}</div></section>
-      <section className="rh-chart-panel"><h2>Cargos e funções</h2><p>Até 30 cargos, ordenados pela quantidade de vínculos.</p><div className="rh-breakdown">{group(filtrado,'cargo').slice(0,30).map(x=><div key={x.nome}><span>{x.nome}</span><strong>{numero(x.valor)}</strong></div>)}</div></section>
-      <section className="rh-chart-panel"><h2>Tipos de vínculo</h2><p>Classificação preservada conforme a folha municipal.</p><div className="rh-breakdown">{group(filtrado,'vinculo').map(x=><div key={x.nome}><span>{x.nome}</span><strong>{numero(x.valor)}</strong></div>)}</div></section>
-      {quantidade===0&&<div className="rh-filter-empty">Nenhuma matrícula corresponde a esta combinação de filtros. Confira os critérios selecionados.</div>}
-    </div>}
-  <div className="rh-footnote"><ShieldCheck size={15}/> A leitura do CSV acontece no seu navegador. Nomes e matrículas não são enviados ao servidor nem salvos. Apenas grupos estatísticos permanecem na sessão. Uma pessoa pode possuir mais de uma matrícula. A categoria aposentado depende de identificação expressa no vínculo oficial.</div>
-  <Link href="/" className="rh-back-overview">Voltar à Visão Geral</Link>
+   <section className="rha-chart-container"><div className="rha-chart-heading"><BarChart3 size={19}/><div><h2>Distribuição por vínculo</h2><p>Quantidade de pessoas ocupadas, por categoria, na esfera administrativa selecionada.</p></div></div><div className="rha-bars">{serie.filter(x=>vinculo==='todos'||x.name===vinculo).map(item=><div className="rha-bar" key={item.name}><span>{item.name}</span><div className="rha-bar-track"><div style={{width:(item.value/max)*100+'%'}}/></div><b>{item.missing&&item.value===0?'—':numero(item.value)}</b></div>)}</div><p className="rha-chart-foot">Na tabela 5881, “—” significa valor não informado pela fonte, não necessariamente zero. Estagiários estão incluídos no conceito de pessoal ocupado.</p></section>
+   <section className="rha-chart-container"><h2>Folha de pagamento — janeiro de 2026</h2><p>Valores financeiros confirmados no Portal da Transparência de Viçosa/MG. Não são calculados com o IBGE 2023.</p><div className="rha-finance-pair"><div><span>Bruto</span><strong>R$ 11.822.334,05</strong></div><div><span>Líquido</span><strong>R$ 9.307.582,03</strong></div></div><a href={PORTAL_RH} target="_blank" rel="noopener noreferrer">Fonte oficial da folha <ExternalLink size={14}/></a></section>
+   <section className="rha-unavailable"><div><Lock size={20}/><div><h2>Remuneração por faixa, cargo e secretaria</h2><p>Esses filtros precisam dos registros mensais individualizados. O IBGE informa a quantidade por vínculo, mas não publica salário individual, cargo ou lotação nesta tabela. O fornecedor do portal municipal bloqueou a coleta programada (403), por isso não apresentamos números fictícios.</p></div></div><div className="rha-pill-list">{FAIXAS_RH.map(x=><span key={x}>{x}</span>)}</div></section>
+   <div className="rha-method"><Info size={18}/><div><b>Metodologia</b><p>O total refere-se a 2023 (Pesquisa MUNIC, tabela 5881). A atualização automática verifica periodicamente a API oficial e mantém a última referência validada em caso de indisponibilidade. “Pessoas ocupadas” não equivale necessariamente a servidores ativos na folha de outubro de 2026.</p></div></div>
  </div>;
 }
