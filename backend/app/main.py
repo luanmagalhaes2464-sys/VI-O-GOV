@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Literal
 from .rh_data import resumo, analise
+from .rh_db import router as rh_folha_router
 
 app=FastAPI(title="VIÇO GOV | Recursos Humanos",version="0.2.0",
  description="Painel baseado na folha de pagamento oficial. A ausência de dados não é zero.")
@@ -32,3 +33,5 @@ def rh_analise(
     tipo_salario:Literal["bruto","liquido"]="bruto"
 ):
     return analise(secretaria,cargo,vinculo,situacao,faixa,tipo_salario)
+
+app.include_router(rh_folha_router)
