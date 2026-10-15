@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X} from 'lucide-react';
 import {brl,num} from '../../lib/api';
+import RHExploracao from '../../components/rh-exploracao';
 type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
 type Grupo={nome:string;quantidade:number;bruto?:number;media_bruta?:number;maior_remuneracao?:number};
@@ -114,14 +115,7 @@ export default function RecursosHumanos(){
     <article><span><Wallet size={16}/> Remuneração bruta</span><strong>{carregando?'…':brl(filtrados?.bruto)}</strong><small>Acumulado de {selecionados.length} {selecionados.length===1?'mês':'meses'}</small></article>
     <article><span><Wallet size={16}/> Quinquênios</span><strong>{carregando?'…':brl(filtrados?.quinquenio)}</strong><small>Rubrica de quinquênio · acumulada</small></article>
   </div>
-  <div className="rh26-chart-grid">
-   <section className="rh26-panel rh26-dept"><div className="rh26-panel-head"><h2>Distribuição por departamento</h2><p>Percentual de vínculos-mês em cada secretaria ou departamento.</p></div>
-    <Rosca dados={dados?.por_departamento||[]}/></section>
-   <section className="rh26-panel"><div className="rh26-panel-head"><h2>Cargos com mais matrículas</h2><p>Vínculos-mês por cargo, em ordem decrescente.</p></div>
-    <Barras dados={dados?.por_cargo||[]} medida="quantidade"/></section>
-   <section className="rh26-panel"><div className="rh26-panel-head"><h2>Cargos com maiores salários</h2><p>Média da remuneração bruta por vínculo-mês, do maior ao menor.</p></div>
-    <Barras dados={dados?.maiores_salarios||[]} medida="media_bruta" moeda/></section>
-  </div>
+  <RHExploracao dados={dados} consulta={consulta}/>
   <section className="rh26-panel rh26-trend"><div className="rh26-panel-head"><h2>Evolução da folha por mês</h2><p>Remuneração bruta mensal; valores de cada competência selecionada.</p></div>
     <div className="rh26-trend-bars">{itens.map((m,i)=><div key={m.mes} className="rh26-trend-item" title={m.mes+' • '+brl(m.indicadores?.bruto)}>
       <strong>{brl(m.indicadores?.bruto)}</strong><div className="rh26-trend-track"><div style={{height:Math.max(5,(Number(m.indicadores?.bruto||0)/top*100))+'%',background:cores[i%cores.length]}}/></div>
