@@ -58,7 +58,7 @@ function condicao(p:URLSearchParams):RHParam{
  const faixa=p.get('faixa')||'';
  if(faixa){
   const item=faixas.find(x=>x[0]===faixa);
-  if(!item)validation('Faixa salarial inválida.');
+  if(!item)throw Object.assign(new Error('Faixa salarial inválida.'),{httpStatus:422});
   if(item[2]!=null){args.push(item[2]);clauses.push(base+'>$'+args.length)}
   if(item[3]!=null){args.push(item[3]);clauses.push(base+'<=$'+args.length)}
  }
