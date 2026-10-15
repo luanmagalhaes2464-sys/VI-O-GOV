@@ -1,0 +1,56 @@
+name: Validar RH de múltiplas competências em produção
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/testar-rh-multimeses.yml'
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Consultar agregados de janeiro a julho na API publicada
+        run: |
+          python - <<'PY'
+          import urllib.request,json,urllib.error,time
+          base='https://vico-gov-web-vicosa.onrender.com/api/rh/periodo'
+          def get(path):
+             request=urllib.request.Request(base+path,headers={'User-Agent':'VIÇO GOV RH quality check'})
+             for attempt in range(3):
+                try:
+                   with urllib.request.urlopen(request,timeout=120) as r:
+                      body=json.load(r)
+                      print('HTTP',r.status,path)
+                      return body
+                except urllib.error.HTTPError as e:
+                   print('HTTP erro',e.code, e.read(400).decode(errors='replace'))
+                   raise
+                except Exception as exc:
+                   if attempt==2:raise
+                   time.sleep(5)
+          s=get('?meses=2026-01,2026-02,2026-07')
+          assert s['meses_solicitados']==['2026-01','2026-02','2026-07']
+          assert s['meses_disponiveis']==['2026-01'],s
+          assert s['meses_pendentes']==['2026-02','2026-07'],s
+          assert s['periodo_completo'] is False
+          t=s['totais_disponiveis']
+          assert t['registros_mes']==2151,t
+          assert t['matriculas_distintas']==2151,t
+          assert abs(t['bruto']-11806743.90)<.1,t
+          assert len(s['por_mes'])==3
+          assert s['por_mes'][1]['indicadores'] is None
+          assert s['por_mes'][2]['indicadores'] is None
+          print('Meses faltantes representados como indisponíveis, não como zero.')
+          a=get('?meses=2026-01&situacao=aposentado')
+          assert a['totais_disponiveis']['registros_mes']==3,a
+          print('Filtro por vinculo com 3 aposentados identificados.')
+          b=get('?meses=2026-02,2026-03')
+          assert b['totais_disponiveis'] is None
+          assert not b['periodo_completo']
+          print('Sem dados não produz total zero fictício.')
+          print('SUCESSO: múltiplas competências via API em produção.')
+          PY
