@@ -65,7 +65,7 @@ function condicao(p:URLSearchParams):RHParam{
  const busca=(p.get('busca')||'').trim();
  if(busca.length>80)validation('Pesquisa muito longa.');
  if(busca){args.push('%'+busca+'%');const n=args.length;args.push('%'+busca+'%');clauses.push('(nome ILIKE $'+n+' OR matricula ILIKE $'+(n+1)+')')}
- return {where:clauses.join(' AND '),args,base};
+ return {where:clauses.join(' AND '),args,base:base as RHParam['base']};
 }
 async function handle(request:NextRequest,{params}:{params:{path:string[]}}){
  const path=params.path;
