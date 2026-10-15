@@ -1,34 +1,47 @@
 'use client';
-import Link from 'next/link';
 import {useEffect,useState} from 'react';
-import {Users,Wallet,Landmark,ArrowUpRight,ExternalLink,RefreshCw,Info} from 'lucide-react';
-import {IBGE_RH_VALIDADO,RHIBGE,PORTAL_RH,API_SIDRA_RH} from '../lib/ibge-rh';
-
-const numero=(x:number)=>new Intl.NumberFormat('pt-BR').format(x);
+import Link from 'next/link';
+import {Users,Wallet,ArrowUpRight,ExternalLink,Info,CalendarDays,CheckCircle2,AlertTriangle} from 'lucide-react';
+import {api,brl,num} from '../lib/api';
+type Resumo={
+ mes:string;disponivel:boolean;matriculas:number;nomes_distintos:number;
+ bruto:number;liquido:number;descontos:number;quinquenio:number;
+ bruto_portal:number;divergencia:number;conciliado:boolean;nota:string;fonte:string;
+};
+const fonte='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
 export default function Home(){
- const [data,setData]=useState<RHIBGE>(IBGE_RH_VALIDADO),[loading,setLoading]=useState(true);
- useEffect(()=>{let active=true;fetch('/api/rh/ibge',{cache:'no-store'}).then(r=>r.json()).then((r:RHIBGE)=>{if(active&&r.codigo_ibge==='3171303')setData(r)}).catch(()=>{}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
- const direta=data.origens.find(x=>x.tipo==='direta')!.total;
- const indireta=data.origens.find(x=>x.tipo==='indireta')!.total;
+ const [r,setR]=useState<Resumo|null>(null);
+ const [erro,setErro]=useState('');
+ useEffect(()=>{let ativo=true;api<Resumo>('/api/v1/rh/folha/resumo?mes=2026-01').then(x=>{if(ativo){setR(x.data);setErro(x.error||'')}});return()=>{ativo=false}},[]);
  return <div className="rh-home">
   <div className="rh-kicker">VIÇO GOV / VISÃO GERAL</div>
-  <h1>Pessoal da Prefeitura de Viçosa</h1>
-  <p className="rh-subtitle">Indicadores de recursos humanos com dados oficiais e referência identificada, sem necessidade de importar arquivos.</p>
-  <div className="rha-status"><RefreshCw size={15}/>{loading?'Consultando a API IBGE…':data.modo==='api'?'Dados obtidos automaticamente do IBGE':'Cópia oficial validada; conexão IBGE em verificação'} <span>IBGE MUNIC · 2023</span></div>
-  <section className="rha-overview">
-   <div className="rha-lead">
-    <div className="rha-label"><Users size={19}/> PESSOAL OCUPADO · IBGE MUNIC 2023</div>
-    <strong>{numero(data.total)}</strong>
-    <h2>Administrações direta e indireta</h2>
-    <p>Dado oficial de 2023. Não é o total de funcionários ativos em outubro de 2026, nem a contagem mensal da folha atual.</p>
-    <Link href="/rh">Analisar tipos de vínculo <ArrowUpRight size={16}/></Link>
-   </div>
-   <div className="rha-two">
-    <div><span>Administração direta</span><b>{numero(direta)}</b><small>IBGE · 2023</small></div>
-    <div><span>Administração indireta</span><b>{numero(indireta)}</b><small>IBGE · 2023</small></div>
-   </div>
-  </section>
-  <div className="rha-financial"><div className="rha-finance-head"><Wallet size={19}/><span>FOLHA DE PAGAMENTO · JANEIRO/2026</span></div><div className="rha-payroll"><div><small>Remuneração bruta total</small><strong>R$ 11.822.334,05</strong></div><div><small>Remuneração líquida total</small><strong>R$ 9.307.582,03</strong></div></div><p>Valores exibidos pela Prefeitura na aba Folha de Pagamento. Não abrangem automaticamente agentes políticos e estagiários de outras abas.</p><a href={PORTAL_RH} target="_blank" rel="noopener noreferrer">Conferir no Portal da Transparência <ExternalLink size={14}/></a></div>
-  <div className="rha-method"><Info size={18}/><div><b>Por que os períodos são diferentes?</b><p>A API IBGE fornece estatísticas de vínculos da pesquisa MUNIC de 2023; o portal municipal confirma os valores totais de folha em janeiro de 2026, mas bloqueou nossa coleta automática dos registros individuais. Não combinamos essas fontes como se fossem o mesmo mês. A atualização da consulta ao IBGE ocorre automaticamente.</p><a href={API_SIDRA_RH} target="_blank" rel="noopener noreferrer">Consultar dados abertos do IBGE <ExternalLink size={13}/></a></div></div>
+  <h1>Recursos Humanos da Prefeitura</h1>
+  <p className="rh-subtitle">Folha de janeiro de 2026 da Prefeitura Municipal de Viçosa/MG — dados individuais processados e armazenados no Neon.</p>
+  <div className="rh-live-source"><CalendarDays size={16}/><strong>Referência: janeiro/2026</strong><span>Fonte: PDF da folha municipal, 2.151 páginas</span><a href={fonte} target="_blank" rel="noopener noreferrer">Portal oficial <ExternalLink size={13}/></a></div>
+  <div className="rh-home-figures">
+   <article className="rh-home-figure rh-home-figure-people">
+     <span className="rh-home-tag"><Users size={18}/> MATRÍCULAS NA FOLHA</span>
+     <strong>{r?.disponivel?num(r.matriculas):'—'}</strong>
+     <h2>Registros identificados no mês</h2>
+     <p>{r?.disponivel?`${num(r.nomes_distintos)} nomes distintos, não necessariamente ${num(r.nomes_distintos)} pessoas únicas. A folha pode incluir desligados, estagiários e agentes políticos.`:'Consultando a base de RH no Neon.'}</p>
+     <Link href="/rh">Explorar pessoas e vínculos <ArrowUpRight size={16}/></Link>
+   </article>
+   <article className="rh-home-figure rh-home-figure-payroll">
+     <span className="rh-home-tag"><Wallet size={18}/> VALOR BRUTO DAS MATRÍCULAS</span>
+     <strong>{brl(r?.bruto)}</strong>
+     <h2>Total extraído do PDF · janeiro/2026</h2>
+     <p>Remuneração bruta calculada a partir das páginas da folha. Descontos e valores líquidos não são incluídos nesse total bruto.</p>
+     <Link href="/rh">Analisar remunerações <ArrowUpRight size={16}/></Link>
+   </article>
+  </div>
+  {r?.disponivel&&<section className="rh-overview-stats">
+    <div><span>Valor líquido da folha PDF</span><strong>{brl(r.liquido)}</strong></div>
+    <div><span>Descontos na folha PDF</span><strong>{brl(r.descontos)}</strong></div>
+    <div><span>Rubrica de quinquênio (105)</span><strong>{brl(r.quinquenio)}</strong></div>
+  </section>}
+  {r?.disponivel&&r.divergencia>0&&<div className="rh-reconciliation"><AlertTriangle size={20}/><div><b>Diferença em relação ao total do portal</b><p>O PDF enviado soma {brl(r.bruto)}, mas o portal exibe {brl(r.bruto_portal)} para janeiro/2026: diferença de {brl(r.divergencia)}. Mantemos os dois valores separados até haver conciliação. O cálculo interno do PDF confere para bruto, descontos e líquido.</p></div></div>}
+  {erro&&<div className="rh-import-error"><Info size={17}/>A API ainda não respondeu: {erro}. O dashboard evita apresentar estimativas como dados de 2026.</div>}
+  <div className="rh-overview-next"><div><h2>Dashboard detalhado de RH</h2><p>Filtros de secretaria, local, cargo, vínculo, jornada, faixa salarial e consulta por nome ou matrícula.</p></div><Link href="/rh">Abrir análise da folha <ArrowUpRight size={17}/></Link></div>
+  <div className="rh-home-note"><CheckCircle2 size={17}/><span>As páginas do PDF foram processadas para janeiro/2026. Fevereiro a julho serão habilitados conforme as bases oficiais forem obtidas. Ter opção de exportar PDF no portal não garante uma API pública acessível.</span></div>
  </div>;
 }
