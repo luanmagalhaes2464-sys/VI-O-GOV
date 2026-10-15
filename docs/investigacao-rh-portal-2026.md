@@ -89,3 +89,32 @@ A exportação foi visualizada em duas etapas: XHR `recursosHumanos.xhtml` com s
 No DevTools, registrar para a requisição XHR `recursosHumanos.xhtml`: `Request Method`, `Content-Type` da resposta, e **formato/elementos estruturais** da aba Response (sem copiar dados pessoais nem tokens). Para o download (`document`), registrar `Request Method`, **caminho da URL somente** (sem query sensível), `Content-Type` e `Content-Disposition`. Não enviar `Copy as cURL`, HAR bruto, cookies, `ViewState`, nem cabeçalhos `Cookie`/`Authorization`.
 
 Critério adicional: demonstrar que o processo consegue obter `ViewState` próprio, realizar a consulta a `2026-02` e receber a exportação correspondente em sessão autorizada e origem de rede permitida, sem intervenção humana, antes de implantar a coleta agendada.
+
+## Evidência de Headers no DevTools — 15/10/2026
+
+O usuário observou uma requisição da exportação com estas propriedades **sem segredos**:
+
+- Endpoint: `POST /portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml`.
+- HTTP 200 no navegador do usuário; o servidor responde via Cloudflare.
+- Request `Content-Type: application/x-www-form-urlencoded; charset=UTF-8`.
+- Request `Faces-Request: partial/ajax` e `X-Requested-With: XMLHttpRequest`.
+- Response `Content-Type: text/xml; charset=UTF-8`; `Cache-Control: no-cache`; `CF-Cache-Status: DYNAMIC`.
+- A requisição carrega **cookie de sessão JSF**; o valor **não foi registrado aqui**.
+- Os identificadores `anoFolhaPagamento_input=2026` e `mesFolhaPagamento_input=1` foram observados no formulário.
+
+### Interpretação técnica
+
+Esse par de headers identifica uma **requisição parcial JSF**, e não uma resposta JSON contendo diretamente a folha. O HTTP 200 apenas indica que a operação AJAX foi processada; não comprova um endpoint de download público. A resposta XML pode atualizar componentes da página ou acionar a abertura de um diálogo “Arquivo Pronto!”. Ainda faltam as características da requisição disparada **ao clicar em “Baixar Arquivo JSON”**.
+
+### Próxima evidência solicitada
+
+Capturar somente a nova requisição após o clique em **Baixar Arquivo JSON**, com:
+
+- Método HTTP, caminho da URL sem parâmetros sensíveis;
+- Response `Content-Type` e, se presente, `Content-Disposition`;
+- Se a requisição possui header `Faces-Request: partial/ajax`;
+- Nomes dos parâmetros do Payload **sem seus tokens, `ViewState`, `JSESSIONID` ou outros valores de sessão**.
+
+**Segurança:** o usuário expôs um valor de cookie `JSESSIONID` no chat. Não reutilizar ou publicar; recomendar reiniciar/encerrar sessão e limpar dados do site.
+
+O bloqueio Cloudflare 403 originado do GitHub permanece não resolvido e será necessário testar a coleta não assistida de maneira autorizada antes de declarar a integração automática funcional.
