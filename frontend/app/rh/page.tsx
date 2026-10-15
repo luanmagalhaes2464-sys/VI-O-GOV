@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {AlertTriangle,ArrowLeft,ArrowRight,BarChart3,CalendarDays,ExternalLink,Filter,Info,Search,Users,Wallet,X} from 'lucide-react';
 import {api,brl,num} from '../../lib/api';
+import RHMultiplos from '../../components/rh-multiplos';
 
 type RHResumo={mes:string;disponivel:boolean;matriculas:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number;divergencia:number;conciliado:boolean;};
 type Opcoes={mes:string;departamentos:string[];cargos:string[];vinculos:string[];locais:string[];jornadas:string[]};
@@ -18,13 +19,14 @@ const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
 const todasFaixas=[['ate_2','Até R$ 2 mil'],['2_4','R$ 2 a R$ 4 mil'],['4_6','R$ 4 a R$ 6 mil'],['6_8','R$ 6 a R$ 8 mil'],['8_10','R$ 8 a R$ 10 mil'],['10_12','R$ 10 a R$ 12 mil'],['acima_12','Acima de R$ 12 mil']];
 const empty:Opcoes={mes:'2026-01',departamentos:[],cargos:[],vinculos:[],locais:[],jornadas:[]};
 export default function RHPage(){
- const [mes,setMes]=useState('2026-01'),[f,setF]=useState<FilterState>(defaults),[pagina,setPagina]=useState(1);
+ const [mes,setMes]=useState('2026-01'),[selecionados,setSelecionados]=useState<string[]>(['2026-01']),[f,setF]=useState<FilterState>(defaults),[pagina,setPagina]=useState(1);
  const [resumo,setResumo]=useState<RHResumo|null>(null),[filtros,setFiltros]=useState<Opcoes>(empty);
  const [analise,setAnalise]=useState<RHAnalise|null>(null),[pessoas,setPessoas]=useState<Pessoas|null>(null);
  const [erro,setErro]=useState(''),[loading,setLoading]=useState(true);
  const [detalhe,setDetalhe]=useState<Detalhe|null>(null),[carregandoDetalhe,setCarregandoDetalhe]=useState(false);
  const qs=useMemo(()=>{const p=new URLSearchParams({mes});for(const [chave,valor] of Object.entries(f))if(valor)p.set(chave,valor);return p.toString()},[mes,f]);
- useEffect(()=>{let active=true;setLoading(true);setErro('');setDetalhe(null);
+ useEffect(()=>{if(selecionados.length>1){setErro('');setLoading(false);return;}
+  let active=true;setLoading(true);setErro('');setDetalhe(null);
   const p=qs+'&pagina='+pagina+'&tamanho=20';
   Promise.all([api<RHResumo>('/api/v1/rh/folha/resumo?mes='+mes),
                api<Opcoes>('/api/v1/rh/folha/filtros?mes='+mes),
@@ -34,9 +36,14 @@ export default function RHPage(){
     setErro(r.error||o.error||a.error||n.error||'')})
    .finally(()=>{if(active)setLoading(false)});
   return()=>{active=false};
- },[mes,qs,pagina]);
+ },[mes,qs,pagina,selecionados.length]);
  function update(key:keyof FilterState,value:string){setF(prev=>({...prev,[key]:value}));setPagina(1)}
- function chooseMonth(v:string){setMes(v);setF({...defaults});setPagina(1)}
+ function alternarMes(value:string){
+  const next=selecionados.includes(value)?selecionados.filter(x=>x!==value):[...selecionados,value].sort();
+  if(next.length===0)return;
+  setSelecionados(next);setMes(next[0]);setF({...defaults});setPagina(1);
+ }
+ function selecionarTodos(){setSelecionados(meses.map((_,i)=>`2026-${String(i+1).padStart(2,'0')}`));setMes('2026-01');setF({...defaults});setPagina(1)}
  function abrir(p:Pessoa){setDetalhe(null);setCarregandoDetalhe(true);
    api<Detalhe>('/api/v1/rh/folha/pessoas/'+encodeURIComponent(p.matricula)+'?mes='+mes)
      .then(r=>{if(r.data)setDetalhe(r.data);else setErro(r.error||'Falha ao abrir matrícula.')})
@@ -49,10 +56,26 @@ export default function RHPage(){
  return <div className="rh-page rhx-page">
   <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
   <div className="rh-page-title"><div><h1>Dashboard da folha de pagamento</h1><p>Prefeitura Municipal de Viçosa · dados individuais, cargos, departamento, vínculo, jornada e quinquênio.</p></div><a href={source} target="_blank" rel="noopener noreferrer">Fonte oficial <ExternalLink size={15}/></a></div>
-  <div className="rhx-status"><CalendarDays size={17}/><strong>Período da folha</strong><select aria-label="Competência" value={mes} onChange={e=>chooseMonth(e.target.value)}>{meses.map((label,i)=><option value={`2026-${String(i+1).padStart(2,'0')}`} key={label}>{label} / 2026{i>0?' — pendente':''}</option>)}</select><span className={disponivel?'rhx-available':'rhx-pending'}>{disponivel?'Dados carregados no Neon':'Sem base carregada'}</span></div>
-  {disponivel&&<div className="rhx-caution"><AlertTriangle size={17}/><span>Janeiro/2026: PDF com {num(resumo!.matriculas)} matrículas. A soma bruta do PDF difere {brl(resumo!.divergencia)} do total exibido no portal. Os valores permanecem identificados como <b>não conciliados</b>, e não são projetados para outros meses.</span></div>}
-  {erro&&<div className="rh-import-error"><Info size={17}/>{erro}</div>}
-  {disponivel?
+  <div className="rhx-month-choice">
+    <div className="rhx-month-choice-head"><div><CalendarDays size={17}/><strong>Escolha um ou vários meses de 2026</strong></div>
+      <button type="button" onClick={selecionarTodos}>Selecionar janeiro a julho</button></div>
+    <div className="rhx-month-choice-grid" role="group" aria-label="Competências da folha">
+      {meses.map((label,i)=>{
+        const value=`2026-${String(i+1).padStart(2,'0')}`;
+        return <label key={value} className={selecionados.includes(value)?'selected':''}>
+          <input type="checkbox" checked={selecionados.includes(value)} onChange={()=>alternarMes(value)}
+            disabled={selecionados.length===1&&selecionados[0]===value}/>
+          <span>{label}</span>
+        </label>
+      })}
+    </div>
+    <p>{selecionados.length} {selecionados.length===1?'competência selecionada':'competências selecionadas'}.
+       {selecionados.length>1?' A comparação mostra os meses disponíveis e identifica os pendentes; nenhum mês é estimado.':' Use os filtros abaixo para analisar a competência escolhida.'}</p>
+  </div>
+  {selecionados.length===1&&<div className="rhx-status"><CalendarDays size={17}/><strong>Competência: {meses[Number(mes.slice(-2))-1]} de 2026</strong><span className={disponivel?'rhx-available':'rhx-pending'}>{disponivel?'Dados carregados no Neon':'Sem base carregada'}</span></div>}
+  {selecionados.length===1&&disponivel&&<div className="rhx-caution"><AlertTriangle size={17}/><span>Janeiro/2026: PDF com {num(resumo!.matriculas)} matrículas. A soma bruta do PDF difere {brl(resumo!.divergencia)} do total exibido no portal. Os valores permanecem identificados como <b>não conciliados</b>, e não são projetados para outros meses.</span></div>}
+  {selecionados.length===1&&erro&&<div className="rh-import-error"><Info size={17}/>{erro}</div>}
+  {selecionados.length>1 ? <RHMultiplos meses={selecionados}/> : disponivel?
    <>
     <div className="rhx-filters">
       <div className="rhx-filters-heading"><div><Filter size={17}/><strong>Filtros de pessoal</strong></div><button onClick={()=>{setF({...defaults});setPagina(1)}}>Limpar filtros</button></div>
@@ -91,8 +114,8 @@ export default function RHPage(){
    </>:
    <div className="rh-data-wait"><CalendarDays size={32}/><h2>Sem folha disponível para {meses[Number(mes.slice(-2))-1]} de 2026</h2><p>O arquivo recebido contém somente janeiro/2026. Fevereiro a julho não foram estimados e só aparecerão quando as bases mensais forem obtidas e validadas.</p></div>}
   <div className="rhx-note"><Info size={16}/><span>Dados públicos de remuneração por matrícula, extraídos do PDF informado. O total de matrículas não equivale à quantidade de funcionários ativos; folhas podem conter rescisões, aposentados e estagiários. A fonte original deverá ser consultada para auditoria.</span></div>
-  {carregandoDetalhe&&<div className="rhx-dialog-back"><div className="rhx-dialog"><p>Carregando os detalhes da matrícula…</p></div></div>}
-  {detalhe&&<div className="rhx-dialog-back" onClick={()=>setDetalhe(null)}><div className="rhx-dialog" role="dialog" aria-modal="true" aria-label="Detalhes da folha" onClick={e=>e.stopPropagation()}>
+  {selecionados.length===1&&carregandoDetalhe&&<div className="rhx-dialog-back"><div className="rhx-dialog"><p>Carregando os detalhes da matrícula…</p></div></div>}
+  {selecionados.length===1&&detalhe&&<div className="rhx-dialog-back" onClick={()=>setDetalhe(null)}><div className="rhx-dialog" role="dialog" aria-modal="true" aria-label="Detalhes da folha" onClick={e=>e.stopPropagation()}>
    <div className="rhx-dialog-head"><div><h2>{detalhe.registro.nome}</h2><p>Matrícula {detalhe.registro.matricula} · {mes}</p></div><button aria-label="Fechar" onClick={()=>setDetalhe(null)}><X size={19}/></button></div>
    <div className="rhx-detail-grid">{[
       ['Cargo/função',detalhe.registro.cargo],['Vínculo',detalhe.registro.vinculo],
