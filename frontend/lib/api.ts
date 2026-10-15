@@ -3,9 +3,10 @@ const BASE = '/api/municipal';
 export type ApiResponse<T> = {data:T|null,error:string|null};
 export async function api<T>(path:string,init?:RequestInit):Promise<ApiResponse<T>> {
  const controller=new AbortController();
- const timeout=setTimeout(()=>controller.abort(),33000);
+ const timeout=setTimeout(()=>controller.abort(),55000);
  try{
-   const response=await fetch(BASE+path,{cache:'no-store',...init,signal:controller.signal});
+   const target=path.startsWith('/api/v1/rh/folha/')?path.replace('/api/v1/rh/folha/','/api/rh/folha/'):BASE+path;
+   const response=await fetch(target,{cache:'no-store',...init,signal:controller.signal});
    if(!response.ok)return {data:null,error:'Erro '+response.status+': a API de dados não conseguiu atender a consulta.'};
    return {data:await response.json() as T,error:null};
  }catch{
