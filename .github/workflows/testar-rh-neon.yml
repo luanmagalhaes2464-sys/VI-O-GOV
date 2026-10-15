@@ -1,0 +1,55 @@
+name: Testar RH Neon no VIÇO GOV em produção
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/testar-rh-neon.yml'
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verificar indicadores e filtros de janeiro
+        run: |
+          python - <<'PY'
+          import json,urllib.request,time
+          BASE='https://vico-gov-web-vicosa.onrender.com/api/municipal/api/v1/rh/folha'
+          def get(path):
+              last=None
+              for attempt in range(4):
+                  try:
+                      req=urllib.request.Request(BASE+path,headers={'User-Agent':'VIÇO GOV - verificacao de producao'})
+                      with urllib.request.urlopen(req,timeout=125) as resp:
+                          assert resp.status==200,(path,resp.status)
+                          return json.load(resp)
+                  except Exception as exc:
+                      last=exc
+                      print('Tentativa',attempt+1,'falhou em',path,':',type(exc).__name__,str(exc)[:200])
+                      time.sleep(5)
+              raise RuntimeError(f'Não respondeu: {path} : {last}')
+          summary=get('/resumo?mes=2026-01')
+          assert summary['disponivel'] is True,summary
+          assert summary['matriculas']==2151,summary
+          assert abs(float(summary['bruto'])-11806743.90)<.02
+          assert abs(float(summary['quinquenio'])-1173320.12)<.02
+          print('OK resumo: 2151 matriculas, janeiro 2026, API web/proxy/Neon.')
+          options=get('/filtros?mes=2026-01')
+          assert len(options['departamentos'])>=10
+          assert len(options['cargos'])>100
+          print('OK filtros:',len(options['departamentos']),'departamentos;',len(options['cargos']),'cargos')
+          analysis=get('/analise?mes=2026-01&situacao=aposentado')
+          assert int(analysis['quantitativos']['matriculas'])==3
+          print('OK aposentados identificados: 3 matriculas')
+          people=get('/pessoas?mes=2026-01&tamanho=20')
+          assert people['total']==2151 and len(people['pessoas'])==20
+          print('OK lista paginada: 20 registros')
+          detail=get('/pessoas/15?mes=2026-01')
+          assert detail['registro']['matricula']=='15'
+          assert len(detail['registro']['rubricas'])>=2
+          print('OK consulta de rubricas por matricula')
+          PY
