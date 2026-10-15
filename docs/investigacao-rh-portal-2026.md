@@ -118,3 +118,29 @@ Capturar somente a nova requisição após o clique em **Baixar Arquivo JSON**, 
 **Segurança:** o usuário expôs um valor de cookie `JSESSIONID` no chat. Não reutilizar ou publicar; recomendar reiniciar/encerrar sessão e limpar dados do site.
 
 O bloqueio Cloudflare 403 originado do GitHub permanece não resolvido e será necessário testar a coleta não assistida de maneira autorizada antes de declarar a integração automática funcional.
+
+## Fonte alternativa verificada em 15/10/2026 — antigo Portal da Transparência
+
+URL sugerida: `https://transparencia.vicosa.mg.gov.br/servidores-por-nomes`.
+
+O endereço principal `https://transparencia.vicosa.mg.gov.br/` ainda disponibiliza HTML contendo links de remuneração, comissionados e dados abertos, inclusive a indicação histórica de desenvolvimento por Actcon.net. No entanto, o fato de o índice HTML existir **não valida a disponibilidade dos módulos internos**.
+
+Foi criado e executado o workflow público `.github/workflows/sondar-transparencia-alternativa.yml` nesta branch, usando HTTP GET simples sem sessão, sem procurar senhas nem baixar registros nominais. Resultado:
+
+| Caminho | Resposta observada | Interpretação |
+| --- | --- | --- |
+| `/` | HTTP 302 | Redirecionamento para o caminho principal |
+| `/transparencia` | HTTP 302 para `www.google.com` | Módulo inacessível neste teste |
+| `/servidores-por-nomes` | HTTP 302 para `www.google.com` | Consulta nominal não entregue |
+| `/servidores` | HTTP 302 para `www.google.com` | Remuneração não entregue |
+| `/dados-abertos` | HTTP 302 para `www.google.com` | Arquivos abertos não entregues |
+| `/cfg_dad.aspx` | HTTP 301 | Redirecionamento adicional; não comprovou arquivo |
+| `/tpc_serv.aspx` | HTTP 301 | Redirecionamento adicional; não comprovou listagem |
+
+Os caminhos `/servidores-por-nomes`, `/servidores`, `/dados-abertos` também redirecionaram ao Google na consulta externa independente ao índice de busca.
+
+**Conclusão operacional:** a fonte alternativa **não forneceu os dados de 2026 nem endpoint programático utilizável** nos testes. Não substituir o portal atual nem publicar dados supostamente coletados dela. É possível que o módulo antigo tenha sido desativado, migrado ou configurado para redirecionar; a causa administrativa exata é desconhecida.
+
+**Próximo teste de sucesso permanece:** obter a competência `2026-02` diretamente de uma fonte oficial pública/permitida, validar campos e montantes sem PDF enviado e automatizar atualização; nenhuma fonte testada até aqui atingiu essa condição.
+
+**Alerta de escopo:** em pesquisas por “Viçosa”, evitar API de `vicosa.rn.gov.br` (município de Viçosa no RN) e sistemas exclusivos da Câmara Municipal ou do SAAE, que não representam a folha da administração direta da Prefeitura de Viçosa/MG.
