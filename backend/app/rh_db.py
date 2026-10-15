@@ -187,7 +187,9 @@ def pessoa(matricula:str,mes:str="2026-01"):
     if not re.fullmatch(r"\d{1,12}",matricula):raise HTTPException(422,"Matrícula inválida.")
     with banco() as con:
         record=con.execute("""SELECT competencia,matricula,nome,admissao,desligamento,jornada,cargo,vinculo,
-             departamento,local_trabalho,bruto,liquido,descontos,quinquenio,rubricas,pagina_pdf
+             departamento,local_trabalho,bruto,liquido,descontos,quinquenio,rubricas,pagina_pdf,
+             (SELECT (item->>'valor')::NUMERIC FROM jsonb_array_elements(rubricas) AS item
+                WHERE item->>'codigo'='100' LIMIT 1) AS salario_base
              FROM rh_folha_mensal WHERE competencia=%s AND matricula=%s""",(competencia(mes),matricula.lstrip('0') or '0')).fetchone()
     if not record:raise HTTPException(404,"Matrícula não localizada.")
     return {"registro":record,"fonte":ORIGEM,
