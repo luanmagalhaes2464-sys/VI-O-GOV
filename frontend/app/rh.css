@@ -103,3 +103,58 @@
 .rh-back-overview{display:inline-block;margin-bottom:18px;font-size:11px;color:#a93944;font-weight:700}
 @media(max-width:1020px){.rh-home-figures{grid-template-columns:1fr}.rh-import-zone{align-items:flex-start;flex-wrap:wrap}.rh-import-actions{flex-direction:row;align-items:center;min-width:0;width:100%}}
 @media(max-width:620px){.rh-home-figure{min-height:275px;padding:22px}.rh-home-figure>strong{font-size:29px}.rh-overview-next{align-items:flex-start;flex-direction:column}.rh-filter-status{display:none}.rh-import-actions{flex-direction:column;align-items:flex-start}.rh-summary-side>strong{font-size:24px}}
+
+
+/* IBGE RH — indicadores oficiais de pessoal por vínculo */
+.rha-status{display:flex;align-items:center;gap:8px;background:#edf6f3;border:1px solid #dbeae5;border-radius:9px;padding:12px 14px;margin:16px 0 18px;font-size:11px;color:#507b72;font-weight:700;flex-wrap:wrap}
+.rha-status>span{margin-left:auto;color:#6a8f86;background:#fff;border-radius:6px;padding:6px 9px;font-size:10px}
+.rha-overview{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:17px}
+.rha-lead{background:linear-gradient(113deg,#273b50,#3d5769);color:#fff;border-radius:12px;padding:28px 30px;display:flex;flex-direction:column;gap:8px}
+.rha-label{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:.8px;font-weight:750;color:#b5d9d6}
+.rha-lead>strong{font-size:46px;letter-spacing:-1px;line-height:1.2;margin:10px 0}
+.rha-lead>h2{font-size:16px;margin:0}.rha-lead p{font-size:11px;line-height:1.7;opacity:.85;margin:3px 0 10px}
+.rha-lead a{display:flex;align-items:center;gap:7px;color:#b8e2de;font-size:11px;font-weight:750}
+.rha-two{display:grid;gap:13px}
+.rha-two>div{display:flex;flex-direction:column;justify-content:center;gap:9px;padding:20px 23px;background:#fff;border:1px solid #e2e8ee;border-radius:11px}
+.rha-two span,.rha-two small{color:#8495a2;font-size:11px}.rha-two b{font-size:29px;line-height:1.25}
+.rha-financial,.rha-chart-container{background:#fff;border:1px solid #e3e9ef;border-radius:11px;padding:22px 23px;margin:0 0 16px}
+.rha-finance-head{display:flex;gap:8px;align-items:center;color:#8291a1;font-size:10px;letter-spacing:.6px;font-weight:750}
+.rha-finance-head svg{color:#a93944}
+.rha-payroll,.rha-finance-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0 14px}
+.rha-payroll>div,.rha-finance-pair>div{display:flex;flex-direction:column;gap:9px}
+.rha-payroll small,.rha-finance-pair span{font-size:11px;color:#8395a5}
+.rha-payroll strong,.rha-finance-pair strong{font-size:25px;letter-spacing:-.6px;color:#24384b}
+.rha-financial p,.rha-chart-container>p{font-size:10.5px;color:#8497a7;line-height:1.6;margin:9px 0 12px}
+.rha-financial a,.rha-chart-container>a,.rha-method a{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#a93944;font-weight:750}
+.rha-method{display:flex;gap:12px;align-items:flex-start;background:#f1f5f7;border:1px solid #e2eaf0;border-radius:9px;padding:16px 18px;margin:16px 0;color:#738999}
+.rha-method svg{flex-shrink:0}.rha-method b{font-size:12px;color:#405a6e}
+.rha-method p{font-size:10.5px;line-height:1.7;margin:6px 0}
+.rha-filters{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:19px;background:#fff;border:1px solid #e5eaf0;border-radius:10px;margin-bottom:16px}
+.rha-filters>div{display:flex;flex-direction:column;gap:9px;min-width:0}
+.rha-filters label{font-size:11px;color:#6f8395;font-weight:700}
+.rha-filters select{width:100%;padding:12px;border-radius:8px;border:1px solid #dce5eb;background:#fff;color:#3f5567;font-size:11px}
+.rha-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:17px}
+.rha-metrics article{background:#fff;border:1px solid #e5eaf0;border-radius:10px;padding:19px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.rha-metrics span{display:flex;gap:7px;align-items:center;color:#73899a;font-size:11px}
+.rha-metrics span svg{color:#ae3641}
+.rha-metrics strong{font-size:27px;letter-spacing:-.5px}
+.rha-metrics small{font-size:10px;color:#97a6b1}
+.rha-chart-heading{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.rha-chart-heading svg{color:#ae3641;flex-shrink:0}
+.rha-chart-container h2{font-size:14px;margin:0 0 6px}
+.rha-chart-heading p{color:#92a2b1;font-size:10.5px;margin:0}
+.rha-bars{display:grid;gap:16px}
+.rha-bar{display:grid;grid-template-columns:minmax(130px,180px) 1fr 55px;gap:12px;align-items:center}
+.rha-bar>span{font-size:11px;color:#6b8294}
+.rha-bar-track{height:15px;border-radius:9px;background:#eff3f5;overflow:hidden}
+.rha-bar-track>div{height:100%;background:linear-gradient(90deg,#3d8e88,#7ccac0);border-radius:9px}
+.rha-bar>b{text-align:right;font-size:12px;color:#3f5466}
+.rha-chart-container>.rha-chart-foot{margin-top:22px;color:#99a7b3}
+.rha-unavailable{background:#fafbfc;border:1px solid #e5eaee;border-radius:11px;padding:19px 22px;margin-bottom:15px}
+.rha-unavailable>div:first-child{display:flex;align-items:flex-start;gap:11px;color:#8a9ba8}
+.rha-unavailable h2{font-size:13px;color:#4b6175;margin:0 0 7px}
+.rha-unavailable p{font-size:10.5px;line-height:1.7;margin:0}
+.rha-pill-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}
+.rha-pill-list>span{background:#eef2f4;color:#94a1ac;padding:7px 10px;border-radius:7px;font-size:10px}
+@media(max-width:850px){.rha-overview,.rha-filters,.rha-payroll,.rha-finance-pair{grid-template-columns:1fr}.rha-metrics{grid-template-columns:1fr}.rha-two{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.rha-two{grid-template-columns:1fr}.rha-lead{padding:23px}.rha-lead>strong{font-size:37px}.rha-payroll strong,.rha-finance-pair strong{font-size:21px}.rha-bar{grid-template-columns:110px 1fr 40px;gap:7px}.rha-status>span{margin-left:0}}
