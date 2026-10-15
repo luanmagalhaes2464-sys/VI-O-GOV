@@ -1,6 +1,6 @@
 """Valida a API agregada MUNIC/IBGE (município 3171303, nunca outras Viçosas)."""
 import json, urllib.request,sys
-BASE="https://apisidra.ibge.gov.br/values/t/5881/n6/3171303/v/all/p/2023"
+BASE="https://apisidra.ibge.gov.br/values/t/5881/n6/3171303/v/all/p/2023/c12471/all"
 headers={"User-Agent":"VicoGov/0.2 contato tecnico dados abertos"}
 try:
  req=urllib.request.Request(BASE,headers=headers)
