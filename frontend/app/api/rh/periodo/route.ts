@@ -51,7 +51,7 @@ export async function GET(request:NextRequest){
   const bin=p.get('faixa')||'';
   if(bin){
    const band=BINS.find(x=>x[0]===bin);
-   if(!band)fail('Faixa salarial inválida.');
+   if(!band)throw Object.assign(new Error('Faixa salarial inválida.'),{httpStatus:422});
    if(band[2]!==null){params.push(band[2]);conditions.push(base+'>$'+params.length)}
    if(band[3]!==null){params.push(band[3]);conditions.push(base+'<=$'+params.length)}
   }
@@ -80,7 +80,6 @@ export async function GET(request:NextRequest){
       indicadores:data||{registros_mes:0,matriculas_distintas:0,nomes_distintos:0,bruto:0,liquido:0,descontos:0,quinquenio:0}};
   });
   const pendentes=chosen.filter(m=>!ready.has(m));
-  const arr:string[]=[];
   const faixas=await Promise.all(BINS.map(async([codigo,nome,low,high])=>{
    const parts=[where],values=[...params];
    if(low!==null){values.push(low);parts.push(base+'>$'+values.length)}
