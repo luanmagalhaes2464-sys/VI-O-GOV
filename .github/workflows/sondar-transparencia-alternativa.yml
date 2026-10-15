@@ -1,0 +1,37 @@
+name: Investigar portal alternativo de Viçosa
+on:
+  workflow_dispatch:
+  push:
+    branches: [investigacao-api-rh-2026]
+    paths:
+      - '.github/workflows/sondar-transparencia-alternativa.yml'
+permissions: {contents: read}
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Testar links publicos e possiveis dados abertos sem baixar registros pessoais
+        run: |
+          python - <<'PY'
+          import urllib.request,urllib.error,urllib.parse,time
+          root='https://transparencia.vicosa.mg.gov.br'
+          paths=['/','/transparencia','/servidores-por-nomes','/servidores','/dados-abertos','/cfg_dad.aspx','/tpc_serv.aspx']
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+           def redirect_request(self,req,fp,code,msg,headers,newurl):return None
+          opener=urllib.request.build_opener(NoRedirect)
+          for path in paths:
+           url=root+path
+           try:
+            request=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; VicoGov-RH-PublicCheck/1.0)'})
+            started=time.monotonic()
+            with opener.open(request,timeout=14) as r:
+             size=len(r.read(900))
+             print('PATH',path,'STATUS',r.status,'LOCATION',urllib.parse.urlsplit(r.headers.get('Location','')).netloc or '-','CONTENT_TYPE',r.headers.get('Content-Type'),'SAMPLE_BYTES',size,'SECONDS',round(time.monotonic()-started,1),flush=True)
+           except urllib.error.HTTPError as e:
+            print('PATH',path,'STATUS',e.code,'LOCATION',urllib.parse.urlsplit(e.headers.get('Location','')).netloc or '-','CONTENT_TYPE',e.headers.get('Content-Type'),flush=True)
+           except Exception as e:
+            print('PATH',path,'ERROR',type(e).__name__,str(e)[:90],flush=True)
+          PY
