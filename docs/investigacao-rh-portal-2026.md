@@ -56,3 +56,36 @@ A automação só será considerada concluída depois de ser demonstrada, com au
 **Integração automática 01/2026–07/2026: ainda não comprovada.**
 
 O backend do VIÇO GOV consultar o Neon **não equivale** ao coletor obter dados automaticamente do portal da Prefeitura.
+
+
+## Evidência adicional — payload de exportação JSF (15/10/2026)
+
+A operação de **Exportar JSON** foi observada pelo usuário no Chrome DevTools e o corpo da requisição continha os seguintes **nomes de parâmetros e valores não sensíveis**:
+
+| Campo JSF | Valor observado | Interpretação |
+| --- | --- | --- |
+| `javax.faces.partial.ajax` | `true` | Requisição parcial AJAX |
+| `javax.faces.source` | `j_idt221` | Identificador de componente gerado no HTML, possivelmente sujeito a alterações |
+| `javax.faces.partial.execute` | `@all` | Processa o formulário na operação |
+| `form1` | `form1` | Formulário submetido |
+| `anoFolhaPagamento_input` | `2026` | Ano da consulta |
+| `mesFolhaPagamento_input` | `1` | Janeiro |
+| `tbv1_activeIndex` e `tbv2_activeIndex` | `0` | Aba visível de Folha de Pagamento |
+| `javax.faces.ViewState` | PRESENÇA CONFIRMADA; **valor deliberadamente omitido** | Estado de sessão do servidor |
+
+A exportação foi visualizada em duas etapas: XHR `recursosHumanos.xhtml` com status HTTP 200, seguido de uma requisição do tipo `document` e download concluído com nome `Folha Pagamento.json` (aprox. 1,95 MB). A segunda operação ainda precisa de confirmação de método, URL, parâmetros e tipo de resposta nos headers.
+
+**Atenção de segurança:** o valor do `javax.faces.ViewState` foi colado pelo usuário na conversa. Não reutilizar, copiar ou publicar esse valor em arquivos, issues, código-fonte ou logs. O estado pode ser vinculado à sessão e mudar a cada carregamento; fechar/reabrir a sessão antes de novos testes.
+
+### O que esta evidência efetivamente demonstra
+
+- O site processa a exportação com a pilha JSF, enviando filtros no formulário. Isto não demonstra a existência de API REST pública.
+- Ano e mês estão expressos por campos de formulário — potencialmente reproduzíveis apenas com sessão autorizada e estado obtido dinamicamente.
+- A mensagem de arquivo pronto e a descarga podem ocorrer por operações HTTP distintas, inclusive uma chamada adicional que exige a mesma sessão.
+- **Ainda não há prova** de que um serviço remoto como Render possa iniciar uma sessão e baixar automaticamente, pois as tentativas de acesso originadas no GitHub foram bloqueadas pelo Cloudflare.
+
+### Próxima prova controlada, sem credenciais
+
+No DevTools, registrar para a requisição XHR `recursosHumanos.xhtml`: `Request Method`, `Content-Type` da resposta, e **formato/elementos estruturais** da aba Response (sem copiar dados pessoais nem tokens). Para o download (`document`), registrar `Request Method`, **caminho da URL somente** (sem query sensível), `Content-Type` e `Content-Disposition`. Não enviar `Copy as cURL`, HAR bruto, cookies, `ViewState`, nem cabeçalhos `Cookie`/`Authorization`.
+
+Critério adicional: demonstrar que o processo consegue obter `ViewState` próprio, realizar a consulta a `2026-02` e receber a exportação correspondente em sessão autorizada e origem de rede permitida, sem intervenção humana, antes de implantar a coleta agendada.
