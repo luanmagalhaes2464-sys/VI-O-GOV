@@ -1,0 +1,90 @@
+/* VIÇO GOV — RH / Inteligência: respeita a identidade institucional do painel */
+.int-page{max-width:1250px;margin:0 auto;color:#354b5e}
+.int-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:22px}
+.int-heading h1{font-size:28px;line-height:1.2;letter-spacing:-.65px;color:#27394c;margin:0 0 9px}
+.int-heading p{color:#8293a2;font-size:12px;margin:0;line-height:1.65}
+.int-heading a,.int-official{display:inline-flex;align-items:center;gap:7px;color:#a53a47;font-size:11px;font-weight:700;white-space:nowrap}
+.int-tabs{display:flex;flex-wrap:wrap;gap:5px;border-bottom:1px solid #e2eaf0;margin-bottom:22px}
+.int-tabs button{border:none;background:none;padding:13px 17px;display:flex;align-items:center;gap:8px;font-size:12px;color:#7e8c99;font-weight:650;cursor:pointer;border-bottom:3px solid transparent}
+.int-tabs button:hover{background:#f5f8fa;color:#3a566f}
+.int-tabs button.active{color:#a53a47;border-bottom-color:#b13b49}
+.int-section{display:flex;flex-direction:column;gap:17px}
+.int-tools{display:flex;align-items:center;flex-wrap:wrap;gap:16px;background:#fff;padding:15px 18px;border:1px solid #e2e9ef;border-radius:11px}
+.int-tools>label{display:flex;align-items:center;gap:10px;color:#637c90;font-size:11px;font-weight:700}
+.int-tools>label svg{color:#a43a47}
+.int-tools select,.int-filters select{background:#fff;border:1px solid #dbe5ec;border-radius:7px;padding:9px 11px;font-size:11px;color:#304d63;max-width:100%;cursor:pointer}
+.int-tools>span{font-size:11px;color:#8598a8}
+.int-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.int-kpis article{border:1px solid #e1e9ef;border-radius:11px;padding:19px 16px;background:#fff;min-width:0}
+.int-kpis article>span{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:700;color:#75899a}
+.int-kpis article>span svg{color:#aa4350}
+.int-kpis article strong{display:block;margin:13px 0 7px;font-size:23px;color:#2e4053;letter-spacing:-.5px;overflow-wrap:anywhere}
+.int-kpis article small{display:block;color:#99a8b4;font-size:10px;line-height:1.45}
+.int-panel{background:white;border:1px solid #e1e9ef;border-radius:12px;padding:23px}
+.int-panel-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.int-panel-header h2,.int-chat h2{font-size:15px;color:#31465a;margin:0 0 7px}
+.int-panel-header p,.int-chat-head p{font-size:11px;color:#8195a5;margin:0;line-height:1.5}
+.int-panel-header>svg{color:#a83e4e}
+.int-count{background:#f3f6f8;border-radius:7px;padding:7px 9px;color:#6d8496;font-size:10px;white-space:nowrap}
+.int-filters{display:flex;gap:12px;margin-bottom:13px;flex-wrap:wrap}
+.int-search{display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #dce5ec;border-radius:8px;flex:1 1 340px;min-width:180px;color:#8da0ac}
+.int-search:focus-within{border-color:#b85861}
+.int-search input{border:0;outline:0;min-width:0;width:100%;padding:11px 0;font-size:11px;background:transparent;color:#3b5367}
+.int-list{display:flex;flex-direction:column;gap:9px}
+.int-alert{border:1px solid #e4ebef;border-radius:9px;overflow:hidden;background:#fff}
+.int-alert>button{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;text-align:left;padding:13px 12px;cursor:pointer;color:#314b60}
+.int-alert>button:hover{background:#f8fafc}
+.int-indicator{width:31px;height:31px;border-radius:8px;background:#fff3e7;color:#b07a32;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.int-indicator[data-kind="informativo"]{background:#edf4fa;color:#4d7fa2}
+.int-alert-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.int-alert-text b{font-size:11.5px;line-height:1.35}
+.int-alert-text small{color:#8b9ba9;font-size:10px;overflow-wrap:anywhere}
+.int-alert-amount{min-width:100px;text-align:right;font-size:12px;font-weight:750;white-space:nowrap}
+.int-alert-amount small{display:block;font-weight:500;margin-top:5px;color:#8696a5;font-size:10px}
+.int-alert>button>svg:last-child{color:#94a5b4;flex-shrink:0}
+.int-alert-detail{border-top:1px solid #edf1f4;padding:15px 17px;background:#fbfcfd;font-size:11px;color:#5f7386;line-height:1.7}
+.int-alert-detail p{margin:0 0 13px}
+.int-alert-detail a{color:#a33c49;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.int-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:13px 0}
+.int-detail-grid>div{display:flex;flex-direction:column;gap:3px;border-radius:7px;padding:10px;background:#fff;border:1px solid #e7edf1}
+.int-detail-grid span{color:#98a7b4;font-size:10px}
+.int-detail-grid strong{font-size:11px;line-height:1.4;color:#38536b;overflow-wrap:anywhere}
+.int-review{display:flex;align-items:center;gap:6px;margin-top:12px!important;color:#8a6c4e}
+.int-notice{display:flex;align-items:flex-start;gap:10px;border:1px solid #e0e9ef;border-radius:9px;background:#f5f8fb;padding:15px;color:#708699;font-size:11px;line-height:1.7}
+.int-notice svg{flex-shrink:0;margin-top:2px}
+.int-warning{display:flex;align-items:flex-start;gap:8px;border:1px solid #ead9cc;border-radius:8px;padding:13px;background:#fffaf4;color:#997049;font-size:11px;line-height:1.6}
+.int-warning svg{flex-shrink:0}
+.int-muted{font-size:11px;color:#91a1ad;line-height:1.65;padding:13px 0}
+.int-fiscal-number{display:flex;align-items:baseline;gap:14px;margin:28px 0 19px;flex-wrap:wrap}
+.int-fiscal-number strong{color:#263f53;font-size:42px;letter-spacing:-1.4px}
+.int-fiscal-number span{font-size:12px;color:#8a9eab}
+.int-gauge{height:17px;background:linear-gradient(to right,#e2eee8 0%,#e2eee8 81%,#f4dfbc 81%,#f4dfbc 90%,#e8bbab 90%);border-radius:15px;overflow:hidden}
+.int-gauge>div{height:100%;background:#ad4350;border-radius:15px;transition:width .25s}
+.int-scale{display:flex;justify-content:space-between;gap:4px;font-size:9px;color:#8e9ba9;margin:9px 0 24px;flex-wrap:wrap}
+.int-limits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.int-limits div{border:1px solid #e4ebf0;border-radius:8px;padding:13px;display:flex;flex-direction:column;gap:7px}
+.int-limits span{font-size:10px;color:#8796a4}
+.int-limits strong{font-size:19px;color:#3d5063}
+.int-official{align-self:flex-start}
+.int-chat{padding:0;overflow:hidden}
+.int-chat-head{display:flex;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid #e8edf1}
+.int-chat-symbol{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#f5eef0;color:#a43f50;border-radius:11px;flex-shrink:0}
+.int-chat-head>div:nth-child(2){flex:1}
+.int-chat-mode{font-size:10px;background:#f2f5f8;border-radius:7px;padding:7px 9px;color:#6b8292;white-space:nowrap}
+.int-chat-feed{min-height:250px;max-height:460px;overflow-y:auto;display:flex;flex-direction:column;gap:13px;padding:24px 20px}
+.int-message{background:#f1f5f7;border-radius:10px;padding:14px 16px;max-width:87%;align-self:flex-start;line-height:1.8;color:#506778}
+.int-message.usuario{align-self:flex-end;background:#f8ecee;color:#704451}
+.int-message p{margin:0;white-space:pre-wrap;font-size:12px}
+.int-sources{margin-top:9px;display:flex;gap:10px;flex-wrap:wrap}
+.int-sources a{display:inline-flex;align-items:center;gap:5px;color:#a53c49;font-size:10px}
+.int-suggestions{display:flex;gap:7px;padding:0 20px 18px;flex-wrap:wrap}
+.int-suggestions button{border:1px solid #dfe7ed;background:#fff;border-radius:8px;padding:9px;color:#587084;font-size:10px;cursor:pointer}
+.int-suggestions button:hover{background:#f8fafb}
+.int-chat-form{display:flex;gap:9px;padding:13px 17px;border-top:1px solid #e8edf1}
+.int-chat-form input{flex:1;min-width:0;padding:11px 12px;border:1px solid #dfe6ec;border-radius:8px;font-size:11px;color:#395168}
+.int-chat-form button{border:0;border-radius:8px;background:#a63d49;color:white;padding:10px 13px;cursor:pointer}
+.int-chat-form button:disabled{opacity:.5}
+.int-chat-foot{display:flex;gap:7px;align-items:center;padding:0 20px 16px;font-size:10px;color:#95a4af}
+@media(max-width:1100px){.int-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:670px){.int-heading{align-items:flex-start;flex-direction:column}.int-heading h1{font-size:24px}.int-kpis{grid-template-columns:1fr 1fr}.int-panel{padding:16px}.int-limits{grid-template-columns:1fr}.int-fiscal-number strong{font-size:34px}.int-alert-amount{min-width:75px}.int-scale span{font-size:8px}.int-chat-head{flex-wrap:wrap}.int-chat-mode{margin-left:50px}}
+@media(max-width:430px){.int-kpis{grid-template-columns:1fr}.int-tabs button{padding:11px;font-size:10px}.int-alert>button{gap:7px}.int-detail-grid{grid-template-columns:1fr}}
