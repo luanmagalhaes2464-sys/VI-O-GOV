@@ -250,18 +250,68 @@ def agente(payload: Pergunta):
              "bruto": money(a["bruto"])} for a in areas
         ]
     }
+    # Usa a auditoria das rubricas de verdade: envia somente indicadores agregados,
+    # nunca os nomes/matrículas dos registros individuais ao provedor de IA.
+    from .rh_auditoria import resumo as auditar_rubricas
+    aud = auditar_rubricas(mes=payload.mes)
+    indicadores["composicao_rubricas"] = aud["financeiro"]
+    indicadores["conferencias"] = aud["contagens"]
+    indicadores["nota_auditoria"] = aud["politica"]
+    pergunta_norm = strip(payload.pergunta)
+    fiscal_doc = None
+    if any(k in pergunta_norm for k in ("LRF", "LIMITE", "RCL", "RGF", "FISCAL")):
+        fiscal_doc = fiscal(ano=2026, periodo=(mes.month-1)//4+1)
+        indicadores["rgf"] = {
+            "periodo": fiscal_doc["quadrimestre"],
+            "percentual_dtp_executivo": fiscal_doc["percentual_dtp_executivo"],
+            "situacao": fiscal_doc["situacao"],
+            "fonte": fiscal_doc["fonte"]
+        }
+    def moeda(v):
+        return "R$ " + format(float(v or 0), ",.2f").replace(",", "X").replace(".", ",").replace("X", ".")
+    eventos = aud["financeiro"]["rubricas"]
+    mapa = {x["categoria"]:x for x in eventos}
+    atual = aud["financeiro"]["bruto"]
+    anterior = aud["financeiro"]["bruto_anterior"]
+    variacao = aud["financeiro"]["variacao"]
+    decimo = mapa.get("13º salário",{}).get("atual",0)
+    # Enquanto a credencial do Gemini não estiver disponível, o componente
+    # continua respondendo por regras determinísticas, sem fingir que é Gemini.
     key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not key:
-        return {
-            "modo": "sem_chave_gemini", "resposta": (
-                f"Na competência {payload.mes}, a base contém {indicadores['lancamentos']} lançamentos, "
-                f"{indicadores['vinculos']} vínculos por nome e matrícula, "
-                f"com folha bruta de R$ {indicadores['folha_bruta']:,.2f}. "
-                "Para perguntas sobre legalidade individual, preciso da tabela legal e das rubricas "
-                "comprovadas. Para o limite da LRF, consulte o demonstrativo RGF/SICONFI, "
-                "não a soma mensal da folha. A IA generativa ainda depende de chave API no servidor."
-            ), "indicadores": indicadores, "fontes": [PORTAL, SICONFI_DOC]
-        }
+        if any(k in pergunta_norm for k in ("AUMENT", "CRESC", "JULHO", "COMPAR", "EVOLU", "DIFERENCA")):
+            answer = (
+                f"Na folha de {payload.mes}, o total bruto foi {moeda(atual)}. "
+                + (f"No mês anterior, {moeda(anterior)}; diferença de {moeda(variacao)}. " if anterior is not None else "Não há mês anterior na base de 2026 para comparar. ")
+                + f"A rubrica de 13º salário somou {moeda(decimo)} nesta competência. "
+                + "Veja a decomposição de férias, indenizações, retroativos e demais parcelas no painel fiscal integrado. "
+                + "É necessário conferir os atos funcionais para avaliar a legalidade de cada parcela."
+            )
+        elif any(k in pergunta_norm for k in ("FERIA", "DECIMO", "13", "RUBRICA", "INDENIZ")):
+            answer = ("Na competência " + payload.mes + ", os valores documentados nas rubricas são: " +
+                "; ".join(x["categoria"] + " " + moeda(x["atual"]) for x in eventos) +
+                ". Esses valores são componentes da própria folha, não gasto extra calculado por estimativa.")
+        elif fiscal_doc is not None:
+            v=fiscal_doc["percentual_dtp_executivo"]
+            answer = (f"O RGF do Executivo para o {fiscal_doc['quadrimestre']}º quadrimestre de 2026 "
+                + (f"apresenta comprometimento de {str(v).replace('.',',')}% da RCL ajustada. " if v is not None else "não forneceu um percentual validado. ")
+                + "O limite legal geral do Executivo municipal é 54%, com patamar de alerta de 48,6% e prudencial de 51,3%. "
+                + "O RGF usa as regras fiscais para os últimos 12 meses; não pode ser inferido somando a folha mensal.")
+        elif any(k in pergunta_norm for k in ("DEPARTAMENTO","SECRETARIA","SETOR")):
+            answer = ("Os cinco departamentos com maior remuneração bruta na competência " + payload.mes + ": "
+                + "; ".join(a["departamento"]+" ("+moeda(a["bruto"])+")" for a in indicadores["departamentos_maior_folha"])
+                + ". Os totais são da folha pública, não do orçamento integral de cada secretaria.")
+        elif any(k in pergunta_norm for k in ("SALARIO","QUINQUENIO","IRREGULAR","LEGAL","PISO")):
+            answer = ("Os salários não podem ser classificados como certos ou errados apenas pela comparação com colegas. "
+                "A base traz rubricas e remuneração; é necessário cruzar com a tabela legal vigente, a jornada, o tempo de serviço, "
+                "as progressões e os atos que fundamentam adicionais e indenizações. Não vou declarar irregularidade sem essa verificação.")
+        else:
+            answer = (f"No período {payload.mes} há {indicadores['vinculos']} vínculos identificados, "
+                f"folha bruta de {moeda(atual)} e " +
+                str(aud["contagens"]["inconsistencias_aritmeticas"]) + " divergências aritméticas encontradas. "
+                "Pergunte sobre o crescimento da folha, rubricas ou limites fiscais para ver o detalhamento.")
+        return {"modo":"sem_chave_gemini","resposta":answer,"indicadores":indicadores,
+                "fontes":[PORTAL,SICONFI_DOC]}
     instrucao = (
         "Você é o assistente analítico do protótipo independente VIÇO GOV de Viçosa/MG. "
         "Responda em português brasileiro e com concisão, SOMENTE com o contexto JSON fornecido. "
