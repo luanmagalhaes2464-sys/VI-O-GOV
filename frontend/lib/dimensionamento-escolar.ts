@@ -26,7 +26,8 @@ export const unidadesDimensionamento=unidadesEscolares.map(e=>{
  return {codigo_inep:e.codigo_inep,nome:e.nome,turmas:e.turmas,faixa:idx,
   auxiliar:idx==null?null:regrasEscolares[0].quantidades[idx],
   administrativo:idx==null?null:regrasEscolares[1].quantidades[idx],
-  eventual:idx==null?null:regrasEscolares[2].quantidades[idx]};
+  // Professor eventual exige turmas elegíveis por etapa; o Censo agregado não separa.
+  eventual:null as number|null};
 });
 export const totalTurmas=unidadesDimensionamento.reduce((x,u)=>x+(u.turmas||0),0);
 export const totaisDimensionamento:Record<CampoDimensionamento,number|null>={
@@ -45,7 +46,8 @@ export function parametroPorCargo(cargo:string):{valor:number|null;regra?:string
  if(n.includes('ASSISTENTE ADM ESCOLAR')||n.includes('ASSISTENTE ADMINISTRATIVO ESCOLAR'))
   return {valor:totaisDimensionamento.administrativo,descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
  if(n.includes('PROFESSOR EVENTUAL'))
-  return {valor:totaisDimensionamento.eventual,descricao:'Referência de professor eventual calculada por faixa de turmas (Censo 2025), não número de vagas legais.'};
+  return {valor:null,regra:'Faixa de turmas elegíveis',
+   descricao:'O Anexo V exige turmas da educação infantil até o 5º ano e condições de turmas integrais do Fundamental II; não calcular a partir das 263 turmas agregadas.'};
  if(/^PROFESSOR (I|II)$/.test(n))
   return {valor:null,regra:'1 por turma',
    descricao:'O Anexo V da Lei municipal nº 1.368/1999 prevê 1 PEB-I ou 1 PEB-II por turma, conforme etapa. Sem número de turmas por etapa e equivalência confirmada dos cargos da folha, não é possível calcular quantitativos separados.'};
