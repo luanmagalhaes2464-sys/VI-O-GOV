@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {BookOpen,Building2,CalendarDays,ClipboardList,ExternalLink,GraduationCap,Info,MapPin,Search,School,Users} from 'lucide-react';
 import {indicadoresEducacao,unidadesEscolares} from '../../lib/educacao-dados';
+import EducacaoDimensionamento from '../../components/educacao-dimensionamento';
 import './educacao.css';
 
 type RHDocentes={mes:string;total:number;linhas:number;cargos:{cargo:string;vinculos:number}[];origem:string;tipo:string;ressalva:string;fonte:string};
@@ -74,6 +75,7 @@ export default function Educacao(){
    </table>{visiveis.length===0&&<p className="edu-noresult">Nenhuma unidade corresponde à pesquisa.</p>}</div>
    <p className="edu-table-notice">Os números por escola são reproduzidos de base secundária que identifica o Censo Escolar 2025 como origem. Para uso oficial, conferir a exportação do Catálogo de Escolas do INEP. Docentes informados no Censo não devem ser somados como pessoas únicas nem equiparados aos vínculos da folha.</p>
   </section>
+  <EducacaoDimensionamento/>
   <section className="edu-panel">
    <div className="edu-panel-heading"><div><h2><Users size={18}/> Professores identificados na folha do RH</h2>
     </div>
