@@ -32,7 +32,7 @@ export async function GET(request:NextRequest){
           FROM rh_folha_analitica_2026
           WHERE competencia=ANY($1::date[])
           ORDER BY competencia,matricula,id`,
-   values:[meses],query_timeout:26000
+   values:[meses]
   });
   const resultado=auditarFolha(results.rows,mes);
   return NextResponse.json(resultado,{headers:{'Cache-Control':'private, no-store'}});
