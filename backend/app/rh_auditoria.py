@@ -56,6 +56,9 @@ def monta(rows):
             codigo = str(item.get("codigo") or "").zfill(4)
             titulo = str(item.get("rubrica") or "Sem descrição")
             tipo = str(item.get("tipo") or "").upper()
+            # Janeiro/2026 veio do PDF antigo sem o campo tipo; 0400 é desconto.
+            if not tipo:
+                tipo = "DESCONTO" if codigo == "0400" or titulo.upper()=="DESCONTOS" else "PROVENTO"
             if tipo == "PROVENTO":
                 bruto_rubricas += valor
                 cat = categoria(item)
