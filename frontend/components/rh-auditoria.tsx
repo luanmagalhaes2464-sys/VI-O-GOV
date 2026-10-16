@@ -2,6 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,ChevronDown,ChevronUp,ExternalLink,Info,Scale,Search,ShieldAlert,Users,Wallet} from 'lucide-react';
 import {api,brl,num} from '../lib/api';
+import {unidadesEscolares} from '../lib/educacao-dados';
 
 type Rubrica={codigo:string;nome:string;categoria:string;valor:number};
 type Ocorrencia={id:string;nome:string;matricula:string;cargo:string;departamento:string;rubricas:Rubrica[];detalhes?:string;bruto:number;diferenca_bruto:number;diferenca_descontos:number;diferenca_liquido:number};
@@ -40,6 +41,40 @@ const normasPorTurmas=[
  {cargo:'Assistente Administrativo Escolar',quantidades:[1,1,2,4,6,6,6]},
  {cargo:'Professor eventual',quantidades:[1,1,2,2,2,2,2]}
 ];
+
+/*
+ * Simulação escolar a partir das turmas de 2025 nas 18 unidades cadastrais.
+ * Não representa vagas criadas por lei nem permite inferir excedentes de 2026.
+ * A faixa de 30 turmas é ambígua no texto disponível: não calcular nesse caso.
+ */
+const indiceFaixa=(turmas:number|null):number|null=>{
+ if(turmas==null||turmas<=0)return null;
+ if(turmas<=6)return 0;
+ if(turmas<=10)return 1;
+ if(turmas<=14)return 2;
+ if(turmas<=19)return 3;
+ if(turmas<=25)return 4;
+ if(turmas<=29)return 5;
+ if(turmas===30)return null;
+ return 6;
+};
+const unidadesComFaixas=unidadesEscolares.map(e=>({
+ ...e,indice:indiceFaixa(e.turmas),auxiliar:e.turmas===null?null:indiceFaixa(e.turmas)===null?null:normasPorTurmas[0].quantidades[indiceFaixa(e.turmas)!],
+ administrativo:e.turmas===null?null:indiceFaixa(e.turmas)===null?null:normasPorTurmas[1].quantidades[indiceFaixa(e.turmas)!]
+}));
+const referenciaCompleta=unidadesComFaixas.length>0&&unidadesComFaixas.every(e=>e.indice!=null);
+const totalAuxiliar=referenciaCompleta?unidadesComFaixas.reduce((acc,e)=>acc+(e.auxiliar||0),0):null;
+const totalAdministrativo=referenciaCompleta?unidadesComFaixas.reduce((acc,e)=>acc+(e.administrativo||0),0):null;
+const totalTurmas=unidadesEscolares.reduce((acc,e)=>acc+(e.turmas||0),0);
+const parametroEscolar=(cargo:string):{valor:number|null;descricao:string}|null=>{
+ const tipo=referencialEscolar(cargo);
+ if(tipo==='auxiliar')return {valor:totalAuxiliar,descricao:'Parâmetro indicativo em 18 escolas, turmas do Censo 2025; não equivale a vagas legais'};
+ if(tipo==='administrativo')return {valor:totalAdministrativo,descricao:'Parâmetro indicativo em 18 escolas, turmas do Censo 2025; não equivale a vagas legais'};
+ if(tipo==='professor')return {valor:null,descricao:'Referência de '+totalTurmas+' turmas, mas sem distribuição por etapa, horas-aula e jornada; não é possível derivar vagas de professor'};
+ if(tipo==='infantil')return {valor:null,descricao:'Exige turmas infantis, turno e jornada separados por escola'};
+ return null;
+};
+
 const pct=(v:number|null|undefined)=>v==null?'—':v.toFixed(2).replace('.',',')+'%';
 export default function RHAuditoria({mes}:{mes:string}){
  const [d,setD]=useState<Auditoria|null>(null),[f,setF]=useState<Fiscal|null>(null);
@@ -99,31 +134,44 @@ export default function RHAuditoria({mes}:{mes:string}){
     {Number(nBase||0)>30&&<p className="rh-a-note">Mostrando os 30 primeiros registros do total de {num(nBase)}.</p>}
    </>}
    {visivel==='cargos'&&<>
-    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> O quadro agora relaciona a Lei 3.066/2023 e alterações de 2025, o Estatuto do Magistério e a regra de extinção de vagas de Motorista. Há {num(quadro?.referencias_identificadas)} combinações com referência legal identificada, mas os limites numéricos de vagas continuam pendentes de quadro consolidado, vínculos e vacâncias por órgão. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
+    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> O quadro agora relaciona a Lei 3.066/2023 e alterações de 2025, o Estatuto do Magistério e a regra de extinção de vagas de Motorista. Há {num(quadro?.referencias_identificadas)} combinações com referência normativa identificada. Para algumas funções é possível calcular um <b>parâmetro por escola (2025)</b>, mas ele não é o limite de cargos autorizados nem comprova excesso em 2026. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
     {quadroErro&&<p className="rh-a-error"><AlertCircle size={14}/>{quadroErro}</p>}
     <div className="rh-a-cargo-tools"><label><Search size={15}/><input type="search" aria-label="Pesquisar cargo e jornada" value={filtroCargo} onChange={e=>setFiltroCargo(e.target.value)} placeholder="Pesquisar cargo ou jornada..."/></label>
      <small>{num(quadro?.grupos)} combinações de cargo e jornada na folha</small></div>
     <div className="rh-a-cargo-wrap"><table className="rh-a-cargo-table">
-      <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Vagas autorizadas</th><th>Excedentes</th></tr></thead>
-      <tbody>{cargosVisiveis.slice(0,50).map((c,i)=><tr key={c.cargo+'-'+c.jornada+'-'+i}>
-        <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
-        <td>{num(c.vinculos_folha)}</td><td>{c.situacao==='referencia_por_escola'?<span title={c.norma_quadro||''} className="rh-a-legal-school">Regra por escola ↓</span>:c.situacao==='cargo_em_extincao'?<span title={c.norma_quadro||''} className="rh-a-legal-school">Motorista · extinção de vagas</span>:<span className="rh-a-no-reference" title="Quadro total ainda não consolidado">A validar</span>}</td>
-        <td><span className="rh-a-no-reference">—</span></td>
-      </tr>)}</tbody>
+      <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Parâmetro escolar (2025)</th><th>Vagas legais</th><th>Excedentes</th></tr></thead>
+      <tbody>{cargosVisiveis.slice(0,50).map((c,i)=>{
+        const referencia=parametroEscolar(c.cargo);
+        return <tr key={c.cargo+'-'+c.jornada+'-'+i}>
+         <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
+         <td>{num(c.vinculos_folha)}</td>
+         <td>{referencia?.valor!=null?<span className="rh-a-school-estimate" title={referencia.descricao}>{num(referencia.valor)} <small>indicativo*</small></span>:
+           referencia?<span className="rh-a-legal-school" title={referencia.descricao}>Regra depende da lotação</span>:<span className="rh-a-muted">—</span>}</td>
+         <td>{c.vagas_legais!=null?num(c.vagas_legais):c.situacao==='cargo_em_extincao'?<span className="rh-a-no-reference" title={c.norma_quadro||''}>Extinção parcial</span>:<span className="rh-a-no-reference">A validar</span>}</td>
+         <td>{c.excedentes!=null?num(c.excedentes):<span className="rh-a-muted">—</span>}</td>
+        </tr>;
+       })}</tbody>
     </table></div>
     {!cargosVisiveis.length&&<p className="rh-a-note">Nenhum cargo corresponde à pesquisa.</p>}
     {cargosVisiveis.length>50&&<p className="rh-a-note">Exibindo as primeiras 50 combinações. Pesquise o nome do cargo para refinar.</p>}
     <div className="rh-a-school-law">
       <div className="rh-a-school-law-head">
-       <div><strong>Referência legal encontrada — Educação</strong>
+       <div><strong>Parâmetros de dimensionamento — Educação</strong>
        <p>Anexo V do Estatuto do Magistério de Viçosa: parâmetros de composição do pessoal <b>por unidade escolar</b>, conforme turmas e alunos. Não são limites globais da prefeitura.</p></div>
        <span>Lei 1.368/1999 · alterações da Lei 3.003/2023</span>
       </div>
+      <p className="rh-a-note"><b>Simulação por unidade escolar:</b> {num(unidadesEscolares.length)} escolas cadastradas e {num(totalTurmas)} turmas no Censo 2025. Aplicando as faixas mostradas abaixo para cada unidade, obtemos <b>{num(totalAuxiliar)} para Auxiliar de Serviço Escolar</b> e <b>{num(totalAdministrativo)} para Assistente Administrativo Escolar</b>. São parâmetros teóricos, NÃO vagas autorizadas ou funcionários necessários em 2026. A Câmara mencionou 19 unidades, enquanto esta base reúne 18; falta conferir a cobertura e o regime de atendimento.</p>
+      <details className="rh-a-school-breakdown"><summary>Ver cálculo de referência por escola (18 unidades · 2025)</summary>
+       <div className="rh-a-cargo-wrap"><table className="rh-a-school-table">
+        <thead><tr><th>Escola</th><th>Turmas</th><th>Auxiliar de Serviço Escolar*</th><th>Assistente Administrativo Escolar*</th></tr></thead>
+        <tbody>{unidadesComFaixas.map(e=><tr key={e.codigo_inep}><td>{e.nome}</td><td>{num(e.turmas)}</td><td>{num(e.auxiliar)}</td><td>{num(e.administrativo)}</td></tr>)}</tbody>
+       </table></div>
+      </details>
       <div className="rh-a-cargo-wrap"><table className="rh-a-school-table">
        <thead><tr><th>Função / turmas na unidade</th>{turmasFaixas.map(x=><th key={x}>{x}</th>)}</tr></thead>
        <tbody>{normasPorTurmas.map(x=><tr key={x.cargo}><td><strong>{x.cargo}</strong></td>{x.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
       </table></div>
-      <p className="rh-a-note">* O texto publicado usa as faixas '26 a 30' e 'a partir de 30', que se sobrepõem em 30 turmas; nesse caso, a interpretação exata deve ser confirmada com o órgão competente. Há regras específicas para tempo integral e autorização pela Secretaria de Educação. Para professor PEB I e II, a referência legal é de 1 por turma; o PEB III depende do total de horas-aula. Para auxiliar de educação infantil, a norma prevê critério por turma e jornada. Nenhum desses parâmetros autoriza concluir excesso municipal sem identificar cada escola e suas turmas.</p>
+      <p className="rh-a-note">* O texto publicado usa as faixas '26 a 30' e 'a partir de 30', que se sobrepõem em 30 turmas; nesse caso, a interpretação exata deve ser confirmada com o órgão competente. Há regras específicas para tempo integral e autorização pela Secretaria de Educação. Para professor PEB I e II, a referência legal é de 1 por turma; o PEB III depende do total de horas-aula. Para auxiliar de educação infantil, a norma prevê critério por turma e jornada. Nenhum desses parâmetros comprova excesso municipal: ainda faltam lotação efetiva por unidade, jornadas, atos legais de 2026 e eventual escola não listada.</p>
       <div className="rh-a-doclinks">
        <a href="https://leismunicipais.com.br/estatuto-do-magisterio-vicosa-mg" rel="noopener noreferrer" target="_blank">Consultar texto consolidado do Estatuto <ExternalLink size={12}/></a>
        <a href="https://www.vicosa.mg.leg.br/comunicacao/noticias/2023/06-2023/vereador-celebra-conquista-da-educacao-e-aprova-mocao-dos-60-anos-da-aspuv" rel="noopener noreferrer" target="_blank">Câmara de Viçosa — Lei 3.003/2023 <ExternalLink size={12}/></a>
@@ -133,7 +181,7 @@ export default function RHAuditoria({mes}:{mes:string}){
     </div>
     <div className="rh-a-doclinks">{quadro?.fontes_referencia.map(x=><a key={x.url} href={x.url} rel="noopener noreferrer" target="_blank">{x.nome}<ExternalLink size={12}/></a>)}</div>
     <p className="rh-a-note"><b>Lei localizada não é limite confirmado.</b> No caso de Motorista, a Lei 3.147/2025 extinguiu vagas que estavam desocupadas em maio/2025; não é correto usar o número da lei anterior como teto atual. A contagem de {num(quadro?.grupos)} é de combinações de cargo e jornada, não de cargos criados por lei.</p>
-    <p className="rh-a-note">O campo excedentes fica em branco enquanto não houver comparação documental validada. Pagamentos após desligamento e vínculos temporários precisam ser distinguidos de cargos efetivos ocupados.</p>
+    <p className="rh-a-note">O campo excedentes fica em branco enquanto não houver comparação documental validada. Mesmo quando há parâmetro calculável por turmas, a contagem global da folha não revela a distribuição dos profissionais por escola. Pagamentos após desligamento e vínculos temporários precisam ser distinguidos de cargos efetivos ocupados.</p>
    </>}
    {visivel==='duplicidade'&&<>
     <p className="rh-a-note"><b>Triagem de duplicidades na competência {mes.slice(-2)}/2026:</b> compara a mesma matrícula, cargo, jornada e tipo de inclusão. Verifica lançamentos integralmente iguais (inclusive rubricas) e inclusões regulares múltiplas sem verbas eventuais identificadas. <b>Não é prova de dois depósitos ou fraude.</b></p>
