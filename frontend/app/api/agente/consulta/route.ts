@@ -126,9 +126,41 @@ export async function POST(req:NextRequest){
    const sl=secretarias.find(s=>norm.includes(normal(s.curto))||norm.includes(normal(s.sigla)));
    return sl?d.departamento.includes(sl.sigla):false;
   })||selectedDep;
-  if(/ESCOLA|MATRICUL|ALUNO|TURMA|EDUCACAO INFANTIL|CENSO/.test(norm)&&!/SALARIO|PROFESSOR NA FOLHA|FOLHA/.test(norm)){
-   const unidade=unidadesEscolares.find(e=>norm.includes(normal(e.nome))||norm.includes(e.codigo_inep));
-   answer=unidade?`${unidade.nome} (INEP ${unidade.codigo_inep}) registrou em 2025 ${number(unidade.matriculas||0)} matrículas, ${number(unidade.turmas||0)} turmas e ${number(unidade.docentes||0)} docentes no cadastro consultado.`:
+  const rankingNumero=/MAIS FUNCIONARIO|MAIS SERVIDOR|MAIOR QUANTIDADE DE (SERVIDOR|FUNCIONARIO|VINCULO)|MAIS VINCULO|MAIOR NUMERO DE (SERVIDOR|FUNCIONARIO)/.test(norm);
+  const rankingMenor=/MENOS FUNCIONARIO|MENOS SERVIDOR|MENOR QUANTIDADE DE (SERVIDOR|FUNCIONARIO|VINCULO)/.test(norm);
+  const rankingGasto=/MAIOR GASTO|MAIS GASTO|MAIOR FOLHA|MAIOR DESPESA/.test(norm);
+  const rankingMenorGasto=/MENOR GASTO|MENOR FOLHA|MENOR DESPESA/.test(norm);
+  const comparaMeses=/MES|COMPETENCIA|JANEIRO|FEVEREIRO|MARCO|ABRIL|MAIO|JUNHO|JULHO/.test(norm)&&
+   /MAIOR|MENOR|MAIS GAST|MENOS GAST|MAIS ALTO|MAIS BAIXO/.test(norm);
+  const relEscolas=/ESCOLA|MATRICUL|ALUNO|TURMA|EDUCACAO INFANTIL|CENSO/.test(norm);
+  const escolaSelecionada=unidadesEscolares.find(e=>{
+   const x=normal(e.nome).replace(/^(ESCOLA|CENTRO) MUNICIPAL (DE EDUCACAO )?/,'');
+   return norm.includes(normal(e.nome))||(x.length>12&&norm.includes(x))||norm.includes(e.codigo_inep);
+  });
+  if(comparaMeses&&/MES|COMPETENCIA/.test(norm)&&/GAST|FOLHA|DESPES/.test(norm)){
+   const ordenados=[...meses].sort((a,b)=>Number(b.bruto)-Number(a.bruto));
+   const escolhido=/MENOR|MENOS|MAIS BAIXO/.test(norm)?ordenados[ordenados.length-1]:ordenados[0];
+   answer=escolhido?`Na série disponível de janeiro a julho de 2026, a competência ${escolhido.mes} teve ${/MENOR|MENOS|MAIS BAIXO/.test(norm)?'a menor':'a maior'} remuneração bruta, de ${toMoney(escolhido.bruto)}.`:
+    'Não há série mensal suficiente no sistema para comparar.';
+  }else if((rankingNumero||rankingMenor)&&/SECRETARIA|SETOR|DEPARTAMENTO|PREFEITURA/.test(norm)){
+   const ordenados=[...deps].sort((a,b)=>Number(b.vinculos)-Number(a.vinculos));
+   const escolhido=rankingMenor?ordenados[ordenados.length-1]:ordenados[0];
+   answer=escolhido?`Em ${mes}, o departamento ${escolhido.departamento} apresenta ${rankingMenor?'a menor':'a maior'} quantidade de vínculos da folha: ${number(Number(escolhido.vinculos))}. Vínculos não são necessariamente servidores ativos únicos.`:
+    'Não há dados suficientes para classificar os departamentos nesta competência.';
+  }else if((rankingGasto||rankingMenorGasto)&&/SECRETARIA|SETOR|DEPARTAMENTO|PREFEITURA/.test(norm)){
+   const ordenados=[...deps].sort((a,b)=>Number(b.bruto)-Number(a.bruto));
+   const escolhido=rankingMenorGasto?ordenados[ordenados.length-1]:ordenados[0];
+   answer=escolhido?`Em ${mes}, o departamento ${escolhido.departamento} apresenta ${rankingMenorGasto?'a menor':'a maior'} remuneração bruta somada, de ${toMoney(escolhido.bruto)}. Não é o orçamento completo da secretaria.`:
+    'Não há dados suficientes para comparar gastos de pessoal.';
+  }else if(relEscolas&&!/SALARIO|PROFESSOR NA FOLHA|FOLHA/.test(norm)){
+   const unidade=escolaSelecionada;
+   if(/MAIS ALUNO|MAIOR NUMERO DE ALUNO|MAIS MATRICULA/.test(norm)&&!unidade){
+    const top=[...unidadesEscolares].sort((a,b)=>(b.matriculas||0)-(a.matriculas||0)).slice(0,5);
+    answer='Escolas municipais com mais matrículas no Censo 2025: '+top.map(e=>e.nome+' ('+number(e.matriculas||0)+')').join('; ')+'.';
+   }else if(/RURAL|URBANA/.test(norm)&&!unidade){
+    const area=/RURAL/.test(norm)?'Rural':'Urbana';const base=unidadesEscolares.filter(e=>e.localizacao===area);
+    answer='No cadastro municipal de 2025 constam '+number(base.length)+' escolas em localização '+area.toLowerCase()+'; '+number(base.reduce((a,e)=>a+(e.matriculas||0),0))+' matrículas nessas unidades.';
+   }else answer=unidade?`${unidade.nome} (INEP ${unidade.codigo_inep}) registrou em 2025 ${number(unidade.matriculas||0)} matrículas, ${number(unidade.turmas||0)} turmas e ${number(unidade.docentes||0)} docentes no cadastro consultado.`:
     `Na base de escolas municipais de Viçosa, referente ao Censo Escolar 2025, constam ${number(unidadesEscolares.length)} escolas, ${number(totalMatriculas)} matrículas e ${number(totalTurmas)} turmas. A soma de docentes por escola é ${number(docentesPorUnidade)} e pode repetir profissionais que atuam em mais de uma unidade. A Câmara mencionou 19 escolas em outra referência; ainda não conciliamos a diferença.`;
   }else if(/QUINQUENIO|PISO|EXCEDEN|VAGA AUTORIZ|ILEGAL|FRAUDE/.test(norm)){
    answer='O sistema ainda não contém, para todos os cargos, as tabelas legais e vagas vigentes consolidadas com os atos funcionais de cada vínculo. Por isso, não posso afirmar irregularidade, excesso de pessoal ou valor ilegal apenas pela folha. Para quinquênios, é preciso confirmar a regra e a situação funcional aplicável.';
@@ -136,9 +168,14 @@ export async function POST(req:NextRequest){
    const top=rubricas.slice(0,12);
    answer=`Na folha de ${mes}, as rubricas de maior valor são: ${top.map(x=>`${x.nome} (${toMoney(x.total)})`).join('; ')}. Para pesquisar uma rubrica específica e os nomes vinculados, abra o detalhamento de rubricas em Recursos Humanos.`;
   }else if(/CARGO|FUNCAO|PROFESSOR|MOTORISTA|ENFERMEIR/.test(norm)){
+   const professores=cargos.filter(c=>/PROFESSOR(A|ES)?/.test(normal(c.cargo)));
+   if(/QUANT|TOTAL|NUMERO|TEM|EXISTEM/.test(norm)&&/PROFESSOR/.test(norm)&&!/SALARIO|MAIOR|MENOR/.test(norm)){
+    answer='Na folha de '+mes+', os cargos de professor entre as categorias agregadas apresentam '+number(professores.reduce((a,c)=>a+Number(c.vinculos),0))+' vínculos somados por cargo. Esse valor pode não incluir categorias fora das mais frequentes; para o total consolidado de todos os cargos de professor, utilize o indicador da guia Educação.';
+   }else{
    const cargo=cargos.find(c=>norm.includes(normal(c.cargo)));
    answer=cargo?`Na folha de ${mes}, o cargo ${cargo.cargo} apresenta ${number(Number(cargo.vinculos))} vínculos e remuneração bruta somada de ${toMoney(cargo.bruto)}. Isso não comprova pessoas ativas distintas.`:
     `Os cargos com mais vínculos na folha de ${mes} são: ${cargos.slice(0,8).map(c=>`${c.cargo} (${number(Number(c.vinculos))})`).join('; ')}. Se quiser, pergunte por um cargo específico.`;
+   }
   }else if(/EVOLU|AUMENT|DIMINUI|COMPAR|MES ANTERIOR|HISTORIC/.test(norm)){
    answer='Evolução mensal da folha bruta em 2026: '+meses.map(m=>`${m.mes}: ${toMoney(m.bruto)}`).join('; ')+'. Alterações podem envolver 13º, férias e outras rubricas, sem que isso implique aumento do vencimento-base.';
   }else if(/SECRETARIA|DEPARTAMENTO|GAST|DESPES|FOLHA|SERVIDOR|FUNCIONARIO|REMUNERAC|TOTAL/.test(norm)){
@@ -147,7 +184,7 @@ export async function POST(req:NextRequest){
   }else if(/OLA|OI|BOM DIA|BOA TARDE|BOA NOITE|O QUE VOCE/.test(norm)){
    answer='Olá! Posso analisar as informações já integradas ao Viço Gov: servidores, remuneração, departamentos, cargos, rubricas, escolas municipais, turmas e matrículas. Informe o tema e, se necessário, o mês.';
   }else{
-   answer='Não encontrei dados suficientes no Viço Gov para responder com segurança a essa pergunta. Já consigo consultar folha, cargos, despesas brutas por secretaria, escolas, matrículas e turmas. Para outras informações, precisamos integrar novas fontes ou habilitar um modelo de linguagem conectado a esses dados.';
+   answer='Ainda não há dados integrados suficientes para responder essa pergunta com segurança. Atualmente posso consultar escolas, matrículas, turmas, docentes do Censo, remuneração da folha, secretarias, cargos e rubricas. Outras análises dependem da integração das fontes correspondentes.';
   }
   return NextResponse.json(resposta('consulta_local',answer,mes));
  }catch(e){
