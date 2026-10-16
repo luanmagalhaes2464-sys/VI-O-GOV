@@ -3,6 +3,9 @@ import {useEffect,useMemo,useState} from 'react';
 import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X} from 'lucide-react';
 import {brl,num} from '../../lib/api';
 import RHExploracao from '../../components/rh-exploracao';
+import RHAuditoria from '../../components/rh-auditoria';
+import RHAssistenteFlutuante from '../../components/rh-assistente-flutuante';
+import './rh-auditoria.css';
 import FiltroPesquisavel from '../../components/filtro-pesquisavel';
 type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
@@ -75,6 +78,7 @@ export default function RecursosHumanos(){
  },[consultaTabela]);
  const itens=dados?.competencias||[];
  const filtrados=dados?.totais;
+ const mesReferencia=[...selecionados].sort()[selecionados.length-1]||'2026-07';
  const labelSelecionados=selecionados.length===7?'Janeiro a julho de 2026':selecionados.length===1?meses[Number(selecionados[0].slice(-2))-1]+' de 2026':selecionados.map(abreviado).join(', ')+'/2026';
  function alterar(mes:string){setSelecionados(prev=>{
   if(prev.includes(mes))return prev.length===1?prev:prev.filter(x=>x!==mes);
@@ -132,6 +136,7 @@ export default function RecursosHumanos(){
     <article><span><Wallet size={16}/> Remuneração bruta</span><strong>{carregando?'…':brl(filtrados?.bruto)}</strong><small>Acumulado de {selecionados.length} {selecionados.length===1?'mês':'meses'}</small></article>
     <article><span><Wallet size={16}/> Quinquênios</span><strong>{carregando?'…':brl(filtrados?.quinquenio)}</strong><small>Rubrica de quinquênio · acumulada</small></article>
   </div>
+  <RHAuditoria mes={mesReferencia}/>
   <RHExploracao dados={dados} consulta={consulta}/>
   <section className="rh26-panel rh26-trend"><div className="rh26-panel-head"><h2>Evolução da folha por mês</h2><p>Remuneração bruta mensal; valores de cada competência selecionada.</p></div>
     <div className="rh26-trend-bars">{itens.map((m,i)=><div key={m.mes} className="rh26-trend-item" title={m.mes+' • '+brl(m.indicadores?.bruto)}>
@@ -161,6 +166,7 @@ export default function RecursosHumanos(){
    <div className="rh26-pagination"><button onClick={()=>setPagina(x=>Math.max(1,x-1))} disabled={pagina===1||carregando}><ChevronLeft size={15}/>Anterior</button><span>Página {pagina} de {Math.max(1,Math.ceil((dados?.total_pessoas??0)/20))}</span><button onClick={()=>setPagina(x=>x+1)} disabled={carregando||!dados||(pagina*20>=dados.total_pessoas)}>Próxima<ChevronRight size={15}/></button></div>
   </section>
   <div className="rh26-method"><Info size={17}/>{dados?.aviso||'Dados extraídos dos relatórios oficiais, com agrupamento de inclusões de pagamento por vínculo e competência.'}</div>
+  <RHAssistenteFlutuante mes={mesReferencia}/>
   {pessoa&&<div className="rh26-overlay" onClick={()=>setPessoa(null)}><div className="rh26-modal" role="dialog" aria-modal="true" aria-label="Ficha do vínculo" onClick={e=>e.stopPropagation()}>
    <div className="rh26-modal-head"><div><h2>{pessoa.nome}</h2><small>{pessoa.mes.slice(-2)+'/2026'} · matrícula {pessoa.matricula}</small></div><button aria-label="Fechar" onClick={()=>setPessoa(null)}><X size={19}/></button></div>
    <div className="rh26-details">{[
