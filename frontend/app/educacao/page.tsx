@@ -53,7 +53,7 @@ export default function Educacao(){
     <strong>{i.id==='docentes'&&carregando?'…':formatar(i.valor)}</strong>
     <div className="edu-stat-meta">{i.periodo}</div>
     <p>{i.extra}</p>
-    {i.fonte&&<a href={i.fonte} target="_blank" rel="noopener noreferrer">Consultar origem <ExternalLink size={12}/></a>}
+
    </article>)}
   </div>
   <section className="edu-panel">
@@ -72,7 +72,7 @@ export default function Educacao(){
      <td><a href={e.fonte_url} target="_blank" rel="noopener noreferrer" className="edu-individual-source">Ver registro <ExternalLink size={12}/></a></td>
     </tr>)}</tbody>
    </table>{visiveis.length===0&&<p className="edu-noresult">Nenhuma unidade corresponde à pesquisa.</p>}</div>
-   <p className="edu-table-notice">Os números por escola são reproduzidos de base secundária que identifica o Censo Escolar 2025 como origem. Para uso oficial, conferir a exportação do Catálogo de Escolas do INEP. Docentes informados no Censo não devem ser somados como pessoas únicas nem equiparados aos vínculos da folha.</p>
+
   </section>
   <EducacaoDimensionamento/>
   <section className="edu-panel">
