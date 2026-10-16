@@ -164,3 +164,41 @@
 .rh-bot-context label{display:flex;align-items:center;gap:9px;font-size:10px;color:#667e90;justify-content:space-between}
 .rh-bot-context select{border:1px solid #dbe5e9;border-radius:6px;background:#fff;padding:6px 8px;color:#425e73;font-size:10px}
 .rh-bot-feed{scroll-behavior:smooth}
+
+
+/* Viço IA — chat livre e biblioteca persistente de documentos */
+.rh-bot-panel{width:min(465px,calc(100vw - 24px));height:min(665px,calc(100dvh - 103px))}
+.vico-ia-tabs{display:flex;gap:6px;padding:8px 13px;background:#fff;border-bottom:1px solid #e6eaef}
+.vico-ia-tabs button{display:flex;align-items:center;gap:6px;border:0;border-radius:7px;background:transparent;color:#687c90;font-weight:700;font-size:11px;padding:9px 11px;cursor:pointer}
+.vico-ia-tabs button.active{color:#9b3545;background:#faedf0}
+.vico-ia-tabs button:hover{background:#f7f1f3}
+.vico-ia-input{align-items:flex-end;gap:8px;padding:10px 13px}
+.vico-ia-input textarea{display:block;flex:1;resize:vertical;min-height:61px;max-height:150px;border:1px solid #d5dfe7;background:#fff;border-radius:9px;padding:11px 12px;outline:0;font:inherit;font-size:12px;line-height:1.45;color:#2c4459}
+.vico-ia-input textarea:focus{border-color:#b05564;box-shadow:0 0 0 2px #b0556420}
+.vico-ia-input button{height:46px;width:42px;background:#ad4251}
+.vico-ia-doc-refs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vico-ia-doc-refs span{display:flex;align-items:center;gap:5px;border-radius:6px;background:#e4eef1;padding:4px 6px;color:#405f6e;font-size:10px}
+.vico-ia-doc-section{flex:1;overflow-y:auto;min-height:0;padding:15px;display:flex;flex-direction:column;gap:12px;background:#fff}
+.vico-ia-doc-section>p{font-size:11px;line-height:1.6;color:#75889a;margin:0}
+.vico-ia-field{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-weight:700;font-size:11px;color:#4e6579}
+.vico-ia-field>input{width:100%}
+.vico-ia-doc-section input:not([type=checkbox]),.vico-ia-doc-section select{border:1px solid #d5dee6;border-radius:7px;padding:9px;background:#fff;color:#33495c;min-width:0}
+.vico-ia-refresh{align-self:flex-start;background:#eef2f5;color:#476078;border:1px solid #e0e6ec;border-radius:7px;padding:7px 11px;font-size:11px;cursor:pointer}
+.vico-ia-doc-list{display:flex;flex-direction:column;gap:7px;padding:11px;border:1px solid #e5eaef;background:#f8fafb;border-radius:9px}
+.vico-ia-doc-list>strong{color:#425b70;font-size:11px}
+.vico-ia-doc-list>div{display:flex;gap:8px;align-items:flex-start;border-bottom:1px solid #e6ebef;padding-bottom:7px;color:#a44855}
+.vico-ia-doc-list>div:last-child{border-bottom:0}
+.vico-ia-doc-list>div>span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.vico-ia-doc-list b{font-size:11px;color:#425e71;overflow-wrap:anywhere}
+.vico-ia-doc-list small{color:#849aaa;font-size:10px}
+.vico-ia-upload{border-top:1px solid #e5eaf0;padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.vico-ia-upload>strong{font-size:12px;color:#394f63}
+.vico-ia-upload label:not(.vico-ia-check){display:flex;flex-direction:column;gap:6px;font-size:11px;color:#667c90}
+.vico-ia-doc-two{display:grid;grid-template-columns:1fr 95px;gap:9px}
+.vico-ia-doc-two label{min-width:0}
+.vico-ia-check{display:flex;align-items:center;gap:8px;font-size:11px;color:#526879}
+.vico-ia-upload-button{display:flex;align-items:center;justify-content:center;gap:7px;background:#a83d49;color:#fff;border:0;border-radius:8px;padding:11px;font-size:11px;cursor:pointer}
+.vico-ia-upload-button:disabled{opacity:.45;cursor:not-allowed}
+.vico-ia-upload small{font-size:10px;color:#8799a9;line-height:1.6}
+.vico-ia-feedback{font-size:11px;color:#375f72;line-height:1.6;margin:0}
+@media(max-width:540px){.rh-bot-panel{width:calc(100vw - 20px);height:min(670px,calc(100dvh - 90px))}.rh-bot-wrap{right:10px;bottom:10px}}
