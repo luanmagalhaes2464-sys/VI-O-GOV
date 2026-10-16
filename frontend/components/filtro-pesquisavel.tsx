@@ -6,7 +6,7 @@ type Props={
  label:string;
  placeholder:string;
  value:string;
- options:string[];
+ options:Array<string|{value:string;label:string}>;
  onChange:(value:string)=>void;
 };
 
@@ -19,15 +19,17 @@ export default function FiltroPesquisavel({label,placeholder,value,options,onCha
  const [aberto,setAberto]=useState(false);
  const [pesquisa,setPesquisa]=useState('');
  const [ativo,setAtivo]=useState(0);
+ const itens=useMemo(()=>options.map(x=>typeof x==='string'?{value:x,label:x}:x),[options]);
+ const selecionado=itens.find(x=>x.value===value)?.label||value;
  const resultados=useMemo(()=>{
   const busca=normalizar(pesquisa);
-  const correspondentes=busca?options.filter(x=>normalizar(x).includes(busca)):options;
+  const correspondentes=busca?itens.filter(x=>normalizar(x.label).includes(busca)):itens;
   return correspondentes.slice(0,70);
- },[pesquisa,options]);
+ },[pesquisa,itens]);
  const contagem=useMemo(()=>{
   const busca=normalizar(pesquisa);
-  return busca?options.filter(x=>normalizar(x).includes(busca)).length:options.length;
- },[pesquisa,options]);
+  return busca?itens.filter(x=>normalizar(x.label).includes(busca)).length:itens.length;
+ },[pesquisa,itens]);
 
  useEffect(()=>{
   function onOutside(event:PointerEvent){
@@ -66,7 +68,7 @@ export default function FiltroPesquisavel({label,placeholder,value,options,onCha
     event.preventDefault();
     if(ativo===0){escolher('');return;}
     const escolhido=resultados[ativo-1];
-    if(escolhido!==undefined)escolher(escolhido);
+    if(escolhido!==undefined)escolher(escolhido.value);
    }
   }else if(event.key==='Escape'){
    event.preventDefault();
@@ -88,7 +90,7 @@ export default function FiltroPesquisavel({label,placeholder,value,options,onCha
       role="combobox" aria-autocomplete="list" aria-expanded={aberto}
       aria-controls={id+'-options'}
       aria-activedescendant={aberto?(id+'-choice-'+ativo):undefined}
-      value={aberto?pesquisa:value}
+      value={aberto?pesquisa:selecionado}
       placeholder={aberto?'Digite para pesquisar…':placeholder}
       onFocus={()=>{if(!aberto)abrir();}}
       onChange={e=>{setPesquisa(e.target.value);setAberto(true);setAtivo(0)}}
@@ -109,12 +111,12 @@ export default function FiltroPesquisavel({label,placeholder,value,options,onCha
       onClick={()=>escolher('')}>
       <span>{placeholder}</span>{!value&&<Check size={14}/>}
     </button>
-    {resultados.map((opcao,i)=><button type="button" key={opcao}
-      id={id+'-choice-'+(i+1)} role="option" aria-selected={opcao===value}
+    {resultados.map((opcao,i)=><button type="button" key={opcao.value}
+      id={id+'-choice-'+(i+1)} role="option" aria-selected={opcao.value===value}
       className={'rh28-option'+(ativo===i+1?' rh28-focused':'')}
       onMouseDown={e=>e.preventDefault()} onMouseEnter={()=>setAtivo(i+1)}
-      onClick={()=>escolher(opcao)}>
-      <span>{opcao}</span>{value===opcao&&<Check size={14}/>}
+      onClick={()=>escolher(opcao.value)}>
+      <span>{opcao.label}</span>{value===opcao.value&&<Check size={14}/>}
     </button>)}
     {contagem===0&&<div className="rh28-empty">Nenhum resultado para “{pesquisa}”.</div>}
     {contagem>resultados.length&&<div className="rh28-more">
