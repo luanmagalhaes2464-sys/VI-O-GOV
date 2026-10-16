@@ -12,18 +12,18 @@
 html,body,.rh-shell{background:#f7f9fc!important;color:#233248!important}
 .rh-shell .main-layout{background:#f7f9fc!important;transition:margin-left .23s ease}
 .rh-shell .content{background:#f7f9fc!important;color:#233248!important}
-.rh-shell .sidebar{width:244px!important;background:#12161c!important;border-right:1px solid #303845!important;transition:width .23s ease}
+.rh-shell .sidebar{width:244px!important;background:#596674!important;border-right:1px solid #77828e!important;transition:width .23s ease}
 .rh-shell .brand{position:relative;color:#f4f6f9!important}
 .rh-shell .brand-icon{flex:0 0 39px}
 .rh-shell .brand-name{min-width:0;white-space:nowrap;overflow:hidden}
 .rh-shell .brand-name strong{color:#f6f8fa!important}
 .rh-shell .brand-name strong span{color:#ef8392!important}
-.rh-shell .brand-name small,.rh-shell .nav-title{color:#97aabd!important}
-.rh-shell .nav-item{color:#c1cedd!important}
-.rh-shell .nav-item:hover{background:#222b36!important;color:#fff!important}
-.rh-shell .nav-item.active{background:#3c2832!important;color:#ff9fac!important}
-.rh-shell .topbar{background:#12161c!important;border-bottom:1px solid #303845!important}
-.rh-shell .breadcrumb{color:#b2bfce!important}
+.rh-shell .brand-name small,.rh-shell .nav-title{color:#dce3ea!important}
+.rh-shell .nav-item{color:#f2f5f8!important}
+.rh-shell .nav-item:hover{background:#707d8a!important;color:#fff!important}
+.rh-shell .nav-item.active{background:#ecdee2!important;color:#963747!important}
+.rh-shell .topbar{background:#596674!important;border-bottom:1px solid #77828e!important}
+.rh-shell .breadcrumb{color:#f2f5f8!important}
 .rh-shell .main-layout{margin-left:244px!important}
 .rh-shell :is(.rh-header-source,.edu-individual-source,.edu-dimension-links a,.edu-stat>a,.vg-card-open){color:#a93944}
 .rh-shell input,.rh-shell select,.rh-shell textarea{color-scheme:light}
@@ -32,10 +32,10 @@ html,body,.rh-shell{background:#f7f9fc!important;color:#233248!important}
 .rh-shell .sidebar-collapse-toggle{
  position:absolute;right:-14px;top:36px;z-index:25;
  display:grid;place-items:center;width:28px;height:28px;border-radius:50%;
- border:1px solid #475360;background:#1c2530;color:#e4edf7;
+ border:1px solid #8894a0;background:#475463;color:#ffffff;
  box-shadow:0 3px 9px #0002;cursor:pointer;
 }
-.rh-shell .sidebar-collapse-toggle:hover{background:#354254;border-color:#6e8297}
+.rh-shell .sidebar-collapse-toggle:hover{background:#6d7987;border-color:#ccd2d8}
 .rh-shell.sidebar-collapsed .sidebar{width:72px!important}
 .rh-shell.sidebar-collapsed .main-layout{margin-left:72px!important}
 .rh-shell.sidebar-collapsed .brand{padding:27px 16px 23px;justify-content:center}
@@ -62,3 +62,22 @@ html,body,.rh-shell{background:#f7f9fc!important;color:#233248!important}
 /* Conteúdo é claro também nos detalhes de RH, Educação e Visão Geral. */
 .rh-shell :is(.vg-page,.edu-page,.rh26-page,.rh-a-stack,.rhd-page){color:#233248}
 .rh-shell :is(.vg-card,.edu-panel,.edu-stat,.rh26-panel,.rh26-filter-box,.rh-a-panel,.rhd-panel){background:#fff}
+
+/* Identidade corporativa: Arial em vez de fontes pesadas e títulos excessivamente condensados. */
+html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table){
+ font-family:Arial,"Helvetica Neue",Helvetica,sans-serif!important;
+ letter-spacing:normal;
+}
+.rh-shell :is(h1,h2,h3,h4,.page-heading h1,.rh26-heading h1,.edu-heading h1,.vg-heading h1,.rh-a-head h2){
+ font-family:Arial,"Helvetica Neue",Helvetica,sans-serif!important;
+ font-weight:650!important;letter-spacing:-.25px!important;
+}
+.rh-shell :is(.edu-stat>strong,.vg-card-info strong,.rh26-cards strong,.rh26-top-card strong){
+ font-weight:700!important;letter-spacing:normal!important;
+}
+.rh-shell .sidebar .nav-item{font-weight:500!important;letter-spacing:normal!important}
+.rh-shell .sidebar .nav-item.active{font-weight:700!important}
+.rh-shell .nav-title{font-weight:600!important;letter-spacing:.4px!important}
+.rh-shell .brand strong{font-weight:700!important;letter-spacing:-.25px!important}
+.rh-shell .brand small{font-weight:600!important;letter-spacing:1px!important}
+.rh-shell .rh-bot-head{background:#9e4754!important}
