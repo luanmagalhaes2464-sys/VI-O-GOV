@@ -101,8 +101,8 @@
 @media(max-width:1040px){.rh-a-cards,.rh-a-fiscal-top{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-a-dist{grid-template-columns:135px 1fr 120px}.rh-a-dist small{display:none}}
 @media(max-width:600px){.rh-a-panel{padding:15px}.rh-a-head{flex-direction:column}.rh-a-count{align-self:flex-start}.rh-a-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-a-card button{min-height:166px}.rh-a-fiscal-top{grid-template-columns:1fr 1fr}.rh-a-fiscal-top strong{font-size:17px}.rh-a-dist{grid-template-columns:1fr 1fr}.rh-a-dist .rh-a-track{grid-column:1 / -1;grid-row:2}.rh-a-dist strong{text-align:right}.rh-bot-wrap{right:12px;bottom:12px}.rh-a-limit-markers{font-size:8px}}
 
-/* Três alertas — análise de quadro de cargos e referenciais legais */
-.rh-a-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+/* Quatro alertas integrados — legislação e triagem de duplicidades */
+.rh-a-cards{grid-template-columns:repeat(4,minmax(0,1fr))}
 .rh-a-pending{font-size:17px!important;white-space:nowrap}
 .rh-a-cargo-tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:13px 0}
 .rh-a-cargo-tools label{display:flex;align-items:center;gap:8px;max-width:460px;min-width:240px;flex:1;border:1px solid #dbe4ec;background:#fff;padding:9px 12px;border-radius:8px;color:#8b9eaa}
