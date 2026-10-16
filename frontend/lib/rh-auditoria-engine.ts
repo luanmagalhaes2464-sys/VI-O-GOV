@@ -91,9 +91,103 @@ function processar(linhas:Linha[],mes:string){
 const fontes=[
  {nome:'Edital de concurso 2023 (vagas oferecidas, não quadro legal)',url:'https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7BC4DCEAED-EB8C-D471-C5AD-B24AC3A2BD75%7D.pdf&cdLocal=18',tipo:'edital_nao_normativo'},
  {nome:'Plano de carreira do magistério citado pelo edital municipal',url:'https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7B22A80EE7-4AC0-AD31-6CBB-2BA3DEE2E82C%7D.pdf&cdLocal=18',tipo:'referencia_indireta'},
+ {nome:'Plano geral de cargos — Lei 3.066/2023 (Câmara de Viçosa)',url:'https://www.vicosa.mg.leg.br/imprensa/noticias/2023/12-2023/vereadores-aprovam-projetos-dos-servidores-municipais',tipo:'lei_base_referencia'},
+ {nome:'Lei 3.147/2025 — Motorista (cargo em extinção)',url:'https://cmvicosa.gwlegis.com.br/doc/norma-juridica/25/documento',tipo:'lei_alteradora'},
+ {nome:'Lei 3.161/2025 — Alteração no plano de cargos',url:'https://cmvicosa.gwlegis.com.br/doc/norma-juridica/41?texto=compilado',tipo:'lei_alteradora'},
+ {nome:'Lei 3.186/2025 — Revisão de vencimentos',url:'https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7B82BD1B3D-5B30-C576-ADC3-CCC8BCDDD751%7D.pdf&cdLocal=12',tipo:'lei_reajuste'},
  {nome:'Portal da Transparência de Viçosa',url:'https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml',tipo:'folha'}
 ];
-const fonte=fontes[2].url;
+const fonte=fontes[fontes.length-1].url;
+
+/**
+ * Triagem de múltiplos pagamentos na MESMA competência.
+ * Compara linhas da mesma matrícula, cargo e jornada (não cruza homônimos).
+ * O campo tipo_inclusao e as rubricas determinam se há repetição idêntica
+ * ou uma segunda inclusão regular a conferir. Não acusa irregularidade.
+ */
+function detectarDuplicidades(linhas:Linha[],mes:string){
+ const pessoas=new Map<string,Linha[]>();
+ for(const r of linhas){
+  if(cents(r.bruto)<=0)continue;
+  const key=JSON.stringify([String(r.matricula),String(r.nome||'').trim().toUpperCase(),r.cargo||'',r.jornada||'']);
+  const atuais=pessoas.get(key)||[];atuais.push(r);pessoas.set(key,atuais);
+ }
+ const encontrados:Array<Record<string,unknown>>=[];
+ function assinatura(r:Linha){
+  const itens=(Array.isArray(r.rubricas)?r.rubricas:[]).map(x=>[
+   String(x.codigo||'').padStart(4,'0'),String(x.tipo||'').toUpperCase(),
+   String(x.rubrica||'').trim().toUpperCase(),cents(x.valor)
+  ]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  return JSON.stringify([r.tipo_inclusao||'',cents(r.bruto),cents(r.descontos),cents(r.liquido),itens]);
+ }
+ function eventual(r:Linha){
+  return (Array.isArray(r.rubricas)?r.rubricas:[]).some(item=>{
+   const cod=String(item.codigo||'').padStart(4,'0');
+   const nome=String(item.rubrica||'').toUpperCase();
+   return EVENTUAIS.includes(categoria(cod,nome));
+  });
+ }
+ for(const rows of pessoas.values()){
+  if(rows.length<2)continue;
+  const porTipo=new Map<string,Linha[]>();
+  for(const row of rows){
+   const tipo=row.tipo_inclusao||'NÃO INFORMADO';
+   const lista=porTipo.get(tipo)||[];lista.push(row);porTipo.set(tipo,lista);
+  }
+  for(const [tipo,entradas] of porTipo){
+   if(entradas.length<2)continue;
+   const porAssinatura=new Map<string,Linha[]>();
+   for(const row of entradas){
+    const sig=assinatura(row),lista=porAssinatura.get(sig)||[];
+    lista.push(row);porAssinatura.set(sig,lista);
+   }
+   for(const duplicadas of porAssinatura.values()){
+    if(duplicadas.length<2)continue;
+    const primeiro=duplicadas[0];
+    encontrados.push({
+     id:'duplicidade-exata-'+mes+'-'+primeiro.matricula+'-'+tipo+'-'+primeiro.id,
+     tipo:'repeticao_identica',nivel:'revisar',
+     nome:primeiro.nome,matricula:String(primeiro.matricula),cargo:primeiro.cargo,
+     departamento:primeiro.departamento||'Não informado',tipo_inclusao:tipo,
+     quantidade:duplicadas.length,
+     ids_lancamentos:duplicadas.map(x=>x.id),
+     valor_unitario:reais(cents(primeiro.bruto)),
+     valor_em_revisao:reais(cents(primeiro.bruto)*(duplicadas.length-1)),
+     criterio:'Mesmo vínculo, tipo de inclusão, proventos, descontos e todas as rubricas idênticos em registros distintos.',
+     observacao:'Possível repetição do lançamento no arquivo da folha. Conferir identificadores de pagamento e origem da importação; não comprova dois depósitos.',
+     rubricas:Array.isArray(primeiro.rubricas)?primeiro.rubricas.map(x=>({
+      codigo:String(x.codigo||'').padStart(4,'0'),nome:String(x.rubrica||''),
+      categoria:categoria(String(x.codigo||'').padStart(4,'0'),String(x.rubrica||'').toUpperCase()),
+      valor:reais(cents(x.valor))
+     })).slice(0,25):[]
+    });
+   }
+   // Segunda inclusão ordinária só é suspeita se ambas parecem remuneração
+   // regular, não parcelas claramente identificadas como 13º/férias/retroativos.
+   if(tipo==='0001'){
+    const regulares=entradas.filter(x=>cents(x.salario_base)>0&&!eventual(x));
+    const assinaturas=new Set(regulares.map(assinatura));
+    if(regulares.length>=2&&assinaturas.size>1){
+     const primeiro=regulares[0];
+     encontrados.push({
+      id:'duplicidade-regular-'+mes+'-'+primeiro.matricula+'-'+primeiro.id,
+      tipo:'multiplas_inclusoes_regulares',nivel:'conferencia',
+      nome:primeiro.nome,matricula:String(primeiro.matricula),cargo:primeiro.cargo,
+      departamento:primeiro.departamento||'Não informado',tipo_inclusao:tipo,
+      quantidade:regulares.length,ids_lancamentos:regulares.map(x=>x.id),
+      valor_unitario:null,valor_em_revisao:null,
+      criterio:'Mais de uma inclusão de remuneração regular (0001) no mesmo vínculo e mês, sem verba eventual explicitamente identificada nas rubricas.',
+      observacao:'Pode decorrer de acerto de folha, retificação ou pagamento complementar. Conferir a justificativa e o demonstrativo de pagamento antes de qualquer conclusão.',
+      rubricas:[]
+     });
+    }
+   }
+  }
+ }
+ encontrados.sort((a,b)=>String(a.tipo).localeCompare(String(b.tipo))||Number(b.valor_em_revisao||0)-Number(a.valor_em_revisao||0));
+ return encontrados;
+}
+
 export function auditarFolha(linhas:Linha[],mes:string){
  const mesAnterior=Number(mes.slice(-2))>1?'2026-'+String(Number(mes.slice(-2))-1).padStart(2,'0'):null;
  const correntes=linhas.filter(x=>x.mes===mes);
@@ -136,14 +230,15 @@ export function auditarFolha(linhas:Linha[],mes:string){
   const valor=atual.totais.get(cat)||0,antes=anterior.totais.get(cat)||0;
   return {categoria:cat,atual:reais(valor),anterior:reais(antes),variacao:reais(valor-antes)};
  });
+ const duplicidades=detectarDuplicidades(correntes,mes);
  const resumo={
   mes,mes_anterior:mesAnterior,fonte,
   cobertura:{linhas:correntes.length,vinculos:atual.grupos.size,linhas_anterior:passadas.length},
   financeiro:{bruto:reais(bruto),bruto_anterior:mesAnterior?reais(brutoAnterior):null,
    variacao:mesAnterior?reais(bruto-brutoAnterior):null,rubricas},
   contagens:{inconsistencias_aritmeticas:atual.erros.length,variacoes_explicadas:explicados.length,
-   revisoes_base:revisoes.length,verificacoes_legais_automaticas:0},
-  inconsistencias:atual.erros.slice(0,40),explicados:explicados.slice(0,30),revisoes:revisoes.slice(0,30),
+   revisoes_base:revisoes.length,verificacoes_legais_automaticas:0,duplicidades_potenciais:duplicidades.length},
+  inconsistencias:atual.erros.slice(0,40),explicados:explicados.slice(0,30),revisoes:revisoes.slice(0,30),duplicidades:duplicidades.slice(0,100),
   nota:'A soma foi feita com todas as inclusões e rubricas da competência. Sem quadro de cargos e tabelas legais consolidados, não é possível concluir excesso ou remuneração ilegal.',
   politica:'Alerta aritmético distinto de conferência legal. Férias, 13º e indenizações são reconhecidos na composição.'
  };
@@ -158,10 +253,17 @@ export function auditarFolha(linhas:Linha[],mes:string){
   if(g.semDesligamento)c.vinculos_sem_desligamento_identificado+=1;
   if(g.temporario)c.vinculos_temporarios_identificados+=1;
  }
+ const legendaNorma=(cargo:string)=>{
+  const c=cargo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+  if(c==='MOTORISTA')return {situacao:'cargo_em_extincao',norma_quadro:'Lei 3.066/2023, alterada pela Lei 3.147/2025 — vagas desocupadas na publicação foram extintas; estoque ocupado em 2025 precisa ser confirmado.'};
+  if(c==='AUXILIAR DE SERVICO ESCOLAR'||c==='AUXILIAR DE EDUCACAO INFANTIL'||c==='ASSISTENTE ADMINISTRATIVO ESCOLAR'||/^PROFESSOR (I|II|III)$/.test(c))
+   return {situacao:'referencia_por_escola',norma_quadro:'Lei 1.368/1999 (Estatuto do Magistério), alterada pela Lei 3.003/2023 — parâmetro por escola/turma, não vagas municipais totais.'};
+  return {situacao:'sem_quadro_consolidado',norma_quadro:null};
+ };
  const cargos=[...gruposCargo.values()].sort((a,b)=>b.vinculos_folha-a.vinculos_folha||a.cargo.localeCompare(b.cargo,'pt-BR')).map(x=>({
-  ...x,vagas_legais:null,excedentes:null,situacao:'aguardando_quadro_legal_vigente',norma_quadro:null
+  ...x,vagas_legais:null,excedentes:null,...legendaNorma(x.cargo)
  }));
- const quadro={mes,cargos,grupos:cargos.length,excessos_confirmados:null,fonte_folha:fonte,
-  fontes_referencia:fontes,nota:'Os números representam vínculos observados na folha, não cargos legalmente ocupados. O quadro legal consolidado não está disponível. Não inferir excedentes.'};
+ const quadro={mes,cargos,grupos:cargos.length,referencias_identificadas:cargos.filter(x=>x.norma_quadro!=null).length,excessos_confirmados:null,fonte_folha:fonte,
+  fontes_referencia:fontes,nota:'Leis 3.066/2023, 3.147/2025 e 3.161/2025 acrescentadas à base documental. Vínculos na folha não comprovam ocupação de vagas efetivas. Falta o quantitativo consolidado vigente por cargo, vínculo, órgão e data. Nenhum excedente foi inferido.'};
  return {auditoria:resumo,quadro};
 }
