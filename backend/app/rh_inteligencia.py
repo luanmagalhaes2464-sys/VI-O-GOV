@@ -84,7 +84,7 @@ def alertas(mes: str = Query("2026-07", max_length=7)):
             )
             SELECT b.matricula,b.nome,b.cargo,b.jornada,b.departamento,b.valor,
                 r.n,r.mediana,COUNT(*) OVER() AS total_ocorrencias,
-                ROUND(b.valor/NULLIF(r.mediana,0),2) AS multiplicador
+                ROUND((b.valor/NULLIF(r.mediana,0))::numeric,2) AS multiplicador
             FROM base b JOIN referencia r USING(cargo,jornada)
             WHERE r.mediana>0 AND b.valor>=r.mediana*2.5
               AND b.valor-r.mediana>=2500
