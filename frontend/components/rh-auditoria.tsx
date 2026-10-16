@@ -7,15 +7,17 @@ type Rubrica={codigo:string;nome:string;categoria:string;valor:number};
 type Ocorrencia={id:string;nome:string;matricula:string;cargo:string;departamento:string;rubricas:Rubrica[];detalhes?:string;bruto:number;diferenca_bruto:number;diferenca_descontos:number;diferenca_liquido:number};
 type Revisao={id:string;nome:string;matricula:string;cargo:string;departamento:string;base_atual:number;base_anterior:number;diferenca:number;rubricas:Rubrica[];explicacao:string};
 type Parcela={categoria:string;atual:number;anterior:number;variacao:number};
-type Auditoria={mes:string;mes_anterior:string|null;fonte:string;cobertura:{linhas:number;vinculos:number};financeiro:{bruto:number;bruto_anterior:number|null;variacao:number|null;rubricas:Parcela[]};contagens:{inconsistencias_aritmeticas:number;variacoes_explicadas:number;revisoes_base:number;verificacoes_legais_automaticas:number};inconsistencias:Ocorrencia[];revisoes:Revisao[];nota:string;politica:string};
+type Duplicidade={id:string;tipo:string;nivel:string;nome:string;matricula:string;cargo:string;departamento:string;tipo_inclusao:string;quantidade:number;ids_lancamentos:number[];valor_unitario:number|null;valor_em_revisao:number|null;criterio:string;observacao:string;rubricas:Rubrica[]};
+type Auditoria={mes:string;mes_anterior:string|null;fonte:string;cobertura:{linhas:number;vinculos:number};financeiro:{bruto:number;bruto_anterior:number|null;variacao:number|null;rubricas:Parcela[]};contagens:{inconsistencias_aritmeticas:number;variacoes_explicadas:number;revisoes_base:number;verificacoes_legais_automaticas:number;duplicidades_potenciais:number};inconsistencias:Ocorrencia[];revisoes:Revisao[];duplicidades:Duplicidade[];nota:string;politica:string};
 type Cargo={cargo:string;jornada:string;vinculos_folha:number;vinculos_sem_desligamento_identificado:number;vinculos_temporarios_identificados:number;vagas_legais:number|null;excedentes:number|null;situacao:string;norma_quadro:string|null};
-type Quadro={mes:string;cargos:Cargo[];grupos:number;excessos_confirmados:number|null;fonte_folha:string;fontes_referencia:{nome:string;url:string;tipo:string}[];nota:string};
+type Quadro={mes:string;cargos:Cargo[];grupos:number;referencias_identificadas?:number;excessos_confirmados:number|null;fonte_folha:string;fontes_referencia:{nome:string;url:string;tipo:string}[];nota:string};
 type Fiscal={percentual_dtp_executivo:number|null;situacao:string;quadrimestre:number;exercicio:number;documentacao:string;fonte:string;erro?:string|null};
-type Tipo='base'|'cargos'|'valor';
+type Tipo='base'|'cargos'|'valor'|'duplicidade';
 const cards:[Tipo,string,string,'warning'|'neutral'|'critical'][]=[
  ['base','Mudança de vencimento-base','Alterações expressivas entre competências','warning'],
  ['cargos','Quantidade de servidores por cargo','Vínculos na folha × cargos autorizados por lei','neutral'],
- ['valor','Divergência de valor','Rubricas conciliadas; pisos e tabelas a validar','critical']
+ ['valor','Divergência de valor','Rubricas conciliadas; pisos e tabelas a validar','critical'],
+ ['duplicidade','Pagamentos possivelmente duplicados','Inclusões repetidas para a mesma matrícula e mês','warning']
 ];
 function rubricasDetalhe(items:Rubrica[]){
  return <div className="rh-a-rubricas"><div className="rh-a-rub-title">Rubricas do pagamento</div>
@@ -64,6 +66,7 @@ export default function RHAuditoria({mes}:{mes:string}){
   (c.cargo+' '+c.jornada).toLocaleLowerCase('pt-BR').includes(filtroCargo.trim().toLocaleLowerCase('pt-BR')))||[],[quadro,filtroCargo]);
  const nBase=d?.contagens.revisoes_base;
  const nValor=d?.contagens.inconsistencias_aritmeticas;
+ const nDup=d?.contagens.duplicidades_potenciais;
  const totalEventos=d?.financeiro.rubricas.filter(r=>r.categoria!=='Demais rubricas').reduce((s,r)=>s+r.atual,0)||0;
  return <div className="rh-a-stack">
  <section className="rh-a-panel">
@@ -76,10 +79,10 @@ export default function RHAuditoria({mes}:{mes:string}){
   {erro&&<div className="rh-a-error"><AlertCircle size={15}/>{erro}</div>}
   <div className="rh-a-cards">{cards.map(([kind,titulo,descricao,tone])=><article className={'rh-a-card '+tone+(visivel===kind?' active':'')} key={kind}>
    <button type="button" aria-expanded={visivel===kind} onClick={()=>{setVisivel(v=>v===kind?null:kind);setLinha('')}}>
-    <div className="rh-a-card-row"><span>{kind==='base'?<Scale size={16}/>:kind==='cargos'?<Users size={16}/>:<AlertCircle size={16}/>}</span>
-     <b className={kind==='cargos'?'rh-a-pending':''}>{kind==='cargos'?'A conferir':loading?'…':num(kind==='base'?nBase:nValor)}</b></div>
+    <div className="rh-a-card-row"><span>{kind==='base'?<Scale size={16}/>:kind==='cargos'?<Users size={16}/>:kind==='duplicidade'?<Wallet size={16}/>:<AlertCircle size={16}/>}</span>
+     <b>{loading?'…':num(kind==='base'?nBase:kind==='cargos'?quadro?.grupos:kind==='duplicidade'?nDup:nValor)}</b></div>
     <h3>{titulo}</h3><p>{descricao}</p>
-    <small>{kind==='cargos'?'▸ Consultar cargos e legislação':kind==='valor'&&nValor===0?'✓ Soma da folha conciliada':'▸ Ver registros'}</small>
+    <small>{kind==='cargos'?'▸ Consultar vínculos e legislação':kind==='valor'&&nValor===0?'✓ Soma da folha conciliada':kind==='duplicidade'&&nDup===0?'✓ Sem repetição detectada':'▸ Ver registros'}</small>
    </button></article>)}</div>
   {visivel&&<div className="rh-a-expanded">
    <div className="rh-a-expanded-head"><h3>{cards.find(x=>x[0]===visivel)?.[1]}</h3>
@@ -96,7 +99,7 @@ export default function RHAuditoria({mes}:{mes:string}){
     {Number(nBase||0)>30&&<p className="rh-a-note">Mostrando os 30 primeiros registros do total de {num(nBase)}.</p>}
    </>}
    {visivel==='cargos'&&<>
-    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> Para alguns cargos da Educação encontramos parâmetros reais no Estatuto do Magistério, definidos por escola e número de turmas. A quantidade de cargos autorizados no quadro geral ainda exige lei consolidada por órgão, cargo e vigência, além das vacâncias. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
+    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> O quadro agora relaciona a Lei 3.066/2023 e alterações de 2025, o Estatuto do Magistério e a regra de extinção de vagas de Motorista. Há {num(quadro?.referencias_identificadas)} combinações com referência legal identificada, mas os limites numéricos de vagas continuam pendentes de quadro consolidado, vínculos e vacâncias por órgão. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
     {quadroErro&&<p className="rh-a-error"><AlertCircle size={14}/>{quadroErro}</p>}
     <div className="rh-a-cargo-tools"><label><Search size={15}/><input type="search" aria-label="Pesquisar cargo e jornada" value={filtroCargo} onChange={e=>setFiltroCargo(e.target.value)} placeholder="Pesquisar cargo ou jornada..."/></label>
      <small>{num(quadro?.grupos)} combinações de cargo e jornada na folha</small></div>
@@ -104,7 +107,7 @@ export default function RHAuditoria({mes}:{mes:string}){
       <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Vagas autorizadas</th><th>Excedentes</th></tr></thead>
       <tbody>{cargosVisiveis.slice(0,50).map((c,i)=><tr key={c.cargo+'-'+c.jornada+'-'+i}>
         <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
-        <td>{num(c.vinculos_folha)}</td><td>{referencialEscolar(c.cargo)?<span className="rh-a-legal-school">Regra por escola ↓</span>:<span className="rh-a-no-reference">A validar</span>}</td>
+        <td>{num(c.vinculos_folha)}</td><td>{c.situacao==='referencia_por_escola'?<span title={c.norma_quadro||''} className="rh-a-legal-school">Regra por escola ↓</span>:c.situacao==='cargo_em_extincao'?<span title={c.norma_quadro||''} className="rh-a-legal-school">Motorista · extinção de vagas</span>:<span className="rh-a-no-reference" title="Quadro total ainda não consolidado">A validar</span>}</td>
         <td><span className="rh-a-no-reference">—</span></td>
       </tr>)}</tbody>
     </table></div>
@@ -129,7 +132,27 @@ export default function RHAuditoria({mes}:{mes:string}){
       <p className="rh-a-note"><b>Comparação regional:</b> o IBGE MUNIC informa o total de trabalhadores nas prefeituras por vínculo, mas não define quantidade permitida para cada cargo. Uma média por habitante deve ser apresentada como indicador comparativo, sem ser usada para acusar excesso de servidores.</p>
     </div>
     <div className="rh-a-doclinks">{quadro?.fontes_referencia.map(x=><a key={x.url} href={x.url} rel="noopener noreferrer" target="_blank">{x.nome}<ExternalLink size={12}/></a>)}</div>
+    <p className="rh-a-note"><b>Lei localizada não é limite confirmado.</b> No caso de Motorista, a Lei 3.147/2025 extinguiu vagas que estavam desocupadas em maio/2025; não é correto usar o número da lei anterior como teto atual. A contagem de {num(quadro?.grupos)} é de combinações de cargo e jornada, não de cargos criados por lei.</p>
     <p className="rh-a-note">O campo excedentes fica em branco enquanto não houver comparação documental validada. Pagamentos após desligamento e vínculos temporários precisam ser distinguidos de cargos efetivos ocupados.</p>
+   </>}
+   {visivel==='duplicidade'&&<>
+    <p className="rh-a-note"><b>Triagem de duplicidades na competência {mes.slice(-2)}/2026:</b> compara a mesma matrícula, cargo, jornada e tipo de inclusão. Verifica lançamentos integralmente iguais (inclusive rubricas) e inclusões regulares múltiplas sem verbas eventuais identificadas. <b>Não é prova de dois depósitos ou fraude.</b></p>
+    {nDup===0&&<p className="rh-a-ok"><CheckCircle2 size={16}/> Nenhuma repetição detectada pelos critérios documentais nesta competência.</p>}
+    {d?.duplicidades?.map(x=><div className="rh-a-person" key={x.id}>
+     <button type="button" onClick={()=>setLinha(v=>v===x.id?'':x.id)}>
+      <span><strong>{x.nome}</strong><small>{x.cargo} · matrícula {x.matricula} · {x.departamento}</small></span>
+      <span className="rh-a-value">{x.valor_em_revisao==null?x.quantidade+' inclusões':brl(x.valor_em_revisao)}</span>
+      {linha===x.id?<ChevronUp size={15}/>:<ChevronDown size={15}/>}
+     </button>
+     {linha===x.id&&<div className="rh-a-person-detail">
+      <p><b>{x.tipo==='repeticao_identica'?'Lançamentos idênticos':'Inclusões regulares múltiplas'}</b> · {x.quantidade} ocorrências · tipo de inclusão {x.tipo_inclusao} · IDs {x.ids_lancamentos.join(', ')}.</p>
+      <p>{x.criterio}</p><p>{x.observacao}</p>
+      {x.valor_unitario!=null&&<p>Valor bruto de cada lançamento repetido: <b>{brl(x.valor_unitario)}</b>. Valor adicional em revisão (não confirmado como pagamento indevido): <b>{brl(x.valor_em_revisao)}</b>.</p>}
+      {x.rubricas.length>0&&rubricasDetalhe(x.rubricas)}
+     </div>}
+    </div>)}
+    {Number(nDup||0)>100&&<p className="rh-a-note">Exibindo as primeiras 100 ocorrências de {num(nDup)}.</p>}
+    <p className="rh-a-note">Matrículas diferentes com nomes iguais <b>não</b> são classificadas como pagamentos duplicados: podem representar homônimos ou acumulações permitidas. A confirmação exige o demonstrativo bancário e os atos funcionais.</p>
    </>}
    {visivel==='valor'&&<>
     <p className="rh-a-note"><b>Verificação matemática:</b> o sistema soma proventos e descontos de cada inclusão e confere o total bruto e líquido. Isso não significa que o salário de todos esteja legalmente correto: pisos, progressões e tabelas de vencimentos ainda precisam ser vinculados à legislação.</p>
