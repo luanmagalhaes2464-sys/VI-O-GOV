@@ -53,7 +53,7 @@ export default function Home(){
     const bruto=carregando?'…':dados?.disponivel?moeda(data?.bruto):'—';
     const departamento=data?.departamentos?.[0];
     const destino=departamento?`/rh?mes=${encodeURIComponent(mes)}&departamento=${encodeURIComponent(departamento)}`:`/rh?mes=${encodeURIComponent(mes)}`;
-    return <Link key={s.slug} href={destino} className="vg-card vg-card-clickable" style={{borderTopColor:c}} aria-label={`Abrir Recursos Humanos da ${s.nome} em ${mes}`}>
+    return <Link key={s.slug} href={destino} className="vg-card vg-card-clickable" style={{borderTopColor:c,'--vg-color':c} as React.CSSProperties} aria-label={`Abrir Recursos Humanos da ${s.nome} em ${mes}`}>
      <div className="vg-card-head">
       <span className="vg-card-icon" style={{backgroundColor:c+'16',color:c}}><Icon size={21}/></span>
       <span className="vg-card-tag">{s.sigla}</span>
