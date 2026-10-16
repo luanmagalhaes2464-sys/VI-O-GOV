@@ -154,3 +154,13 @@
 .rh-a-school-breakdown>.rh-a-cargo-wrap{margin-top:12px}
 .rh-a-cargo-table th:nth-child(3){min-width:160px}
 .rh-a-cargo-table th:nth-child(4){min-width:110px}
+
+
+/* Agente municipal único, flutuante em todas as páginas */
+.rh-bot-logo{font-size:20px;font-weight:800;font-family:Inter,Arial,sans-serif;background:#b03545!important;color:#fff!important;border-radius:11px!important}
+.rh-bot-trigger{background:#a83d49!important;box-shadow:0 9px 26px #a83d4933!important}
+.rh-bot-head{background:#a83d49!important}
+.rh-bot-context{border-top:1px solid #edf1f4;padding:9px 14px;background:#fafbfc}
+.rh-bot-context label{display:flex;align-items:center;gap:9px;font-size:10px;color:#667e90;justify-content:space-between}
+.rh-bot-context select{border:1px solid #dbe5e9;border-radius:6px;background:#fff;padding:6px 8px;color:#425e73;font-size:10px}
+.rh-bot-feed{scroll-behavior:smooth}
