@@ -4,7 +4,6 @@ import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart
 import {brl,num} from '../../lib/api';
 import RHExploracao from '../../components/rh-exploracao';
 import RHAuditoria from '../../components/rh-auditoria';
-import './rh-auditoria.css';
 import FiltroPesquisavel from '../../components/filtro-pesquisavel';
 type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
