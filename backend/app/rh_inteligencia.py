@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 import unicodedata
 from datetime import date
 from decimal import Decimal, InvalidOperation
@@ -63,7 +64,7 @@ def alertas(mes: str = Query("2026-07", max_length=7)):
                     GROUP BY matricula,nome,cargo,jornada
                 )
                 SELECT a.matricula,a.nome,a.cargo,a.departamento,a.valor AS valor_atual,
-                  p.valor AS valor_anterior, a.valor-p.valor AS diferenca,
+                  p.valor AS valor_anterior, a.valor-p.valor AS diferenca,COUNT(*) OVER() AS total_ocorrencias,
                   ROUND((a.valor-p.valor)*100 / NULLIF(p.valor,0),1) AS variacao
                 FROM atual a JOIN anterior p USING(matricula,nome,cargo,jornada)
                 WHERE p.valor>=1000 AND a.valor>=p.valor*1.6 AND (a.valor-p.valor)>=1500
@@ -82,7 +83,8 @@ def alertas(mes: str = Query("2026-07", max_length=7)):
                 GROUP BY cargo,jornada HAVING COUNT(*)>=12
             )
             SELECT b.matricula,b.nome,b.cargo,b.jornada,b.departamento,b.valor,
-                r.n,r.mediana,ROUND(b.valor/NULLIF(r.mediana,0),2) AS multiplicador
+                r.n,r.mediana,COUNT(*) OVER() AS total_ocorrencias,
+                ROUND(b.valor/NULLIF(r.mediana,0),2) AS multiplicador
             FROM base b JOIN referencia r USING(cargo,jornada)
             WHERE r.mediana>0 AND b.valor>=r.mediana*2.5
               AND b.valor-r.mediana>=2500
@@ -131,7 +133,8 @@ def alertas(mes: str = Query("2026-07", max_length=7)):
             "sem_base": int(kpis["sem_base"]), "liquido_superior_bruto": int(kpis["liquido_superior"])
         },
         "resumo": {
-            "variacoes": len(diferencas), "comparacoes_pares": len(pares),
+            "variacoes": int(diferencas[0]["total_ocorrencias"]) if diferencas else 0,
+            "comparacoes_pares": int(pares[0]["total_ocorrencias"]) if pares else 0,
             "qualidade": int(bool(kpis["sem_base"])), "total": len(achados),
             "resultados_limitados": "Até 35 ocorrências por categoria; não é contagem exaustiva."
         },
@@ -172,7 +175,7 @@ def interpretar_rgf(items):
     return candidatos[0] if len(diferentes) == 1 and candidatos else None
 
 @lru_cache(maxsize=6)
-def buscar_rgf(ano: int, periodo: int):
+def buscar_rgf(ano: int, periodo: int, _janela_6h: int):
     params = {
         "an_exercicio": ano, "in_periodicidade": "Q", "nr_periodo": periodo,
         "co_tipo_demonstrativo": "RGF", "no_anexo": "RGF-Anexo 01",
@@ -199,7 +202,7 @@ def buscar_rgf(ano: int, periodo: int):
 @router.get("/fiscal")
 def fiscal(ano: int = Query(2026, ge=2024, le=2026), periodo: int = Query(2, ge=1, le=3)):
     # A declaração do período mais recente pode não ter sido homologada.
-    resultado = buscar_rgf(ano, periodo)
+    resultado = buscar_rgf(ano, periodo, int(time.time() // (6 * 3600)))
     candidato = resultado["apurado"]
     pct = candidato["valor"] if candidato else None
     faixa = None
