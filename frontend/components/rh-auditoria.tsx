@@ -73,7 +73,7 @@ export default function RHAuditoria({mes}:{mes:string}){
   <div className="rh-a-head">
    <div><div className="rh-a-eyebrow"><ShieldAlert size={15}/> ALERTAS DE INCONSISTÊNCIA</div>
    <h2>Situações para a Prefeitura investigar</h2>
-   <p>Comparação fundamentada na folha de {mes.slice(-2)}/2026 e nas rubricas reais. Os valores legais só são validados quando há uma norma aplicável ao cargo, jornada e competência.</p></div>
+   </div>
    <div className="rh-a-count"><span>CONFERÊNCIAS DE VENCIMENTO-BASE</span><strong>{loading?'…':num(nBase)}</strong></div>
   </div>
   {erro&&<div className="rh-a-error"><AlertCircle size={15}/>{erro}</div>}
@@ -183,11 +183,11 @@ export default function RHAuditoria({mes}:{mes:string}){
    <article><span>Verbas eventuais identificadas</span><strong>{loading||!d?'—':brl(totalEventos)}</strong><small>13º, férias, retroativos e indenizações</small></article>
    <article><span>DTP/RCL no RGF do Executivo</span><strong>{pct(f?.percentual_dtp_executivo)}</strong><small>{f?.percentual_dtp_executivo==null?'Aguardando fonte homologada':'RGF '+periodo+'º quadrimestre de 2026'}</small></article>
   </div>
-  {d&&<div className="rh-a-distribution"><div className="rh-a-dist-head"><h3>De onde vem o valor da folha?</h3><p>Classificação real dos proventos por rubrica, sem estimar despesa fiscal</p></div>
-   {d.financeiro.rubricas.map((r,i)=><div className="rh-a-dist" key={r.categoria}>
+  {d&&<div className="rh-a-distribution"><div className="rh-a-dist-head"><h3>De onde vem o valor da folha?</h3><p>Clique em uma categoria para abrir nomes e rubricas em outra aba</p></div>
+   {d.financeiro.rubricas.map((r,i)=><a className="rh-a-dist rh-a-dist-link" key={r.categoria} href={"/rh/rubricas?mes="+encodeURIComponent(mes)+"&categoria="+encodeURIComponent(r.categoria)} target="_blank" rel="noopener noreferrer" title={"Abrir detalhamento de "+r.categoria+" em outra aba"}>
     <span>{r.categoria}</span><div className="rh-a-track"><div style={{width:(d.financeiro.bruto>0?100*r.atual/d.financeiro.bruto:0)+'%',background:['#e5a13a','#a886d7','#db7480','#729db8','#0b827f'][i]}}/></div>
     <strong>{brl(r.atual)}</strong>{d.mes_anterior&&<small>{r.variacao>=0?'+':''}{brl(r.variacao)} vs. anterior</small>}
-   </div>)}
+   </a>)}
   </div>}
   {d?.mes==='2026-07'&&<p className="rh-a-insight"><CheckCircle2 size={18}/> Em julho, a rubrica <b>adiantamento de 13º</b> representa parte expressiva da diferença frente a junho. A composição da folha explica o crescimento melhor do que uma comparação simples entre totais.</p>}
   <div className="rh-a-fiscal-notice"><Info size={17}/><span>O RGF usa Despesa Total com Pessoal em 12 meses e Receita Corrente Líquida ajustada. Ele não pode ser calculado diretamente somando a remuneração nominal da folha. O percentual oficial fornece contexto, enquanto os gráficos acima explicam os pagamentos efetivos.</span></div>
