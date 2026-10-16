@@ -11,9 +11,9 @@ export async function GET(req:NextRequest){
  try{
   const autorizado=temCredencial(req);
   const docs=await knowledgePool().query(
-   `SELECT id::text,nome_arquivo,categoria,ano_referencia,fonte,publico,criado_em,
-     tamanho_bytes,(SELECT COUNT(*)::int FROM vico_ia_trechos WHERE documento_id=id) trechos
-    FROM vico_ia_documentos WHERE publico=true OR $1::boolean=true
+   `SELECT d.id::text,d.nome_arquivo,d.categoria,d.ano_referencia,d.fonte,d.publico,d.criado_em,
+     d.tamanho_bytes,(SELECT COUNT(*)::int FROM vico_ia_trechos t WHERE t.documento_id=d.id) trechos
+    FROM vico_ia_documentos d WHERE d.publico=true OR $1::boolean=true
     ORDER BY criado_em DESC LIMIT 150`,[autorizado]);
   return NextResponse.json({documentos:docs.rows,autorizado,modelo_ativo:Boolean(process.env.GEMINI_API_KEY),
    importacao_habilitada:Boolean(process.env.VICO_DOC_UPLOAD_KEY),armazenamento:'Neon PostgreSQL'},
@@ -28,7 +28,7 @@ export async function POST(req:NextRequest){
  try{
   const data=await req.formData();
   const item=data.get('arquivo');
-  if(!(item instanceof File))return erro('Selecione um arquivo.',422);
+  if(!item||typeof item==='string')return erro('Selecione um arquivo.',422);
   if(item.size<1||item.size>5*1024*1024)return erro('Limite de 5 MB por arquivo.',413);
   const nome=item.name.slice(0,220).replace(/[\\/]/g,'_');
   const ext=extensao(nome);
