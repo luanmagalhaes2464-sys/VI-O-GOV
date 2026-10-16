@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {BookOpen,Building2,CalendarDays,ClipboardList,ExternalLink,GraduationCap,Info,MapPin,Search,School,Users} from 'lucide-react';
+import {BookOpen,Building2,CalendarDays,ClipboardList,ExternalLink,GraduationCap,MapPin,Search,School,Users} from 'lucide-react';
 import {indicadoresEducacao,unidadesEscolares} from '../../lib/educacao-dados';
 import EducacaoDimensionamento from '../../components/educacao-dimensionamento';
 import './educacao.css';
@@ -47,7 +47,6 @@ export default function Educacao(){
     <p>Panorama das escolas, matrículas, professores e turmas da rede municipal de Viçosa–MG. Cada indicador informa sua competência e origem.</p></div>
    <span className="edu-location"><MapPin size={14}/> Viçosa · MG</span>
   </div>
-  <div className="edu-reference"><Info size={16}/><span><b>Referências distintas:</b> escolas, alunos e turmas do Censo Escolar 2025; professores por cargo extraídos da folha de RH de 2026. A Câmara mencionou 19 escolas em outra referência de 2025, enquanto a listagem censitária consultada apresenta 18 unidades municipais ativas. Essa diferença ainda requer conciliação.</span></div>
   <div className="edu-metrics">
    {indicadores.map(i=><article className="edu-stat" key={i.id}>
     <div className="edu-stat-top"><span>{i.titulo}</span><span className="edu-stat-icon">{i.icon}</span></div>
