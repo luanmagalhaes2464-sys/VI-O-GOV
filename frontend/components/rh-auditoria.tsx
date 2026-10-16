@@ -95,6 +95,8 @@ export default function RHAuditoria({mes}:{mes:string}){
          <td>{num(c.vinculos_folha)}</td>
          <td>{referencia?.valor!=null?
            <span className="rh-a-school-estimate" title={referencia.descricao}>{num(referencia.valor)} <small>calculado · 2025</small></span>:
+           referencia?.regra?
+           <span className="rh-a-rule" title={referencia.descricao}>{referencia.regra}</span>:
            <span className="rh-a-muted" title={referencia?.descricao||'Sem parâmetro escolar aplicável'}>—</span>}</td>
          <td>{c.vagas_legais!=null?num(c.vagas_legais):c.situacao==='cargo_em_extincao'?<span className="rh-a-no-reference" title={c.norma_quadro||''}>Extinção parcial</span>:<span className="rh-a-no-reference">A validar</span>}</td>
          <td>{c.excedentes!=null?num(c.excedentes):<span className="rh-a-muted">—</span>}</td>
