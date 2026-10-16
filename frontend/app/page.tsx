@@ -1,47 +1,77 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {Users,Wallet,ArrowUpRight,ExternalLink,Info,CalendarDays,CheckCircle2,AlertTriangle} from 'lucide-react';
-import {api,brl,num} from '../lib/api';
-type Resumo={
- mes:string;disponivel:boolean;matriculas:number;nomes_distintos:number;
- bruto:number;liquido:number;descontos:number;quinquenio:number;
- bruto_portal:number;divergencia:number;conciliado:boolean;nota:string;fonte:string;
-};
-const fonte='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
+import {
+  ArrowUpRight,Building2,CalendarDays,Clapperboard,GraduationCap,HeartHandshake,HeartPulse,
+  Landmark,Leaf,Lightbulb,MapPinned,RefreshCcw,Sprout,Users,Wallet,Wrench,Info
+} from 'lucide-react';
+import {secretarias} from '../lib/secretarias';
+import './visao-geral.css';
+
+type ResumoSecretaria={slug:string;nome:string;curto:string;sigla:string;vinculos:number|null;registros:number|null;bruto:number|null;situacao:string};
+type Painel={mes:string;disponivel:boolean;secretarias:ResumoSecretaria[];outros:{departamento:string;vinculos:number;bruto:number}[];total_bruto_da_folha:number;metodologia:string;ressalva:string;fonte:string;aviso?:string};
+const nomes=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
+const cores=['#4375c2','#a35a81','#13877c','#b77c22','#795dba','#347da4','#bf4553','#68844b','#8a668f','#b95e48','#496db1','#4c8a6d'];
+const icones=[Landmark,Building2,HeartHandshake,Sprout,Clapperboard,Lightbulb,GraduationCap,Wallet,Wrench,HeartPulse,MapPinned,Leaf];
+const numero=(n:number|null|undefined)=>n==null?'—':new Intl.NumberFormat('pt-BR').format(n);
+const moeda=(n:number|null|undefined)=>n==null?'—':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
 export default function Home(){
- const [r,setR]=useState<Resumo|null>(null);
+ const [mes,setMes]=useState('2026-07');
+ const [dados,setDados]=useState<Painel|null>(null);
+ const [carregando,setCarregando]=useState(true);
  const [erro,setErro]=useState('');
- useEffect(()=>{let ativo=true;api<Resumo>('/api/v1/rh/folha/resumo?mes=2026-01').then(x=>{if(ativo){setR(x.data);setErro(x.error||'')}});return()=>{ativo=false}},[]);
- return <div className="rh-home">
-  <div className="rh-kicker">VIÇO GOV / VISÃO GERAL</div>
-  <h1>Recursos Humanos da Prefeitura</h1>
-  <p className="rh-subtitle">Folha de janeiro de 2026 da Prefeitura Municipal de Viçosa/MG — dados individuais processados e armazenados no Neon.</p>
-  <div className="rh-live-source"><CalendarDays size={16}/><strong>Referência: janeiro/2026</strong><span>Fonte: PDF da folha municipal, 2.151 páginas</span><a href={fonte} target="_blank" rel="noopener noreferrer">Portal oficial <ExternalLink size={13}/></a></div>
-  <div className="rh-home-figures">
-   <article className="rh-home-figure rh-home-figure-people">
-     <span className="rh-home-tag"><Users size={18}/> MATRÍCULAS NA FOLHA</span>
-     <strong>{r?.disponivel?num(r.matriculas):'—'}</strong>
-     <h2>Registros identificados no mês</h2>
-     <p>{r?.disponivel?`${num(r.nomes_distintos)} nomes distintos, não necessariamente ${num(r.nomes_distintos)} pessoas únicas. A folha pode incluir desligados, estagiários e agentes políticos.`:'Consultando a base de RH no Neon.'}</p>
-     <Link href="/rh">Explorar pessoas e vínculos <ArrowUpRight size={16}/></Link>
-   </article>
-   <article className="rh-home-figure rh-home-figure-payroll">
-     <span className="rh-home-tag"><Wallet size={18}/> VALOR BRUTO DAS MATRÍCULAS</span>
-     <strong>{brl(r?.bruto)}</strong>
-     <h2>Total extraído do PDF · janeiro/2026</h2>
-     <p>Remuneração bruta calculada a partir das páginas da folha. Descontos e valores líquidos não são incluídos nesse total bruto.</p>
-     <Link href="/rh">Analisar remunerações <ArrowUpRight size={16}/></Link>
-   </article>
+ useEffect(()=>{
+  let ativo=true;setErro('');setCarregando(true);setDados(null);
+  fetch('/api/visao-geral/secretarias?mes='+mes,{cache:'no-store'})
+   .then(async r=>{const obj=await r.json();if(!r.ok)throw new Error(obj.error||'Consulta não disponível');return obj as Painel})
+   .then(data=>{if(ativo)setDados(data)})
+   .catch(e=>{if(ativo)setErro(e instanceof Error?e.message:'Falha ao carregar a folha')})
+   .finally(()=>{if(ativo)setCarregando(false)});
+  return()=>{ativo=false};
+ },[mes]);
+ const porSlug=useMemo(()=>new Map((dados?.secretarias||[]).map(s=>[s.slug,s])),[dados]);
+ const outrosBruto=dados?.outros.reduce((t,x)=>t+x.bruto,0)||0;
+ return <div className="vg-page">
+  <div className="vg-heading">
+   <div><div className="vg-eyebrow">VIÇO GOV / VISÃO GERAL</div>
+    <h1>Panorama das Secretarias</h1>
+    <p>Servidores identificados e remuneração bruta mensal, com base na folha pública da Prefeitura de Viçosa/MG.</p>
+   </div>
+   <label className="vg-month"><CalendarDays size={17}/><span>Competência</span>
+    <select value={mes} aria-label="Selecionar competência da folha" onChange={e=>setMes(e.target.value)}>
+     {nomes.map((n,i)=><option key={n} value={'2026-'+String(i+1).padStart(2,'0')}>{n} / 2026</option>)}
+    </select>
+   </label>
   </div>
-  {r?.disponivel&&<section className="rh-overview-stats">
-    <div><span>Valor líquido da folha PDF</span><strong>{brl(r.liquido)}</strong></div>
-    <div><span>Descontos na folha PDF</span><strong>{brl(r.descontos)}</strong></div>
-    <div><span>Rubrica de quinquênio (105)</span><strong>{brl(r.quinquenio)}</strong></div>
-  </section>}
-  {r?.disponivel&&r.divergencia>0&&<div className="rh-reconciliation"><AlertTriangle size={20}/><div><b>Diferença em relação ao total do portal</b><p>O PDF enviado soma {brl(r.bruto)}, mas o portal exibe {brl(r.bruto_portal)} para janeiro/2026: diferença de {brl(r.divergencia)}. Mantemos os dois valores separados até haver conciliação. O cálculo interno do PDF confere para bruto, descontos e líquido.</p></div></div>}
-  {erro&&<div className="rh-import-error"><Info size={17}/>A API ainda não respondeu: {erro}. O dashboard evita apresentar estimativas como dados de 2026.</div>}
-  <div className="rh-overview-next"><div><h2>Dashboard detalhado de RH</h2><p>Filtros de secretaria, local, cargo, vínculo, jornada, faixa salarial e consulta por nome ou matrícula.</p></div><Link href="/rh">Abrir análise da folha <ArrowUpRight size={17}/></Link></div>
-  <div className="rh-home-note"><CheckCircle2 size={17}/><span>As páginas do PDF foram processadas para janeiro/2026. Fevereiro a julho serão habilitados conforme as bases oficiais forem obtidas. Ter opção de exportar PDF no portal não garante uma API pública acessível.</span></div>
+  {erro&&<div className="vg-error"><Info size={17}/>{erro}<button type="button" onClick={()=>{setMes(mes);setCarregando(true);window.location.reload()}} aria-label="Tentar novamente"><RefreshCcw size={15}/> Recarregar</button></div>}
+  {dados&&!dados.disponivel&&<div className="vg-error"><Info size={18}/>{dados.aviso}</div>}
+  <div className="vg-grid">
+   {secretarias.map((s,i)=>{
+    const data=porSlug.get(s.slug);
+    const c=cores[i%cores.length],Icon=icones[i%icones.length];
+    const valor=carregando?'…':dados?.disponivel?numero(data?.vinculos):'—';
+    const bruto=carregando?'…':dados?.disponivel?moeda(data?.bruto):'—';
+    return <article key={s.slug} className="vg-card" style={{borderTopColor:c}}>
+     <div className="vg-card-head">
+      <span className="vg-card-icon" style={{backgroundColor:c+'16',color:c}}><Icon size={21}/></span>
+      <span className="vg-card-tag">{s.sigla}</span>
+     </div>
+     <h2>{s.nome}</h2>
+     <div className="vg-card-info">
+      <div><span><Users size={14}/> Vínculos na folha</span><strong>{valor}</strong></div>
+      <div><span><Wallet size={14}/> Remuneração bruta</span><strong>{bruto}</strong></div>
+     </div>
+     <div className="vg-card-footer"><span>{mes.slice(5,7)}/{mes.slice(0,4)}</span>
+      <Link href={s.slug==='educacao-esportes'?'/educacao':'/rh'}>{s.slug==='educacao-esportes'?'Abrir Educação':'Consultar RH'}<ArrowUpRight size={14}/></Link>
+     </div>
+    </article>;
+   })}
+  </div>
+  <p className="vg-note"><Info size={16}/>
+   <span><strong>Como ler os números:</strong> cada vínculo corresponde a nome + matrícula no departamento durante o mês selecionado. Não representa necessariamente o total de pessoas ativas. O gasto corresponde apenas à folha bruta vinculada à secretaria; não inclui contratos, obras e outras despesas orçamentárias. Janeiro/2026 possui ressalva de conciliação com o portal.</span>
+  </p>
+  {dados?.disponivel&&dados.outros.length>0&&<p className="vg-outros">
+    Órgãos não incluídos nos cards de secretarias ({dados.outros.map(o=>o.departamento).join(' · ')}): {moeda(outrosBruto)} da folha bruta. Esses pagamentos não foram atribuídos artificialmente a nenhuma secretaria.
+   </p>}
  </div>;
 }
