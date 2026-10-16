@@ -32,3 +32,10 @@
 @media(max-width:1150px){.vg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){.vg-heading{align-items:flex-start;flex-direction:column;gap:14px}.vg-grid{gap:10px}.vg-card{padding:16px 14px 13px}}
 @media(max-width:600px){.vg-heading h1{font-size:24px}.vg-grid{grid-template-columns:1fr}.vg-card h2{min-height:0}.vg-card-info strong{font-size:20px}}
+
+
+/* A superfície inteira do card abre o RH já filtrado */
+.vg-card-clickable{text-decoration:none;color:inherit;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.vg-card-clickable:hover{transform:translateY(-3px);box-shadow:0 9px 20px rgba(38,61,79,.09);border-color:#becbd4}
+.vg-card-clickable:focus-visible{outline:3px solid #b03e4b;outline-offset:3px}
+.vg-card-open{display:inline-flex;align-items:center;gap:5px;color:#a93c49;font-size:10.5px;font-weight:750}
