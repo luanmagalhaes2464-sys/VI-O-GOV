@@ -1,0 +1,34 @@
+/* VIÇO GOV · visão geral de secretarias com folha mensal */
+.vg-page{display:flex;flex-direction:column;gap:21px;color:#2d4155}
+.vg-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.vg-eyebrow{letter-spacing:1.3px;font-weight:780;color:#a94350;font-size:10px;margin:0 0 10px}
+.vg-heading h1{font-size:28px;letter-spacing:-.8px;margin:0 0 9px;color:#263d50}
+.vg-heading p{font-size:12px;line-height:1.7;margin:0;color:#8798a8;max-width:690px}
+.vg-month{display:flex;align-items:center;gap:9px;background:white;border:1px solid #e0e7ee;border-radius:10px;padding:11px 13px;color:#638091;min-height:44px;white-space:nowrap}
+.vg-month>span{font-size:10px;font-weight:700}
+.vg-month select{border:0;background:transparent;outline:0;color:#395268;font-size:11px;font-weight:730;cursor:pointer}
+.vg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.vg-card{background:#fff;border:1px solid #e5eaf0;border-top:4px solid;border-radius:12px;min-width:0;padding:20px 19px 15px;box-shadow:0 3px 12px rgba(34,63,82,.025);display:flex;flex-direction:column}
+.vg-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.vg-card-icon{width:39px;height:39px;display:grid;place-items:center;border-radius:10px}
+.vg-card-tag{font-size:10px;font-weight:780;letter-spacing:.5px;color:#98a6b4}
+.vg-card h2{font-size:14px;line-height:1.45;color:#344e64;min-height:42px;margin:0 0 17px;letter-spacing:-.18px}
+.vg-card-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto}
+.vg-card-info>div{min-width:0;padding:12px;border:1px solid #edf1f4;background:#f8fafb;border-radius:8px}
+.vg-card-info span{display:flex;align-items:center;gap:6px;font-size:10px;color:#7e93a4;line-height:1.45}
+.vg-card-info svg{flex-shrink:0}
+.vg-card-info strong{display:block;margin-top:10px;color:#2e485d;font-size:19px;letter-spacing:-.4px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.vg-card-info>div:last-child strong{font-size:17px}
+.vg-card-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #eef2f5;padding-top:12px;margin-top:16px}
+.vg-card-footer>span{font-size:10px;color:#9aaaB8}
+.vg-card-footer a{font-size:10.5px;color:#a73e4b;font-weight:750;display:inline-flex;align-items:center;gap:5px}
+.vg-card-footer a:hover{text-decoration:underline}
+.vg-note{display:flex;align-items:flex-start;gap:10px;margin:0;padding:14px 16px;border:1px solid #e4eaf0;background:#f7f9fb;border-radius:9px;font-size:10.5px;line-height:1.7;color:#71879a}
+.vg-note svg{flex-shrink:0}
+.vg-note strong{color:#4e657a}
+.vg-outros{font-size:10.5px;color:#8b9fae;margin:0;line-height:1.7}
+.vg-error{padding:14px 15px;border:1px solid #f3dfe1;background:#fff8f8;border-radius:9px;color:#a14b56;font-size:11px;display:flex;align-items:center;gap:10px}
+.vg-error button{margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:white;border:1px solid #eccdd2;color:#99434f;border-radius:7px;padding:6px 10px;font-size:10px;white-space:nowrap}
+@media(max-width:1150px){.vg-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.vg-heading{align-items:flex-start;flex-direction:column;gap:14px}.vg-grid{gap:10px}.vg-card{padding:16px 14px 13px}}
+@media(max-width:600px){.vg-heading h1{font-size:24px}.vg-grid{grid-template-columns:1fr}.vg-card h2{min-height:0}.vg-card-info strong{font-size:20px}}
