@@ -28,7 +28,7 @@ const cents=(x:unknown):number=>{
  return Number.isFinite(n)?Math.round(n*100):0;
 };
 const reais=(x:number):number=>Math.round(x)/100;
-function categoria(codigo:string,nome:string):string {
+export function categoriaRubrica(codigo:string,nome:string):string {
  if(DECIMO.has(codigo))return '13º salário';
  if(FERIAS.has(codigo))return 'Férias e adicionais';
  if(INDENIZACAO.has(codigo)||nome.includes('INDENIZA'))return 'Indenizações';
@@ -68,7 +68,7 @@ function processar(linhas:Linha[],mes:string){
    // Janeiro/2026 não contém campo tipo; o código 0400 é desconto.
    const tipo=(item.tipo||((codigo==='0400'||nome.toUpperCase()==='DESCONTOS')?'DESCONTO':'PROVENTO')).toUpperCase();
    if(tipo==='PROVENTO'){
-    somap+=valor;const cat=categoria(codigo,nome.toUpperCase());
+    somap+=valor;const cat=categoriaRubrica(codigo,nome.toUpperCase());
     g.categorias.set(cat,(g.categorias.get(cat)||0)+valor);
     totais.set(cat,(totais.get(cat)||0)+valor);
     const chave=JSON.stringify([codigo,nome,cat]);
@@ -124,7 +124,7 @@ function detectarDuplicidades(linhas:Linha[],mes:string){
   return (Array.isArray(r.rubricas)?r.rubricas:[]).some(item=>{
    const cod=String(item.codigo||'').padStart(4,'0');
    const nome=String(item.rubrica||'').toUpperCase();
-   return EVENTUAIS.includes(categoria(cod,nome));
+   return EVENTUAIS.includes(categoriaRubrica(cod,nome));
   });
  }
  for(const rows of pessoas.values()){
@@ -157,7 +157,7 @@ function detectarDuplicidades(linhas:Linha[],mes:string){
      observacao:'Possível repetição do lançamento no arquivo da folha. Conferir identificadores de pagamento e origem da importação; não comprova dois depósitos.',
      rubricas:Array.isArray(primeiro.rubricas)?primeiro.rubricas.map(x=>({
       codigo:String(x.codigo||'').padStart(4,'0'),nome:String(x.rubrica||''),
-      categoria:categoria(String(x.codigo||'').padStart(4,'0'),String(x.rubrica||'').toUpperCase()),
+      categoria:categoriaRubrica(String(x.codigo||'').padStart(4,'0'),String(x.rubrica||'').toUpperCase()),
       valor:reais(cents(x.valor))
      })).slice(0,25):[]
     });
