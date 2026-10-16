@@ -21,6 +21,23 @@ function rubricasDetalhe(items:Rubrica[]){
  return <div className="rh-a-rubricas"><div className="rh-a-rub-title">Rubricas do pagamento</div>
  {items.map((x,i)=><div key={x.codigo+'-'+i}><span>{x.nome}<small>Código {x.codigo} · {x.categoria}</small></span><strong>{brl(x.valor)}</strong></div>)}</div>;
 }
+// Referências de dimensionamento POR ESCOLA do Anexo V da Lei municipal
+// nº 1.368/1999, na redação da Lei nº 3.003/2023. Não são vagas
+// autorizadas no quadro geral. Para usar é preciso cruzar turmas de cada unidade.
+const referencialEscolar=(cargo:string):'auxiliar'|'infantil'|'professor'|'administrativo'|null=>{
+ const n=cargo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+ if(n.includes('AUXILIAR DE SERVICO ESCOLAR'))return 'auxiliar';
+ if(n.includes('AUXILIAR DE EDUCACAO INFANTIL'))return 'infantil';
+ if(/^PROFESSOR (I|II|III)$/.test(n.trim()))return 'professor';
+ if(n.includes('ASSISTENTE ADM ESCOLAR')||n.includes('ASSISTENTE ADMINISTRATIVO ESCOLAR'))return 'administrativo';
+ return null;
+};
+const turmasFaixas=['Até 6','7–10','11–14','15–19','20–25','26–30','A partir de 30*'];
+const normasPorTurmas=[
+ {cargo:'Auxiliar de Serviço Escolar',quantidades:[4,5,6,8,14,14,16]},
+ {cargo:'Assistente Administrativo Escolar',quantidades:[1,1,2,4,6,6,6]},
+ {cargo:'Professor eventual',quantidades:[1,1,2,2,2,2,2]}
+];
 const pct=(v:number|null|undefined)=>v==null?'—':v.toFixed(2).replace('.',',')+'%';
 export default function RHAuditoria({mes}:{mes:string}){
  const [d,setD]=useState<Auditoria|null>(null),[f,setF]=useState<Fiscal|null>(null);
@@ -79,7 +96,7 @@ export default function RHAuditoria({mes}:{mes:string}){
     {Number(nBase||0)>30&&<p className="rh-a-note">Mostrando os 30 primeiros registros do total de {num(nBase)}.</p>}
    </>}
    {visivel==='cargos'&&<>
-    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> A quantidade máxima de cargos autorizados ainda exige a lei municipal consolidada por cargo, órgão e vigência, além dos registros de vacância. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
+    <p className="rh-a-note"><b>Os vínculos observados são reais.</b> Para alguns cargos da Educação encontramos parâmetros reais no Estatuto do Magistério, definidos por escola e número de turmas. A quantidade de cargos autorizados no quadro geral ainda exige lei consolidada por órgão, cargo e vigência, além das vacâncias. Um concurso com 45 vagas não significa um limite legal de 45 servidores para o cargo.</p>
     {quadroErro&&<p className="rh-a-error"><AlertCircle size={14}/>{quadroErro}</p>}
     <div className="rh-a-cargo-tools"><label><Search size={15}/><input type="search" aria-label="Pesquisar cargo e jornada" value={filtroCargo} onChange={e=>setFiltroCargo(e.target.value)} placeholder="Pesquisar cargo ou jornada..."/></label>
      <small>{num(quadro?.grupos)} combinações de cargo e jornada na folha</small></div>
@@ -87,12 +104,30 @@ export default function RHAuditoria({mes}:{mes:string}){
       <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Vagas autorizadas</th><th>Excedentes</th></tr></thead>
       <tbody>{cargosVisiveis.slice(0,50).map((c,i)=><tr key={c.cargo+'-'+c.jornada+'-'+i}>
         <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
-        <td>{num(c.vinculos_folha)}</td><td><span className="rh-a-no-reference">A validar</span></td>
+        <td>{num(c.vinculos_folha)}</td><td>{referencialEscolar(c.cargo)?<span className="rh-a-legal-school">Regra por escola ↓</span>:<span className="rh-a-no-reference">A validar</span>}</td>
         <td><span className="rh-a-no-reference">—</span></td>
       </tr>)}</tbody>
     </table></div>
     {!cargosVisiveis.length&&<p className="rh-a-note">Nenhum cargo corresponde à pesquisa.</p>}
     {cargosVisiveis.length>50&&<p className="rh-a-note">Exibindo as primeiras 50 combinações. Pesquise o nome do cargo para refinar.</p>}
+    <div className="rh-a-school-law">
+      <div className="rh-a-school-law-head">
+       <div><strong>Referência legal encontrada — Educação</strong>
+       <p>Anexo V do Estatuto do Magistério de Viçosa: parâmetros de composição do pessoal <b>por unidade escolar</b>, conforme turmas e alunos. Não são limites globais da prefeitura.</p></div>
+       <span>Lei 1.368/1999 · alterações da Lei 3.003/2023</span>
+      </div>
+      <div className="rh-a-cargo-wrap"><table className="rh-a-school-table">
+       <thead><tr><th>Função / turmas na unidade</th>{turmasFaixas.map(x=><th key={x}>{x}</th>)}</tr></thead>
+       <tbody>{normasPorTurmas.map(x=><tr key={x.cargo}><td><strong>{x.cargo}</strong></td>{x.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
+      </table></div>
+      <p className="rh-a-note">* O texto publicado usa as faixas '26 a 30' e 'a partir de 30', que se sobrepõem em 30 turmas; nesse caso, a interpretação exata deve ser confirmada com o órgão competente. Há regras específicas para tempo integral e autorização pela Secretaria de Educação. Para professor PEB I e II, a referência legal é de 1 por turma; o PEB III depende do total de horas-aula. Para auxiliar de educação infantil, a norma prevê critério por turma e jornada. Nenhum desses parâmetros autoriza concluir excesso municipal sem identificar cada escola e suas turmas.</p>
+      <div className="rh-a-doclinks">
+       <a href="https://leismunicipais.com.br/estatuto-do-magisterio-vicosa-mg" rel="noopener noreferrer" target="_blank">Consultar texto consolidado do Estatuto <ExternalLink size={12}/></a>
+       <a href="https://www.vicosa.mg.leg.br/comunicacao/noticias/2023/06-2023/vereador-celebra-conquista-da-educacao-e-aprova-mocao-dos-60-anos-da-aspuv" rel="noopener noreferrer" target="_blank">Câmara de Viçosa — Lei 3.003/2023 <ExternalLink size={12}/></a>
+       <a href="https://www.ibge.gov.br/estatisticas/sociais/habitacao/10586-pesquisa-de-informacoes-basicas-municipais.html" rel="noopener noreferrer" target="_blank">IBGE MUNIC — comparação entre municípios <ExternalLink size={12}/></a>
+      </div>
+      <p className="rh-a-note"><b>Comparação regional:</b> o IBGE MUNIC informa o total de trabalhadores nas prefeituras por vínculo, mas não define quantidade permitida para cada cargo. Uma média por habitante deve ser apresentada como indicador comparativo, sem ser usada para acusar excesso de servidores.</p>
+    </div>
     <div className="rh-a-doclinks">{quadro?.fontes_referencia.map(x=><a key={x.url} href={x.url} rel="noopener noreferrer" target="_blank">{x.nome}<ExternalLink size={12}/></a>)}</div>
     <p className="rh-a-note">O campo excedentes fica em branco enquanto não houver comparação documental validada. Pagamentos após desligamento e vínculos temporários precisam ser distinguidos de cargos efetivos ocupados.</p>
    </>}

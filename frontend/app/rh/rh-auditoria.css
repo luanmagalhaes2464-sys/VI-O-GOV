@@ -121,3 +121,18 @@
 .rh-a-doclinks a:hover{background:#f8fafb}
 @media(max-width:760px){.rh-a-cards{grid-template-columns:1fr 1fr}.rh-a-cargo-table{min-width:620px}}
 @media(max-width:520px){.rh-a-cards{grid-template-columns:1fr}.rh-a-card button{min-height:128px}}
+
+/* Referência de dimensionamento por escola; não confundir com vagas do quadro geral */
+.rh-a-legal-school{display:inline-flex;padding:5px 7px;background:#ecf6f8;color:#28748a;border-radius:6px;font-size:10px;font-weight:700;white-space:nowrap}
+.rh-a-school-law{margin:16px 0 5px;padding:16px;background:#f7fafc;border:1px solid #dae6ee;border-radius:11px}
+.rh-a-school-law-head{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:14px}
+.rh-a-school-law-head strong{font-size:12px;color:#304b60}
+.rh-a-school-law-head p{margin:6px 0 0;color:#637f91;font-size:11px;line-height:1.6;max-width:700px}
+.rh-a-school-law-head>span{font-size:10px;color:#6991a0;white-space:nowrap;font-weight:700}
+.rh-a-school-table{border-collapse:collapse;width:100%;font-size:11px;color:#405a6d}
+.rh-a-school-table th{position:sticky;top:0;text-align:center;padding:10px 8px;min-width:75px;background:#eef3f8;border-bottom:1px solid #dce7ed;color:#617c91;font-size:10px}
+.rh-a-school-table th:first-child{min-width:190px;text-align:left}
+.rh-a-school-table td{padding:10px 8px;border-bottom:1px solid #e8edf0;text-align:center}
+.rh-a-school-table td:first-child{text-align:left}
+.rh-a-school-table tr:last-child td{border-bottom:0}
+@media(max-width:700px){.rh-a-school-law-head{flex-direction:column}.rh-a-school-law-head>span{white-space:normal}}
