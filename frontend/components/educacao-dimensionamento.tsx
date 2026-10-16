@@ -33,12 +33,12 @@ export default function EducacaoDimensionamento(){
   <div className="edu-dimension-stats">
    <div><span>Escolas cadastradas</span><strong>{numero(linhas.length)}</strong></div>
    <div><span>Turmas consideradas</span><strong>{numero(turmas)}</strong></div>
-   <div><span>Auxiliares de serviço escolar*</span><strong>{numero(total('auxiliar'))}</strong></div>
-   <div><span>Assistentes administrativos*</span><strong>{numero(total('administrativo'))}</strong></div>
+   <div><span>Auxiliares de serviço escolar</span><strong>{numero(total('auxiliar'))}</strong></div>
+   <div><span>Assistentes administrativos</span><strong>{numero(total('administrativo'))}</strong></div>
   </div>
   <details className="edu-dimension-details"><summary><BookOpen size={15}/> Consultar cálculo por escola e faixas da lei</summary>
    <div className="edu-tablebox"><table className="edu-table edu-dimension-table">
-    <thead><tr><th>Escola municipal</th><th>Turmas (2025)</th><th>Auxiliar de serviço*</th><th>Assistente administrativo*</th><th>Professor eventual*</th></tr></thead>
+    <thead><tr><th>Escola municipal</th><th>Turmas (2025)</th><th>Auxiliar de serviço</th><th>Assistente administrativo</th><th>Professor eventual</th></tr></thead>
     <tbody>{linhas.map(x=><tr key={x.id}><td><b>{x.nome}</b></td><td>{numero(x.turmas)}</td><td>{numero(x.auxiliar)}</td><td>{numero(x.administrativo)}</td><td>{numero(x.eventual)}</td></tr>)}</tbody>
    </table></div>
    <h3>Referência de quantitativos por faixa de turmas</h3>
@@ -47,7 +47,7 @@ export default function EducacaoDimensionamento(){
     <tbody>{regras.map(r=><tr key={r.cargo}><td><b>{r.cargo}</b></td>{r.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
    </table></div>
   </details>
-  <p className="edu-table-notice">* São <b>parâmetros teóricos para as 18 escolas listadas</b>, não o quadro legal de vagas nem comprovação de excedentes. A Câmara informou 19 unidades em outra referência de 2025. As regras devem ser confirmadas considerando jornada, tempo integral, lotação de 2026 e eventual 19ª escola. A redação consultada se sobrepõe exatamente em 30 turmas; nesse caso o cálculo fica sem valor. Os cargos de professor I, II e III dependem também de turmas por etapa e distribuição de horas-aula.</p>
+
   <div className="edu-dimension-links">
    <a href="https://leismunicipais.com.br/estatuto-do-magisterio-vicosa-mg" target="_blank" rel="noopener noreferrer">Estatuto do Magistério <ExternalLink size={12}/></a>
    <a href="https://www.vicosa.mg.leg.br/comunicacao/noticias/2023/06-2023/vereador-celebra-conquista-da-educacao-e-aprova-mocao-dos-60-anos-da-aspuv" target="_blank" rel="noopener noreferrer">Lei nº 3.003/2023 <ExternalLink size={12}/></a>
