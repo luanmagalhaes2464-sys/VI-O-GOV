@@ -213,7 +213,7 @@ export default function RHAuditoria({mes}:{mes:string}){
   <div className="rh-a-fiscal-notice"><Info size={17}/><span>O RGF usa Despesa Total com Pessoal em 12 meses e Receita Corrente Líquida ajustada. Ele não pode ser calculado diretamente somando a remuneração nominal da folha. O percentual oficial fornece contexto, enquanto os gráficos acima explicam os pagamentos efetivos.</span></div>
   {f?.percentual_dtp_executivo!=null&&<div className="rh-a-limit"><div><span>Executivo em relação à RCL ajustada</span><b>{pct(f.percentual_dtp_executivo)}</b></div><div className="rh-a-limit-track"><span style={{width:Math.min(100,f.percentual_dtp_executivo/60*100)+'%'}}/></div><div className="rh-a-limit-markers"><span>0%</span><span>Alerta 48,6%</span><span>Prudencial 51,3%</span><span>Legal 54%</span></div></div>}
   {f?.percentual_dtp_executivo==null&&<p className="rh-a-note">Ainda não foi possível confirmar o percentual do RGF para este quadrimestre. Não utilizamos uma porcentagem estimada.</p>}
-  <div className="rh-a-source"><a href="https://apidatalake.tesouro.gov.br/docs/siconfi/" target="_blank" rel="noopener noreferrer">Fonte do RGF/SICONFI <ExternalLink size={12}/></a> · Fonte da folha: documentos oficiais importados para o Viço GOV.</div>
+  <div className="rh-a-source"><a href="https://apidatalake.tesouro.gov.br/docs/siconfi/" target="_blank" rel="noopener noreferrer">Fonte do RGF/SICONFI <ExternalLink size={12}/></a></div>
  </section>
  </div>;
 }
