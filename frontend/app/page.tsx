@@ -8,7 +8,7 @@ import {
 import {secretarias} from '../lib/secretarias';
 import './visao-geral.css';
 
-type ResumoSecretaria={slug:string;nome:string;curto:string;sigla:string;vinculos:number|null;registros:number|null;bruto:number|null;situacao:string};
+type ResumoSecretaria={slug:string;nome:string;curto:string;sigla:string;vinculos:number|null;registros:number|null;bruto:number|null;situacao:string;departamentos:string[]};
 type Painel={mes:string;disponivel:boolean;secretarias:ResumoSecretaria[];outros:{departamento:string;vinculos:number;bruto:number}[];total_bruto_da_folha:number;metodologia:string;ressalva:string;fonte:string;aviso?:string};
 const nomes=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
 const cores=['#4375c2','#a35a81','#13877c','#b77c22','#795dba','#347da4','#bf4553','#68844b','#8a668f','#b95e48','#496db1','#4c8a6d'];
@@ -51,7 +51,9 @@ export default function Home(){
     const c=cores[i%cores.length],Icon=icones[i%icones.length];
     const valor=carregando?'…':dados?.disponivel?numero(data?.vinculos):'—';
     const bruto=carregando?'…':dados?.disponivel?moeda(data?.bruto):'—';
-    return <article key={s.slug} className="vg-card" style={{borderTopColor:c}}>
+    const departamento=data?.departamentos?.[0];
+    const destino=departamento?`/rh?mes=${encodeURIComponent(mes)}&departamento=${encodeURIComponent(departamento)}`:`/rh?mes=${encodeURIComponent(mes)}`;
+    return <Link key={s.slug} href={destino} className="vg-card vg-card-clickable" style={{borderTopColor:c}} aria-label={`Abrir Recursos Humanos da ${s.nome} em ${mes}`}>
      <div className="vg-card-head">
       <span className="vg-card-icon" style={{backgroundColor:c+'16',color:c}}><Icon size={21}/></span>
       <span className="vg-card-tag">{s.sigla}</span>
@@ -61,15 +63,10 @@ export default function Home(){
       <div><span><Users size={14}/> Vínculos na folha</span><strong>{valor}</strong></div>
       <div><span><Wallet size={14}/> Remuneração bruta</span><strong>{bruto}</strong></div>
      </div>
-     <div className="vg-card-footer"><span>{mes.slice(5,7)}/{mes.slice(0,4)}</span>
-      <Link href={s.slug==='educacao-esportes'?'/educacao':'/rh'}>{s.slug==='educacao-esportes'?'Abrir Educação':'Consultar RH'}<ArrowUpRight size={14}/></Link>
-     </div>
-    </article>;
+     <div className="vg-card-footer"><span>{mes.slice(5,7)}/{mes.slice(0,4)}</span><span className="vg-card-open">Abrir secretaria <ArrowUpRight size={14}/></span></div>
+    </Link>;
    })}
   </div>
-  <p className="vg-note"><Info size={16}/>
-   <span><strong>Como ler os números:</strong> cada vínculo corresponde a nome + matrícula no departamento durante o mês selecionado. Não representa necessariamente o total de pessoas ativas. O gasto corresponde apenas à folha bruta vinculada à secretaria; não inclui contratos, obras e outras despesas orçamentárias. Janeiro/2026 possui ressalva de conciliação com o portal.</span>
-  </p>
   {dados?.disponivel&&dados.outros.length>0&&<p className="vg-outros">
     Órgãos não incluídos nos cards de secretarias ({dados.outros.map(o=>o.departamento).join(' · ')}): {moeda(outrosBruto)} da folha bruta. Esses pagamentos não foram atribuídos artificialmente a nenhuma secretaria.
    </p>}
