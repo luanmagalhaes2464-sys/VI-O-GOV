@@ -66,7 +66,7 @@ export default function RHAuditoria({mes}:{mes:string}){
     {visivel==='conciliacao'&&n('conciliacao')===0?<p className="rh-a-ok"><CheckCircle2 size={17}/> Nenhuma divergência aritmética identificada: total bruto, soma dos proventos, descontos e líquido conciliam nas linhas verificadas.</p>:null}
     {visivel==='explicados'&&<p className="rh-a-note">Estes pagamentos <b>não entram como inconsistências</b>. O sistema reconstruiu o aumento com rubricas eventuais e separou o que ainda depende de comprovação funcional.</p>}
     {visivel==='base'&&<p className="rh-a-note">Mudanças superiores a 15% e R$ 300 no vencimento-base para o mesmo cargo e jornada. Necessitam consulta à legislação e aos atos de progressão; não são prova de pagamento errado.</p>}
-    {visivel!=='juridico'&&(grupos[visivel]||[]).slice(0,30).map(x=><div className="rh-a-person" key={x.id}>
+    {visivel!=='juridico'&&(visivel==='conciliacao'?grupos.conciliacao:visivel==='base'?grupos.base:visivel==='explicados'?grupos.explicados:[]).slice(0,30).map(x=><div className="rh-a-person" key={x.id}>
       <button type="button" onClick={()=>setLinha(p=>p===x.id?'':x.id)}><span><strong>{x.nome}</strong><small>{x.cargo} · matrícula {x.matricula} · {x.departamento}</small></span>
       <span className="rh-a-value">{visivel==='base'?brl((x as Revisao).base_atual):visivel==='explicados'?brl((x as Explicado).bruto_atual):brl((x as Ocorrencia).bruto)}</span>
       {linha===x.id?<ChevronUp size={15}/>:<ChevronDown size={15}/>}</button>
@@ -78,7 +78,7 @@ export default function RHAuditoria({mes}:{mes:string}){
        {x.rubricas?.length>0&&rubricasDetalhe(x.rubricas)}
       </div>}
     </div>)}
-    {visivel!=='juridico'&&n(visivel)>30&&<p className="rh-a-note">Exibindo os 30 primeiros registros. Total identificado: {num(n(visivel))}.</p>}
+    {visivel!=='juridico'&&Number(n(visivel)||0)>30&&<p className="rh-a-note">Exibindo os 30 primeiros registros. Total identificado: {num(n(visivel))}.</p>}
   </div>}
   <div className="rh-a-source"><Info size={15}/> Análise da competência {mes.slice(-2)}/2026, com {num(d?.cobertura.linhas)} inclusões de pagamento e {num(d?.cobertura.vinculos)} vínculos/competência. <a href={d?.fonte||'https://pmvicosa.cidadesmg.com.br/portaltransparencia/'} target="_blank" rel="noopener noreferrer">Fonte oficial <ExternalLink size={12}/></a></div>
  </section>
@@ -92,7 +92,7 @@ export default function RHAuditoria({mes}:{mes:string}){
    <article><span>Folha bruta de {mes.slice(-2)}/2026</span><strong>{brl(d?.financeiro.bruto)}</strong><small>Valores registrados no banco do RH</small></article>
    <article><span>Variação ante o mês anterior</span><strong>{d?.financeiro.variacao==null?'—':brl(d.financeiro.variacao)}</strong><small>Inclui parcelas eventuais, não equivale à DTP fiscal</small></article>
    <article><span>Verbas eventuais identificadas</span><strong>{loading?'…':brl(totalEventos)}</strong><small>13º, férias, retroativos e indenizações</small></article>
-   <article><span>DTP/RCL no RGF do Executivo</span><strong>{pct(f?.percentual_dtp_executivo)}</strong><small>{f?.percentual_dtp_executivo==null?'Aguardando fonte homologada':'2º quadrimestre'===periodo+'º quadrimestre'?'RGF 2º quadrimestre de 2026':'RGF '+periodo+'º quadrimestre de 2026'}</small></article>
+   <article><span>DTP/RCL no RGF do Executivo</span><strong>{pct(f?.percentual_dtp_executivo)}</strong><small>{f?.percentual_dtp_executivo==null?'Aguardando fonte homologada':'RGF '+periodo+'º quadrimestre de 2026'}</small></article>
   </div>
   {d&&<div className="rh-a-distribution"><div className="rh-a-dist-head"><h3>De onde vem o valor da folha?</h3><p>Classificação real dos proventos por rubrica, sem estimar despesa fiscal</p></div>
    {d.financeiro.rubricas.map((r,i)=><div className="rh-a-dist" key={r.categoria}>
