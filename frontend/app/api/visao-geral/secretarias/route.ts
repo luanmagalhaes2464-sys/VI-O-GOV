@@ -25,7 +25,15 @@ const departamentos:Record<string,string>={
  'SEC. MUN. DE CULTURA, EVENTOS, TURISMO E JUVENTUDE':'cultura-turismo-juventude',
  'SEC. MUN. DESENV. ECON., EMPREEND. E INOVACAO':'desenvolvimento-economico',
  'SEC. MUN. DE MEIO AMB., BIOD. E REC. HIDRICOS':'meio-ambiente',
- 'SECRETARIA MUNICIPAL DE AGROPECUARIA - SEMAG':'agropecuaria'
+ 'SECRETARIA MUNICIPAL DE AGROPECUARIA - SEMAG':'agropecuaria',
+ // Janeiro foi importado de PDF com os nomes longos truncados.
+ 'SEC. MUN. DE CULTURA, EVENTOS, TURISMO E':'cultura-turismo-juventude',
+ 'SEC. MUN. DESENV. ECON., EMPREEND. E':'desenvolvimento-economico',
+ 'SEC. MUN. PLANEJ., MOBILIDADE E GESTAO':'planejamento-mobilidade-territorio',
+ 'SECRETARIA MUNICIPAL DE ADMINISTRACAO -':'administracao',
+ 'SECRETARIA MUNICIPAL DE AGROPECUARIA -':'agropecuaria',
+ 'SECRETARIA MUNICIPAL DE ASSISTENCIA SOCIAL':'assistencia-social',
+ 'SECRETARIA MUNICIPAL DE GESTAO FINANCEIRA':'gestao-financeira'
 };
 type Row={departamento:string|null;vinculos:number;registros:number;bruto:string};
 export async function GET(req:NextRequest){
