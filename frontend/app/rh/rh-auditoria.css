@@ -100,3 +100,24 @@
 .rh-bot-disclaimer{font-size:9px;text-align:center;color:#8b9eaa;padding:0 10px 12px}
 @media(max-width:1040px){.rh-a-cards,.rh-a-fiscal-top{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-a-dist{grid-template-columns:135px 1fr 120px}.rh-a-dist small{display:none}}
 @media(max-width:600px){.rh-a-panel{padding:15px}.rh-a-head{flex-direction:column}.rh-a-count{align-self:flex-start}.rh-a-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-a-card button{min-height:166px}.rh-a-fiscal-top{grid-template-columns:1fr 1fr}.rh-a-fiscal-top strong{font-size:17px}.rh-a-dist{grid-template-columns:1fr 1fr}.rh-a-dist .rh-a-track{grid-column:1 / -1;grid-row:2}.rh-a-dist strong{text-align:right}.rh-bot-wrap{right:12px;bottom:12px}.rh-a-limit-markers{font-size:8px}}
+
+/* Três alertas — análise de quadro de cargos e referenciais legais */
+.rh-a-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rh-a-pending{font-size:17px!important;white-space:nowrap}
+.rh-a-cargo-tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:13px 0}
+.rh-a-cargo-tools label{display:flex;align-items:center;gap:8px;max-width:460px;min-width:240px;flex:1;border:1px solid #dbe4ec;background:#fff;padding:9px 12px;border-radius:8px;color:#8b9eaa}
+.rh-a-cargo-tools input{font:inherit;background:none;outline:0;border:0;min-width:0;width:100%;font-size:11px;color:#344f65}
+.rh-a-cargo-tools small{font-size:10px;color:#7e94a7}
+.rh-a-cargo-wrap{max-height:440px;overflow:auto;border:1px solid #e4ebef;border-radius:9px}
+.rh-a-cargo-table{border-collapse:collapse;width:100%;font-size:11px;color:#496073}
+.rh-a-cargo-table th{text-align:left;background:#f5f7fa;color:#627d91;font-size:10px;font-weight:800;position:sticky;top:0;z-index:1;border-bottom:1px solid #e2e9ee;padding:12px 13px}
+.rh-a-cargo-table td{padding:12px 13px;border-bottom:1px solid #eff2f5;vertical-align:top}
+.rh-a-cargo-table tr:last-child td{border-bottom:0}
+.rh-a-cargo-table td strong{font-size:10.5px}
+.rh-a-cargo-table td small{display:block;color:#99aabb;margin-top:4px}
+.rh-a-no-reference{font-size:10px;color:#987340;background:#fff8e8;padding:4px 7px;border-radius:5px;white-space:nowrap}
+.rh-a-doclinks{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:15px 0}
+.rh-a-doclinks a{color:#9a3e4b;background:#fff;border:1px solid #e5eaf0;padding:8px 10px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700}
+.rh-a-doclinks a:hover{background:#f8fafb}
+@media(max-width:760px){.rh-a-cards{grid-template-columns:1fr 1fr}.rh-a-cargo-table{min-width:620px}}
+@media(max-width:520px){.rh-a-cards{grid-template-columns:1fr}.rh-a-card button{min-height:128px}}
