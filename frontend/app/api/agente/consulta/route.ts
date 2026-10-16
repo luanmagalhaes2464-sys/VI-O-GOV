@@ -44,7 +44,11 @@ export async function POST(req:NextRequest){
   if(nowWindow.size>1500)nowWindow.clear();
   const body=await req.json().catch(()=>null);
   const pergunta=String(body?.pergunta||'').trim();
-  const mes=String(body?.mes||'2026-07');
+  const perguntaNormal=normal(pergunta);
+  const mesSolicitado=(['JANEIRO','FEVEREIRO','MARCO','ABRIL','MAIO','JUNHO','JULHO'] as const)
+   .map((m,i)=>({nome:m,mes:'2026-'+String(i+1).padStart(2,'0')}))
+   .find(x=>new RegExp('(^|[^A-Z])'+x.nome+'([^A-Z]|$)').test(perguntaNormal));
+  const mes=mesSolicitado?.mes||String(body?.mes||'2026-07');
   const deptoAtual=String(body?.departamento||'').slice(0,160);
   if(pergunta.length<4||pergunta.length>600||!/^2026-0[1-7]$/.test(mes))
    return NextResponse.json({error:'Pergunta ou competência inválida.'},{status:422});
@@ -70,7 +74,7 @@ export async function POST(req:NextRequest){
   const meses=registros[2].rows;
   const rubricas=registros[3].rows;
   const sumBruto=deps.reduce((t,r)=>t+Number(r.bruto||0),0);
-  const norm=normal(pergunta);
+  const norm=perguntaNormal;
   const current=meses.find(m=>m.mes===mes);
   const selectedDep=deps.find(d=>deptoAtual&&d.departamento===deptoAtual);
   // Preferir sempre identificadores oficiais de lote e competência.
@@ -120,12 +124,35 @@ export async function POST(req:NextRequest){
   }
   // Sem chave de modelo, responder por consultas determinísticas e não simular IA generativa.
   let answer:string;
-  const matchDep=deps.find(d=>norm.includes(normal(d.departamento))||(
-   d.departamento.length>15&&d.departamento.split(/\s+-\s+/).some(v=>v.length>10&&norm.includes(normal(v)))
-  ))||deps.find(d=>{
-   const sl=secretarias.find(s=>norm.includes(normal(s.curto))||norm.includes(normal(s.sigla)));
-   return sl?d.departamento.includes(sl.sigla):false;
-  })||selectedDep;
+  // O usuário não precisa conhecer a sigla oficial nem selecionar um documento.
+  const aliases:Record<string,RegExp>={
+   SEMEE:/EDUCACAO|ENSINO|ESCOLAR/,
+   SEMSA:/SAUDE|HOSPITAL|POSTO DE SAUDE/,
+   SEMAD:/ADMINISTRACAO/,
+   SEMAS:/ASSISTENCIA SOCIAL/,
+   SEMSI:/SERVICOS INTEGRADOS|SERVICOS URBANOS/,
+   SEMAG:/AGROPECUARIA|AGRICULTURA/,
+   SEMGF:/GESTAO FINANCEIRA|FINANCAS/,
+   SEGOV:/GOVERNO/,
+   SEMDEI:/DESENVOLVIMENTO ECONOMICO|EMPREENDEDOR|INOVACAO/,
+   SEMCULTJ:/CULTURA|TURISMO|JUVENTUDE/,
+  };
+  const sl=secretarias.find(s=>norm.includes(normal(s.nome))||norm.includes(normal(s.curto))||
+   norm.includes(normal(s.sigla))||aliases[s.sigla]?.test(norm));
+  const departamentoPorSecretaria=sl?deps.find(d=>{
+   const full=normal(d.departamento);
+   return full.includes(sl.sigla)||(
+    sl.sigla==='SEMEE'&&full.includes('EDUCACAO E ESPORTES')
+   )||(
+    sl.sigla==='SEMCULTJ'&&full.includes('CULTURA')
+   )||(
+    sl.sigla==='SEMDEI'&&full.includes('DESENV.')
+   );
+  }):undefined;
+  const matchDep=deps.find(d=>norm.includes(normal(d.departamento))||
+   (d.departamento.length>15&&d.departamento.split(/\s+-\s+/)
+    .some(v=>v.length>10&&norm.includes(normal(v)))))||
+   departamentoPorSecretaria||selectedDep;
   const rankingNumero=/MAIS FUNCIONARIO|MAIS SERVIDOR|MAIOR QUANTIDADE DE (SERVIDOR|FUNCIONARIO|VINCULO)|MAIS VINCULO|MAIOR NUMERO DE (SERVIDOR|FUNCIONARIO)/.test(norm);
   const rankingMenor=/MENOS FUNCIONARIO|MENOS SERVIDOR|MENOR QUANTIDADE DE (SERVIDOR|FUNCIONARIO|VINCULO)/.test(norm);
   const rankingGasto=/MAIOR GASTO|MAIS GASTO|MAIOR FOLHA|MAIOR DESPESA/.test(norm);
