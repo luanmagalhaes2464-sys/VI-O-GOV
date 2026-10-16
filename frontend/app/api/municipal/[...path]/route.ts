@@ -4,7 +4,7 @@ const BACKEND='https://vico-gov-api-vicosa.onrender.com';
 function pathAllowed(path:string,method:string){
  if(!/^api\/v1\/[a-z0-9/._-]+$/i.test(path)||path.includes('..')||path.includes('//'))return false;
  if(path.startsWith('api/v1/admin/'))return false;
- if(method==='POST')return path==='api/v1/agente/perguntas';
+ if(method==='POST')return path==='api/v1/agente/perguntas'||path==='api/v1/rh/inteligencia/agente';
  return method==='GET';
 }
 async function relay(request:NextRequest,{params}:{params:{path:string[]}},method:'GET'|'POST'){
