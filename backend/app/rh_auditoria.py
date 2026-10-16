@@ -181,3 +181,58 @@ def resumo(mes:str=Query("2026-07",max_length=7)):
         "nota":"Os totais utilizam TODAS as inclusões de pagamento da competência; rubricas eventuais são classificadas por códigos do PDF/CSV. A conciliação matemática não atesta base legal, jornada, tempo de serviço ou regularidade funcional. A ausência de documentação legal produz análise inconclusiva, não erro.",
         "politica":"Só divergências aritméticas são chamadas inconsistências; aumentos com férias, décimo terceiro ou indenizações documentados não contam como irregularidades. Alterações de vencimento-base são revisões documentais."
     }
+
+
+# O edital de concurso oferece vagas em um certame e NAO representa a lotacao
+# maxima criada por lei. Sem anexo legal consolidado vigente, excesso = desconhecido.
+FONTES_QUADRO = [
+    {"nome": "Edital de concurso 2023 (vagas ofertadas, não limite do quadro)",
+     "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7BC4DCEAED-EB8C-D471-C5AD-B24AC3A2BD75%7D.pdf&cdLocal=18",
+     "tipo": "edital_nao_normativo"},
+    {"nome": "Plano de carreira do magistério (Lei 3.003/2023, conforme edital)",
+     "url": "https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7B22A80EE7-4AC0-AD31-6CBB-2BA3DEE2E82C%7D.pdf&cdLocal=18",
+     "tipo": "referencia_indireta"},
+    {"nome": "Portal da Transparência de Viçosa",
+     "url": PORTAL, "tipo": "folha"}
+]
+
+@router.get("/cargos")
+def cargos_ocupacao(mes: str = Query("2026-07", max_length=7)):
+    competencia = parse_mes(mes)
+    with banco() as con:
+        rows = con.execute("""
+            SELECT cargo, jornada,
+                   COUNT(DISTINCT (nome, matricula))::int AS vinculos_folha,
+                   COUNT(DISTINCT (nome, matricula))
+                       FILTER (WHERE desligamento IS NULL OR desligamento > competencia)::int
+                       AS vinculos_sem_desligamento_identificado,
+                   COUNT(DISTINCT (nome, matricula))
+                       FILTER (WHERE vinculo ILIKE '%%CONTRAT%%'
+                         OR vinculo ILIKE '%%TEMPOR%%')::int AS vinculos_temporarios_identificados
+            FROM rh_folha_analitica_2026
+            WHERE competencia=%s AND TRIM(cargo)<>''
+            GROUP BY cargo, jornada ORDER BY vinculos_folha DESC,cargo,jornada
+        """,(competencia,)).fetchall()
+    return {
+        "mes": mes,
+        "cargos": [{
+            "cargo": x["cargo"], "jornada": x["jornada"],
+            "vinculos_folha": x["vinculos_folha"],
+            "vinculos_sem_desligamento_identificado":
+                 x["vinculos_sem_desligamento_identificado"],
+            "vinculos_temporarios_identificados": x["vinculos_temporarios_identificados"],
+            "vagas_legais": None, "excedentes": None,
+            "situacao": "aguardando_quadro_legal_vigente",
+            "norma_quadro": None
+        } for x in rows],
+        "grupos": len(rows),
+        "excessos_confirmados": None,
+        "fonte_folha": PORTAL,
+        "fontes_referencia": FONTES_QUADRO,
+        "nota": (
+            "Vínculos/matrículas da folha por cargo e jornada, inclusive parcelas pagas após desligamento. "
+            "'Sem desligamento identificado' não comprova situação funcional ativa. "
+            "Não há na base o quadro consolidado de vagas autorizadas por cargo e órgão, "
+            "com vigência legal, nomeações e vacâncias. Portanto não é possível calcular "
+            "excedentes legais; vagas oferecidas em editais NÃO são o limite de cargos.")
+    }
