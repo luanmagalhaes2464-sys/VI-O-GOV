@@ -5,11 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Literal
 from .rh_data import resumo, analise
 from .rh_db import router as rh_folha_router
+from .rh_inteligencia import router as rh_inteligencia_router
 
 app=FastAPI(title="VIÇO GOV | Recursos Humanos",version="0.2.0",
  description="Painel baseado na folha de pagamento oficial. A ausência de dados não é zero.")
 app.add_middleware(CORSMiddleware,allow_origins=["https://vico-gov-web-vicosa.onrender.com"],
- allow_credentials=False,allow_methods=["GET"],allow_headers=["Content-Type"])
+ allow_credentials=False,allow_methods=["GET","POST"],allow_headers=["Content-Type"])
 
 @app.get("/",include_in_schema=False)
 def home():
@@ -35,3 +36,5 @@ def rh_analise(
     return analise(secretaria,cargo,vinculo,situacao,faixa,tipo_salario)
 
 app.include_router(rh_folha_router)
+
+app.include_router(rh_inteligencia_router)
