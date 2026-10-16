@@ -118,7 +118,7 @@ export default function InteligenciaRH(){
     <div className="int-panel int-chat">
       <div className="int-chat-head"><div className="int-chat-symbol"><Bot size={22}/></div><div><h2>Assistente Inteligente Viço GOV</h2><p>Consultas agregadas verificáveis, sem acesso livre ao banco de dados</p></div><span className="int-chat-mode">{modo==='gemini'?'Gemini ativo':modo==='sem_chave_gemini'?'Modo básico':'Consulta supervisionada'}</span></div>
       <div className="int-chat-feed" aria-live="polite">{mensagens.map((m,i)=><div className={'int-message '+m.autor} key={i}>
-       <p>{m.text}</p>{m.fontes?.length?<div className="int-sources">{m.fontes.map(f=><a href={f} target="_blank" rel="noopener noreferrer" key={f}>Fonte oficial <ExternalLink size={12}/></a>)}</div>:null}
+       <p>{m.texto}</p>{m.fontes?.length?<div className="int-sources">{m.fontes.map(f=><a href={f} target="_blank" rel="noopener noreferrer" key={f}>Fonte oficial <ExternalLink size={12}/></a>)}</div>:null}
       </div>)}{enviando&&<p className="int-muted">Consultando os dados disponíveis...</p>}</div>
       {mensagens.length<=2&&<div className="int-suggestions">{sugestoes.map(q=><button key={q} type="button" disabled={enviando} onClick={()=>enviar(q)}>{q}</button>)}</div>}
       <form className="int-chat-form" onSubmit={e=>{e.preventDefault();enviar(pergunta)}}><input aria-label="Perguntar ao assistente" value={pergunta} maxLength={600} onChange={e=>setPergunta(e.target.value)} placeholder="Pergunte sobre salários, secretarias, gastos e legislação..."/><button type="submit" disabled={enviando||pergunta.trim().length<4} aria-label="Enviar pergunta"><Send size={18}/></button></form>
