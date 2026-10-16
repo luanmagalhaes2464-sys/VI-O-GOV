@@ -1,30 +1,11 @@
 'use client';
-import {useMemo} from 'react';
 import {Calculator,BookOpen,ExternalLink} from 'lucide-react';
-import {unidadesEscolares} from '../lib/educacao-dados';
-const faixas=['Até 6','7–10','11–14','15–19','20–25','26–30','Acima de 30'];
-const regras=[
- {cargo:'Auxiliar de Serviço Escolar',quantidades:[4,5,6,8,14,14,16]},
- {cargo:'Assistente Administrativo Escolar',quantidades:[1,1,2,4,6,6,6]},
- {cargo:'Professor eventual',quantidades:[1,1,2,2,2,2,2]}
-];
-const faixa=(n:number|null)=>{
- if(n==null||n<=0||n===30)return null;
- if(n<=6)return 0;if(n<=10)return 1;if(n<=14)return 2;
- if(n<=19)return 3;if(n<=25)return 4;if(n<=29)return 5;return 6;
-};
+import {faixasTurmas,regrasEscolares,unidadesDimensionamento,totalTurmas,totaisDimensionamento} from '../lib/dimensionamento-escolar';
 const numero=(n:number|null)=>n==null?'—':new Intl.NumberFormat('pt-BR').format(n);
 export default function EducacaoDimensionamento(){
- const linhas=useMemo(()=>unidadesEscolares.map(e=>{
-  const indice=faixa(e.turmas);
-  return {id:e.codigo_inep,nome:e.nome,turmas:e.turmas,
-   auxiliar:indice===null?null:regras[0].quantidades[indice],
-   administrativo:indice===null?null:regras[1].quantidades[indice],
-   eventual:indice===null?null:regras[2].quantidades[indice]};
- }),[]);
- const total=(k:'auxiliar'|'administrativo'|'eventual')=>
-  linhas.some(r=>r[k]===null)?null:linhas.reduce((t,r)=>t+(r[k]||0),0);
- const turmas=linhas.reduce((t,r)=>t+(r.turmas||0),0);
+ const linhas=unidadesDimensionamento;
+ const total=(k:'auxiliar'|'administrativo'|'eventual')=>totaisDimensionamento[k];
+ const turmas=totalTurmas;
  return <section className="edu-panel edu-dimensionamento">
   <div className="edu-panel-heading"><div>
    <h2><Calculator size={18}/> Parâmetros de dimensionamento — Educação</h2>
@@ -39,12 +20,12 @@ export default function EducacaoDimensionamento(){
   <details className="edu-dimension-details"><summary><BookOpen size={15}/> Consultar cálculo por escola e faixas da lei</summary>
    <div className="edu-tablebox"><table className="edu-table edu-dimension-table">
     <thead><tr><th>Escola municipal</th><th>Turmas (2025)</th><th>Auxiliar de serviço</th><th>Assistente administrativo</th><th>Professor eventual</th></tr></thead>
-    <tbody>{linhas.map(x=><tr key={x.id}><td><b>{x.nome}</b></td><td>{numero(x.turmas)}</td><td>{numero(x.auxiliar)}</td><td>{numero(x.administrativo)}</td><td>{numero(x.eventual)}</td></tr>)}</tbody>
+    <tbody>{linhas.map(x=><tr key={x.codigo_inep}><td><b>{x.nome}</b></td><td>{numero(x.turmas)}</td><td>{numero(x.auxiliar)}</td><td>{numero(x.administrativo)}</td><td>{numero(x.eventual)}</td></tr>)}</tbody>
    </table></div>
    <h3>Referência de quantitativos por faixa de turmas</h3>
    <div className="edu-tablebox"><table className="edu-table edu-dimension-table">
-    <thead><tr><th>Cargo / faixa</th>{faixas.map(f=><th key={f}>{f}</th>)}</tr></thead>
-    <tbody>{regras.map(r=><tr key={r.cargo}><td><b>{r.cargo}</b></td>{r.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
+    <thead><tr><th>Cargo / faixa</th>{faixasTurmas.map(f=><th key={f}>{f}</th>)}</tr></thead>
+    <tbody>{regrasEscolares.map(r=><tr key={r.cargo}><td><b>{r.cargo}</b></td>{r.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
    </table></div>
   </details>
 
