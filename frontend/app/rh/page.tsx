@@ -4,7 +4,6 @@ import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart
 import {brl,num} from '../../lib/api';
 import RHExploracao from '../../components/rh-exploracao';
 import RHAuditoria from '../../components/rh-auditoria';
-import RHAssistenteFlutuante from '../../components/rh-assistente-flutuante';
 import './rh-auditoria.css';
 import FiltroPesquisavel from '../../components/filtro-pesquisavel';
 type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
@@ -48,6 +47,13 @@ function Rosca({dados}:{dados:Grupo[]}){
 }
 export default function RecursosHumanos(){
  const [selecionados,setSelecionados]=useState<string[]>(['2026-01']);
+ // Deep link da Visão Geral: preserva o mês e aplica o departamento selecionado.
+ useEffect(()=>{
+  const qs=new URLSearchParams(window.location.search);
+  const mes=qs.get('mes');const departamento=qs.get('departamento');
+  if(mes&&/^2026-0[1-7]$/.test(mes))setSelecionados([mes]);
+  if(departamento&&departamento.length<=160){setF(prev=>({...prev,departamento}));setFiltrosAbertos(true)}
+ },[]);
  const [aberto,setAberto]=useState(false),[filtrosAbertos,setFiltrosAbertos]=useState(true),[f,setF]=useState<Filtros>(vazio),[pagina,setPagina]=useState(1);
  const [dados,setDados]=useState<Painel|null>(null),[carregando,setCarregando]=useState(true),[erro,setErro]=useState('');
  const [pessoa,setPessoa]=useState<Row|null>(null);
@@ -107,7 +113,6 @@ export default function RecursosHumanos(){
       <button className="rh26-dropdown-close" type="button" onClick={()=>setAberto(false)}>Aplicar seleção</button></div>}
     </div>
   </section>
-  <div className="rh26-source"><Info size={16}/><span><b>7 competências no banco.</b> Os dados de fevereiro a julho foram importados dos CSVs fornecidos; a coleta automática do portal ainda não está habilitada. A folha de janeiro mantém ressalva de conciliação.</span></div>
   {erro&&<div className="rh-import-error"><AlertTriangle size={17}/>{erro}</div>}
   <section className="rh26-filter-box">
    <div className="rh26-box-head"><button type="button" className="rh26-filter-toggle" onClick={()=>setFiltrosAbertos(v=>!v)} aria-expanded={filtrosAbertos} aria-controls="rh26-filtros">
@@ -168,8 +173,6 @@ export default function RecursosHumanos(){
    {!carregando&&dados?.pessoas.length===0&&<div className="rh29-table-empty">Nenhum servidor encontrado. Tente outro nome, matrícula, cargo ou departamento.</div>}
    <div className="rh26-pagination"><button onClick={()=>setPagina(x=>Math.max(1,x-1))} disabled={pagina===1||carregando}><ChevronLeft size={15}/>Anterior</button><span>Página {pagina} de {Math.max(1,Math.ceil((dados?.total_pessoas??0)/20))}</span><button onClick={()=>setPagina(x=>x+1)} disabled={carregando||!dados||(pagina*20>=dados.total_pessoas)}>Próxima<ChevronRight size={15}/></button></div>
   </section>
-  <div className="rh26-method"><Info size={17}/>{dados?.aviso||'Dados extraídos dos relatórios oficiais, com agrupamento de inclusões de pagamento por vínculo e competência.'}</div>
-  <RHAssistenteFlutuante mes={mesReferencia}/>
   {pessoa&&<div className="rh26-overlay" onClick={()=>setPessoa(null)}><div className="rh26-modal" role="dialog" aria-modal="true" aria-label="Ficha do vínculo" onClick={e=>e.stopPropagation()}>
    <div className="rh26-modal-head"><div><h2>{pessoa.nome}</h2><small>{pessoa.mes.slice(-2)+'/2026'} · matrícula {pessoa.matricula}</small></div><button aria-label="Fechar" onClick={()=>setPessoa(null)}><X size={19}/></button></div>
    <div className="rh26-details">{[
