@@ -202,3 +202,7 @@
 .vico-ia-upload small{font-size:10px;color:#8799a9;line-height:1.6}
 .vico-ia-feedback{font-size:11px;color:#375f72;line-height:1.6;margin:0}
 @media(max-width:540px){.rh-bot-panel{width:calc(100vw - 20px);height:min(670px,calc(100dvh - 90px))}.rh-bot-wrap{right:10px;bottom:10px}}
+
+
+/* Legislação do magistério: critérios visíveis no comparador sem vagas inventadas. */
+.rh-a-rule{display:inline-block;color:#566a7b;background:#f1f5f8;border:1px solid #e5ecf1;border-radius:6px;padding:6px 9px;font-size:10.5px;line-height:1.4;font-weight:600;white-space:normal}
