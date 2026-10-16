@@ -136,3 +136,10 @@
 .rh-a-school-table td:first-child{text-align:left}
 .rh-a-school-table tr:last-child td{border-bottom:0}
 @media(max-width:700px){.rh-a-school-law-head{flex-direction:column}.rh-a-school-law-head>span{white-space:normal}}
+
+
+/* Clique nas barras abre detalhamento nominal da rubrica em nova aba */
+.rh-a-dist-link{text-decoration:none;color:inherit;cursor:pointer;border-radius:7px;padding:10px 8px;margin-left:-8px;margin-right:-8px;transition:background .15s}
+.rh-a-dist-link:hover{background:#f6f9fa}
+.rh-a-dist-link:focus-visible{outline:2px solid #a83d49;outline-offset:1px}
+.rh-a-dist-link:hover>span{color:#a93c49;font-weight:750}
