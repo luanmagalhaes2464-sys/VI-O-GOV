@@ -9,7 +9,7 @@ export default function EducacaoDimensionamento(){
  return <section className="edu-panel edu-dimensionamento">
   <div className="edu-panel-heading"><div>
    <h2><Calculator size={18}/> Parâmetros de dimensionamento — Educação</h2>
-   <p>Simulação indicativa por unidade escolar baseada nas faixas de turmas do Anexo V do Estatuto do Magistério (Lei municipal nº 1.368/1999, alterações da Lei nº 3.003/2023).</p>
+
   </div><span className="edu-counter">Censo Escolar 2025</span></div>
   <div className="edu-dimension-stats">
    <div><span>Escolas cadastradas</span><strong>{numero(linhas.length)}</strong></div>
