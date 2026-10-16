@@ -6,6 +6,7 @@ from typing import Literal
 from .rh_data import resumo, analise
 from .rh_db import router as rh_folha_router
 from .rh_inteligencia import router as rh_inteligencia_router
+from .rh_auditoria import router as rh_auditoria_router
 
 app=FastAPI(title="VIÇO GOV | Recursos Humanos",version="0.2.0",
  description="Painel baseado na folha de pagamento oficial. A ausência de dados não é zero.")
@@ -38,3 +39,5 @@ def rh_analise(
 app.include_router(rh_folha_router)
 
 app.include_router(rh_inteligencia_router)
+
+app.include_router(rh_auditoria_router)
