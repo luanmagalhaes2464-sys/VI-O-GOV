@@ -56,3 +56,18 @@
 .edu-download:hover{background:#8c303c}
 @media(max-width:1050px){.edu-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.edu-grid{grid-template-columns:1fr}.edu-ingestion{align-items:flex-start}}
 @media(max-width:650px){.edu-heading{flex-direction:column}.edu-location{align-self:flex-start}.edu-metrics{gap:9px}.edu-stat{padding:13px;min-height:160px}.edu-stat>strong{font-size:23px}.edu-stat-top{font-size:10px}.edu-panel{padding:15px}.edu-panel-heading{flex-wrap:wrap}.edu-ingestion{flex-direction:column}.edu-download{width:100%}.edu-heading h1{font-size:24px}}
+
+/* Educação: cadastro escolar integral, consulta de docentes ao RH */
+.edu-table{min-width:820px}
+.edu-table td:last-child{white-space:nowrap}
+.edu-individual-source{display:inline-flex;align-items:center;gap:5px;color:#a93c49;font-weight:720}
+.edu-table-notice{font-size:10.5px;line-height:1.7;color:#8297a9;margin:15px 0 0}
+.edu-month-selector{display:flex;align-items:center;gap:7px;border:1px solid #e1e8ee;border-radius:8px;padding:8px 10px;color:#8799a8;background:#fff}
+.edu-month-selector select{background:transparent;border:0;outline:0;color:#425b70;font-size:11px;max-width:170px}
+.edu-query-error{font-size:11px;color:#ab4955;background:#fff6f6;border-radius:8px;padding:11px}
+.edu-rh-summary{display:flex;align-items:center;gap:11px;background:#f6f9fb;border:1px solid #e7ecf2;border-radius:9px;padding:13px 16px;margin-bottom:11px}
+.edu-rh-summary b{font-size:24px;color:#334e64}.edu-rh-summary span{font-size:11px;color:#73899b;line-height:1.5}
+.edu-role-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.edu-role-list>div{display:flex;align-items:center;justify-content:space-between;gap:7px;background:#fff;border:1px solid #edf1f4;border-radius:8px;padding:11px 13px}
+.edu-role-list span{font-size:11px;color:#536d80}.edu-role-list b{font-size:12px;color:#304a60}
+@media(max-width:650px){.edu-role-list{grid-template-columns:1fr}.edu-rh-summary{align-items:flex-start}.edu-panel-heading .edu-month-selector{flex-shrink:0}}
