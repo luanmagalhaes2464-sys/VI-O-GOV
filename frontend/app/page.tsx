@@ -30,7 +30,6 @@ export default function Home(){
   return()=>{ativo=false};
  },[mes]);
  const porSlug=useMemo(()=>new Map((dados?.secretarias||[]).map(s=>[s.slug,s])),[dados]);
- const outrosBruto=dados?.outros.reduce((t,x)=>t+x.bruto,0)||0;
  return <div className="vg-page">
   <div className="vg-heading">
    <div><div className="vg-eyebrow">VIÇO GOV / VISÃO GERAL</div>
@@ -67,8 +66,6 @@ export default function Home(){
     </Link>;
    })}
   </div>
-  {dados?.disponivel&&dados.outros.length>0&&<p className="vg-outros">
-    Órgãos não incluídos nos cards de secretarias ({dados.outros.map(o=>o.departamento).join(' · ')}): {moeda(outrosBruto)} da folha bruta. Esses pagamentos não foram atribuídos artificialmente a nenhuma secretaria.
-   </p>}
+
  </div>;
 }
