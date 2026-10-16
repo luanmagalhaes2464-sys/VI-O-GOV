@@ -66,8 +66,8 @@ export default function FiltroPesquisavel({label,placeholder,value,options,onCha
   }else if(event.key==='Enter'){
    if(aberto){
     event.preventDefault();
-    if(ativo===0){escolher('');return;}
-    const escolhido=resultados[ativo-1];
+    if(ativo===0&&!pesquisa.trim()){escolher('');return;}
+    const escolhido=resultados[ativo===0?0:ativo-1];
     if(escolhido!==undefined)escolher(escolhido.value);
    }
   }else if(event.key==='Escape'){
