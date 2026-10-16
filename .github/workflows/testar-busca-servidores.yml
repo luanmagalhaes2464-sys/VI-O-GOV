@@ -1,0 +1,43 @@
+name: Validar pesquisa de Servidores e remunerações
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/testar-busca-servidores.yml']
+permissions: {contents: read}
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Confirmar pesquisa em toda a base e independência dos gráficos
+        run: |
+          python - <<'PY'
+          import json,time,urllib.request,urllib.parse
+          base='https://vico-gov-web-vicosa.onrender.com/api/rh/painel'
+          def consultar(**args):
+            url=base+'?'+urllib.parse.urlencode(args)
+            for i in range(4):
+              try:
+                with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'VIÇO GOV qualidade de RH'}),timeout=120) as resp:
+                  assert resp.status==200,resp.status
+                  return json.load(resp)
+              except Exception as exc:
+                if i==3:raise
+                print('Tentativa',i+1,'aguardando publicação',type(exc).__name__)
+                time.sleep(8)
+          baseline=consultar(meses='2026-01,2026-02')
+          resultado=consultar(meses='2026-01,2026-02',tabela_busca='DIRETOR')
+          assert resultado['total_pessoas']>0,resultado['total_pessoas']
+          assert resultado['total_pessoas']<=baseline['total_pessoas']
+          assert resultado['totais']==baseline['totais'],'Filtro da tabela não pode alterar indicadores'
+          assert resultado['por_departamento']==baseline['por_departamento'],'Filtro da tabela não pode alterar gráfico'
+          assert all(any('diretor' in str(row.get(field,'')).lower() for field in ('nome','matricula','cargo','departamento')) for row in resultado['pessoas'])
+          vazio=consultar(meses='2026-01,2026-02',tabela_busca='ZZZ_TERMOINEXISTENTE_67890')
+          assert vazio['total_pessoas']==0 and vazio['pessoas']==[]
+          assert vazio['totais']==baseline['totais']
+          pagina=consultar(meses='2026-01,2026-02',tabela_busca='DIRETOR',pagina=2)
+          if resultado['total_pessoas']>20:assert pagina['pessoas']
+          print('OK: busca por cargo/nome/matricula/departamento; paginação e gráficos preservados.')
+          PY
