@@ -71,3 +71,17 @@
 .edu-role-list>div{display:flex;align-items:center;justify-content:space-between;gap:7px;background:#fff;border:1px solid #edf1f4;border-radius:8px;padding:11px 13px}
 .edu-role-list span{font-size:11px;color:#536d80}.edu-role-list b{font-size:12px;color:#304a60}
 @media(max-width:650px){.edu-role-list{grid-template-columns:1fr}.edu-rh-summary{align-items:flex-start}.edu-panel-heading .edu-month-selector{flex-shrink:0}}
+
+
+/* Parâmetros de dimensionamento escolar — somente na Educação */
+.edu-dimension-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.edu-dimension-stats>div{border:1px solid #e4eaef;background:#f7fafb;border-radius:9px;padding:14px;min-width:0}
+.edu-dimension-stats span{display:block;font-size:10px;color:#70869a;line-height:1.5}
+.edu-dimension-stats strong{display:block;font-size:24px;margin-top:8px;color:#314c62}
+.edu-dimension-details{margin:15px 0;padding:12px;background:#fff;border:1px solid #e5eaf0;border-radius:8px}
+.edu-dimension-details summary{display:flex;align-items:center;gap:7px;color:#426a81;cursor:pointer;font-weight:750;font-size:11px}
+.edu-dimension-details h3{font-size:12px;color:#4a6378;margin:18px 0 7px}
+.edu-dimension-table{min-width:690px}
+.edu-dimension-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px}
+.edu-dimension-links a{display:inline-flex;gap:5px;align-items:center;color:#a83d49;font-size:11px;font-weight:740}
+@media(max-width:900px){.edu-dimension-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
