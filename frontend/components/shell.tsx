@@ -1,20 +1,56 @@
 'use client';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {useState} from 'react';
-import {Menu,X} from 'lucide-react';
+import {useEffect,useState} from 'react';
+import {Menu,X,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
 import RHAssistenteFlutuante from './rh-assistente-flutuante';
 import {menu} from './navigation';
 
+const STORAGE_KEY='vico-gov.sidebar-collapsed';
 export default function Shell({children}:{children:React.ReactNode}){
- const pathname=usePathname(),[open,setOpen]=useState(false);
- return <div className="app-layout rh-shell">
+ const pathname=usePathname();
+ const [open,setOpen]=useState(false);
+ const [collapsed,setCollapsed]=useState(false);
+ useEffect(()=>{
+  try{setCollapsed(window.localStorage.getItem(STORAGE_KEY)==='true')}catch{/* Sem armazenamento: manter expandida */}
+ },[]);
+ const toggleCollapsed=()=>{
+  setCollapsed(current=>{
+   const next=!current;
+   try{window.localStorage.setItem(STORAGE_KEY,String(next))}catch{/* Preferência somente nesta sessão */}
+   return next;
+  });
+ };
+ return <div className={'app-layout rh-shell'+(collapsed?' sidebar-collapsed':'')}>
   {open&&<div className="overlay" onClick={()=>setOpen(false)}/>}
-  <aside className={'sidebar '+(open?'show':'')}>
-   <div className="brand"><div className="brand-icon">V</div><div><strong>VIÇO <span>GOV</span></strong><small>INTELIGÊNCIA MUNICIPAL</small></div><button onClick={()=>setOpen(false)} className="mobile-only close-btn" aria-label="Fechar menu"><X size={18}/></button></div>
-   <nav aria-label="Navegação principal" className="navigation">{menu.map(gr=><div className="nav-group" key={gr.section}><div className="nav-title">{gr.section}</div>{gr.items.map(({slug,name,icon:Icon})=><Link key={slug} onClick={()=>setOpen(false)} href={slug?'/'+slug:'/'} className={'nav-item '+(pathname===(slug?'/'+slug:'/')?'active':'')}><Icon size={18}/><span>{name}</span></Link>)}</div>)}</nav>
+  <aside className={'sidebar '+(open?'show':'')} aria-label="Menu lateral">
+   <div className="brand">
+    <div className="brand-icon" aria-hidden="true">V</div>
+    <div className="brand-name"><strong>VIÇO <span>GOV</span></strong><small>INTELIGÊNCIA MUNICIPAL</small></div>
+    <button onClick={()=>setOpen(false)} className="mobile-only close-btn" aria-label="Fechar menu"><X size={18}/></button>
+   </div>
+   <button type="button" className="sidebar-collapse-toggle" onClick={toggleCollapsed}
+    aria-label={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
+    title={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
+    aria-expanded={!collapsed}>
+    {collapsed?<PanelLeftOpen size={17}/>:<PanelLeftClose size={17}/>}
+   </button>
+   <nav aria-label="Navegação principal" className="navigation">
+    {menu.map(group=><div className="nav-group" key={group.section}>
+     <div className="nav-title">{group.section}</div>
+     {group.items.map(({slug,name,icon:Icon})=><Link key={slug} onClick={()=>setOpen(false)}
+      href={slug?'/'+slug:'/'} title={collapsed?name:undefined} aria-label={name}
+      className={'nav-item '+(pathname===(slug?'/'+slug:'/')?'active':'')}>
+      <Icon size={18}/><span className="nav-item-text">{name}</span>
+     </Link>)}
+    </div>)}
+   </nav>
   </aside>
-  <div className="main-layout"><header className="topbar"><div className="top-left"><button onClick={()=>setOpen(true)} className="mobile-only close-btn" aria-label="Abrir menu"><Menu size={21}/></button><span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':'Prefeitura Municipal de Viçosa · Visão Geral'}</span></div></header>
+  <div className="main-layout">
+   <header className="topbar"><div className="top-left">
+    <button onClick={()=>setOpen(true)} className="mobile-only close-btn" aria-label="Abrir menu"><Menu size={21}/></button>
+    <span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':'Prefeitura Municipal de Viçosa · Visão Geral'}</span>
+   </div></header>
    <main className="content">{children}</main>
   </div>
   <RHAssistenteFlutuante/>
