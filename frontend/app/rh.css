@@ -419,3 +419,27 @@ button.rh27-person:hover,button.rh27-person.selected{background:#f5f8fb}
 .rh27-pay-detail>.rh27-note:last-child svg{flex-shrink:0}
 @media(max-width:700px){.rh27-modal{padding:14px}.rh27-summary{grid-template-columns:1fr 1fr}.rh27-pay-totals{grid-template-columns:1fr 1fr}.rh27-summary strong{font-size:15px}}
 @media(max-width:400px){.rh27-summary{grid-template-columns:1fr}.rh27-person{align-items:flex-start;flex-direction:column}}
+
+
+/* Filtros de RH com pesquisa incremental */
+.rh28-field{display:flex;flex-direction:column;gap:7px;min-width:0;position:relative}
+.rh28-field:focus-within{z-index:50}
+.rh28-field>label{font-size:10.5px;color:#71869a;font-weight:700}
+.rh28-combobox{position:relative;min-width:0;width:100%}
+.rh28-combobox-control{height:39px;display:flex;align-items:center;gap:9px;padding:0 8px 0 11px;border:1px solid #dfe6ec;border-radius:8px;background:#fff;color:#334d64;transition:border-color .15s,box-shadow .15s}
+.rh28-combobox-control.rh28-combobox-open,.rh28-combobox-control:focus-within{border-color:#bd7780;box-shadow:0 0 0 2px #ad3c491b}
+.rh28-combobox-search-icon{flex-shrink:0;color:#7e95a8}
+.rh28-combobox-control>input{flex:1;min-width:0;width:100%;border:0;outline:0;background:transparent;font:inherit;font-size:11px;font-weight:600;color:#354e63;padding:8px 0}
+.rh28-combobox-control>input::placeholder{color:#97a7b4;font-weight:400}
+.rh28-combobox-control>button{display:flex;align-items:center;justify-content:center;border:0;background:none;color:#8b9aaa;cursor:pointer;padding:4px;flex-shrink:0}
+.rh28-combobox-control>button:hover{color:#a93d4b;background:#f6f8fa;border-radius:5px}
+.rh28-combobox-open .rh28-arrow svg{transform:rotate(180deg)}
+.rh28-options{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:120;max-height:257px;overflow-y:auto;overscroll-behavior:contain;border-radius:9px;background:#fff;border:1px solid #dbe4eb;box-shadow:0 14px 30px #213e551e;padding:5px;scrollbar-width:thin}
+.rh28-option{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:34px;border:0;border-radius:6px;padding:9px 10px;background:#fff;text-align:left;color:#445a70;font-size:11px;font-weight:500;line-height:1.35;cursor:pointer;overflow-wrap:anywhere}
+.rh28-option>span{min-width:0}
+.rh28-option:hover,.rh28-option.rh28-focused{background:#f3f6fa;color:#a43d49}
+.rh28-option[aria-selected="true"]{color:#a43d49;font-weight:750}
+.rh28-option svg{flex-shrink:0}
+.rh28-empty,.rh28-more{padding:10px;color:#7e90a2;line-height:1.45;font-size:11px}
+.rh28-more{border-top:1px solid #e6ecf2;background:#fbfcfd}
+@media(max-width:620px){.rh28-options{max-height:225px}}
