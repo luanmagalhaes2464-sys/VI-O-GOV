@@ -5,7 +5,7 @@ export async function api<T>(path:string,init?:RequestInit):Promise<ApiResponse<
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),55000);
  try{
-   const target=path.startsWith('/api/v1/rh/folha/')?path.replace('/api/v1/rh/folha/','/api/rh/folha/'):BASE+path;
+   const target=path.startsWith('/api/v1/rh/folha/')?path.replace('/api/v1/rh/folha/','/api/rh/folha/'):path.startsWith('/api/rh/')?path:BASE+path;
    const response=await fetch(target,{cache:'no-store',...init,signal:controller.signal});
    if(!response.ok)return {data:null,error:'Erro '+response.status+': a API de dados não conseguiu atender a consulta.'};
    return {data:await response.json() as T,error:null};
