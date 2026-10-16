@@ -51,7 +51,7 @@ export async function POST(req:NextRequest){
    .find(x=>new RegExp('(^|[^A-Z])'+x.nome+'([^A-Z]|$)').test(perguntaNormal));
   const mes=mesSolicitado?.mes||String(body?.mes||'2026-07');
   const deptoAtual=String(body?.departamento||'').slice(0,160);
-  const historico=Array.isArray(body?.historico)?
+  const historico:{autor:string;texto:string}[]=Array.isArray(body?.historico)?
    body.historico.slice(-10).filter((x:unknown)=>typeof x==='object'&&x!==null)
    .map((x:{autor?:string;texto?:string})=>({
     autor:x.autor==='assistant'?'assistente':'usuario',texto:String(x.texto||'').slice(0,1200)
