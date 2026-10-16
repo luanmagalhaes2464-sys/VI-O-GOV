@@ -457,3 +457,13 @@ button.rh27-person:hover,button.rh27-person.selected{background:#f5f8fb}
 .rh29-table-search button:hover{color:#aa3e49;background:#fbeef0}
 .rh29-table-empty{padding:25px 15px;text-align:center;background:#fafbfc;border-radius:8px;font-size:11px;line-height:1.5;color:#8397a8}
 @media(max-width:620px){.rh29-table-tools>span{width:100%}.rh29-table-search{max-width:none}}
+
+
+/* Filtros recolhíveis com estados preservados */
+.rh26-box-head .rh26-filter-toggle{display:inline-flex;align-items:center;gap:9px;background:none;border:0;padding:5px 3px;color:#425a6f;min-width:0;text-align:left}
+.rh26-filter-toggle h2{font-weight:750;white-space:nowrap}
+.rh26-filter-toggle span{color:#9aa9b6;font-size:10.5px;font-weight:500;margin-left:6px}
+.rh26-filter-toggle .rh26-rotate{transform:rotate(180deg)}
+.rh26-filter-toggle:hover h2{color:#a93c49}
+.rh26-filter-box:has(.rh26-filter-toggle[aria-expanded="false"]){padding-bottom:14px}
+.rh26-filter-box:has(.rh26-filter-toggle[aria-expanded="false"]) .rh26-box-head{margin-bottom:0}
