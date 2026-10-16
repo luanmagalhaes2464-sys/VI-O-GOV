@@ -28,16 +28,16 @@ export default function RHAuditoria({mes}:{mes:string}){
  const [loading,setLoading]=useState(true),[erro,setErro]=useState(''),[visivel,setVisivel]=useState<Tipo|null>(null);
  const [linha,setLinha]=useState(''),[filtroCargo,setFiltroCargo]=useState('');
  const mesNum=Number(mes.slice(-2)),periodo=Math.ceil(mesNum/4);
- useEffect(()=>{let alive=true;setLoading(true);setErro('');setVisivel(null);setLinha('');setFiltroCargo('');
-  api<Auditoria>('/api/v1/rh/auditoria/resumo?mes='+mes).then(r=>{
-   if(!alive)return;if(r.data)setD(r.data);else{setD(null);setErro(r.error||'Falha na consulta de rubricas.')}
+ useEffect(()=>{
+  let alive=true;setLoading(true);setErro('');setQuadroErro('');
+  setD(null);setQuadro(null);setVisivel(null);setLinha('');setFiltroCargo('');
+  // A mesma API Next.js do painel RH busca o Neon: sem cold start do backend Render.
+  api<{auditoria:Auditoria;quadro:Quadro}>('/api/rh/auditoria?mes='+mes).then(r=>{
+   if(!alive)return;
+   if(r.data){setD(r.data.auditoria);setQuadro(r.data.quadro);}
+   else{setErro(r.error||'Não foi possível consultar as rubricas da folha.');setQuadroErro('Os dados de cargos não foram carregados.');}
   }).finally(()=>{if(alive)setLoading(false)});
   return()=>{alive=false};
- },[mes]);
- useEffect(()=>{let alive=true;setQuadro(null);setQuadroErro('');
-  api<Quadro>('/api/v1/rh/auditoria/cargos?mes='+mes).then(r=>{
-    if(!alive)return;if(r.data)setQuadro(r.data);else setQuadroErro(r.error||'Não foi possível consultar os cargos.');
-  });return()=>{alive=false};
  },[mes]);
  useEffect(()=>{let alive=true;setF(null);
   api<Fiscal>('/api/v1/rh/inteligencia/fiscal?ano=2026&periodo='+periodo).then(r=>{if(alive)setF(r.data)});
@@ -122,7 +122,7 @@ export default function RHAuditoria({mes}:{mes:string}){
   <div className="rh-a-fiscal-top">
    <article><span>Folha bruta de {mes.slice(-2)}/2026</span><strong>{brl(d?.financeiro.bruto)}</strong><small>Valores registrados no banco do RH</small></article>
    <article><span>Variação ante o mês anterior</span><strong>{d?.financeiro.variacao==null?'—':brl(d.financeiro.variacao)}</strong><small>Inclui parcelas eventuais, não equivale à DTP fiscal</small></article>
-   <article><span>Verbas eventuais identificadas</span><strong>{loading?'…':brl(totalEventos)}</strong><small>13º, férias, retroativos e indenizações</small></article>
+   <article><span>Verbas eventuais identificadas</span><strong>{loading||!d?'—':brl(totalEventos)}</strong><small>13º, férias, retroativos e indenizações</small></article>
    <article><span>DTP/RCL no RGF do Executivo</span><strong>{pct(f?.percentual_dtp_executivo)}</strong><small>{f?.percentual_dtp_executivo==null?'Aguardando fonte homologada':'RGF '+periodo+'º quadrimestre de 2026'}</small></article>
   </div>
   {d&&<div className="rh-a-distribution"><div className="rh-a-dist-head"><h3>De onde vem o valor da folha?</h3><p>Classificação real dos proventos por rubrica, sem estimar despesa fiscal</p></div>
