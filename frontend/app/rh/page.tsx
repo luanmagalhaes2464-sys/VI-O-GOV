@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X} from 'lucide-react';
 import {brl,num} from '../../lib/api';
 import RHExploracao from '../../components/rh-exploracao';
+import FiltroPesquisavel from '../../components/filtro-pesquisavel';
 type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;bruto:number;liquido:number;descontos:number;quinquenio:number};
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
 type Grupo={nome:string;quantidade:number;bruto?:number;media_bruta?:number;maior_remuneracao?:number};
@@ -69,9 +70,9 @@ export default function RecursosHumanos(){
  });setPagina(1)}
  function update(key:keyof Filtros,v:string){setF(old=>({...old,[key]:v}));setPagina(1)}
  const options=dados?.opcoes||{};
- const optionsFor=(name:keyof Filtros,placeholder:string)=><select value={f[name]} onChange={e=>update(name,e.target.value)}>
-  <option value="">{placeholder}</option>{(options[name]||[]).map(s=><option key={s} value={s}>{s}</option>)}
- </select>;
+ const optionsFor=(name:keyof Filtros,label:string,placeholder:string)=><FiltroPesquisavel
+  label={label} placeholder={placeholder} value={f[name]}
+  options={options[name]||[]} onChange={value=>update(name,value)}/>;
  const top=itens.reduce((v,x)=>Math.max(v,x.indicadores?.bruto||0),1);
  return <div className="rh-page rh26-page">
   <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
@@ -96,17 +97,21 @@ export default function RecursosHumanos(){
    <div className="rh26-box-head"><div><Filter size={17}/><h2>Filtros de análise</h2></div><button type="button" onClick={()=>{setF({...vazio});setPagina(1)}}><RefreshCcw size={14}/> Limpar filtros</button></div>
    <div className="rh26-filters">
     <label>Pesquisar servidor ou matrícula<div className="rh26-search"><Search size={14}/><input value={f.busca} placeholder="Nome ou matrícula" onChange={e=>update('busca',e.target.value)}/></div></label>
-    <label>Secretaria / departamento{optionsFor('departamento','Todos os departamentos')}</label>
-    <label>Cargo / função{optionsFor('cargo','Todos os cargos')}</label>
-    <label>Vínculo{optionsFor('vinculo','Todos os vínculos')}</label>
-    <label>Local de trabalho{optionsFor('local','Todos os locais')}</label>
-    <label>Jornada semanal{optionsFor('jornada','Todas as jornadas')}</label>
-    <label>Categoria<select value={f.situacao} onChange={e=>update('situacao',e.target.value)}>
-     <option value="">Todas as categorias</option><option value="efetivo">Efetivos</option><option value="comissionado">Comissionados</option>
-     <option value="aposentado">Aposentados identificados</option><option value="estagiario">Estagiários</option><option value="contratado">Contratados</option>
-    </select></label>
-    <label>Faixa salarial<select value={f.faixa} onChange={e=>update('faixa',e.target.value)}>{faixas.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-    <label>Base salarial<select value={f.base} onChange={e=>update('base',e.target.value)}><option value="bruto">Remuneração bruta</option><option value="liquido">Remuneração líquida</option></select></label>
+    {optionsFor('departamento','Secretaria / departamento','Todos os departamentos')}
+    {optionsFor('cargo','Cargo / função','Todos os cargos')}
+    {optionsFor('vinculo','Vínculo','Todos os vínculos')}
+    {optionsFor('local','Local de trabalho','Todos os locais')}
+    {optionsFor('jornada','Jornada semanal','Todas as jornadas')}
+    <FiltroPesquisavel label="Categoria" placeholder="Todas as categorias" value={f.situacao}
+      options={[{value:'efetivo',label:'Efetivos'},{value:'comissionado',label:'Comissionados'},
+       {value:'aposentado',label:'Aposentados identificados'},{value:'estagiario',label:'Estagiários'},
+       {value:'contratado',label:'Contratados'}]} onChange={value=>update('situacao',value)}/>
+    <FiltroPesquisavel label="Faixa salarial" placeholder="Todas as faixas" value={f.faixa}
+      options={faixas.filter(([value])=>value).map(([value,label])=>({value,label}))}
+      onChange={value=>update('faixa',value)}/>
+    <FiltroPesquisavel label="Base salarial" placeholder="Escolher base salarial" value={f.base}
+      options={[{value:'bruto',label:'Remuneração bruta'},{value:'liquido',label:'Remuneração líquida'}]}
+      onChange={value=>update('base',value||'bruto')}/>
    </div>
   </section>
   <div className="rh26-cards">
