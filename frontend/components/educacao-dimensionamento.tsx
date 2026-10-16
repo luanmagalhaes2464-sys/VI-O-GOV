@@ -17,9 +17,14 @@ export default function EducacaoDimensionamento(){
    <div><span>Auxiliares de serviço escolar</span><strong>{numero(total('auxiliar'))}</strong></div>
    <div><span>Assistentes administrativos</span><strong>{numero(total('administrativo'))}</strong></div>
   </div>
+  <div className="edu-docentes-formulas">
+   <div><strong>Professor I e II</strong><span>1 por turma da etapa correspondente</span></div>
+   <div><strong>Professor III</strong><span>Horas-aula totais ÷ carga horária básica</span></div>
+   <div><strong>Turmas cadastradas</strong><span>{numero(turmas)} (sem separação por etapa)</span></div>
+  </div>
   <details className="edu-dimension-details"><summary><BookOpen size={15}/> Consultar cálculo por escola e faixas da lei</summary>
    <div className="edu-tablebox"><table className="edu-table edu-dimension-table">
-    <thead><tr><th>Escola municipal</th><th>Turmas (2025)</th><th>Auxiliar de serviço</th><th>Assistente administrativo</th><th>Professor eventual</th></tr></thead>
+    <thead><tr><th>Escola municipal</th><th>Turmas (2025)</th><th>Auxiliar de serviço</th><th>Assistente administrativo</th><th>Professor eventual¹</th></tr></thead>
     <tbody>{linhas.map(x=><tr key={x.codigo_inep}><td><b>{x.nome}</b></td><td>{numero(x.turmas)}</td><td>{numero(x.auxiliar)}</td><td>{numero(x.administrativo)}</td><td>{numero(x.eventual)}</td></tr>)}</tbody>
    </table></div>
    <h3>Referência de quantitativos por faixa de turmas</h3>
@@ -29,9 +34,10 @@ export default function EducacaoDimensionamento(){
    </table></div>
   </details>
 
+  <div className="edu-dimension-brief">¹ Para o professor eventual, a regra depende das turmas elegíveis por etapa de ensino.</div>
   <div className="edu-dimension-links">
    <a href="https://leismunicipais.com.br/estatuto-do-magisterio-vicosa-mg" target="_blank" rel="noopener noreferrer">Estatuto do Magistério <ExternalLink size={12}/></a>
-   <a href="https://www.vicosa.mg.leg.br/comunicacao/noticias/2023/06-2023/vereador-celebra-conquista-da-educacao-e-aprova-mocao-dos-60-anos-da-aspuv" target="_blank" rel="noopener noreferrer">Lei nº 3.003/2023 <ExternalLink size={12}/></a>
+   <a href="https://www.vicosa.mg.gov.br/abrir_arquivo.aspx?arquivo=%7B70A0AE0D-A7AA-4858-4E7D-7BE32CB6DDAE%7D.pdf&cdLocal=18" target="_blank" rel="noopener noreferrer">Lei nº 3.003/2023 <ExternalLink size={12}/></a>
   </div>
  </section>;
 }
