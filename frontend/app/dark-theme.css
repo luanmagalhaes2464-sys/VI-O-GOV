@@ -1,0 +1,136 @@
+/*
+ * VIÇO GOV — Dark institucional 2026
+ * Escopo restrito ao portal. Tokens + sobreposições para estilos históricos
+ * com cores claras fixadas nos componentes. Mantém gráficos e faixas cromáticas.
+ */
+:root{
+ color-scheme:dark;
+ --bg:#0f1115;--white:#171b22;--ink:#f3f4f6;
+ --muted:#9baabc;--line:#303845;--red:#dc6b79;--red-dark:#b64e5d;
+ --shadow:0 6px 24px rgba(0,0,0,.15);
+ --dark-surface:#171b22;--dark-inset:#1e242d;--dark-border:#303845;
+ --dark-text:#eaf0f6;--dark-sub:#aebccd;
+}
+html,body,.app-layout,.rh-shell,.rh-shell .main-layout{
+ background:var(--bg)!important;color:var(--dark-text)!important;
+}
+.rh-shell .sidebar{background:#12161c!important;border-color:#303845!important}
+.rh-shell .brand{color:#f1f4f8!important}
+.rh-shell .brand small,.rh-shell .nav-title,.rh-shell .sidebar-footer{color:#94a3b6!important}
+.rh-shell .nav-item{color:#becbd9!important}
+.rh-shell .nav-item:hover{background:#232a34!important;color:#fff!important}
+.rh-shell .nav-item.active{background:#37252f!important;color:#ffa0ad!important}
+.rh-shell .topbar{background:rgba(19,23,30,.97)!important;border-color:#303845!important}
+.rh-shell .breadcrumb{color:#a8b8ca!important}
+.rh-shell .content{background:var(--bg)!important}
+.rh-shell .main-footer{color:#8192a6!important}
+.rh-shell .prototype-pill{background:#2e261b!important;border-color:#57442c!important;color:#f1c78e!important}
+.rh-shell :is(.rh-header-source,.vg-card-open,.edu-individual-source,.edu-dimension-links a,.edu-stat>a,.rhd-top a,.rhd-foot a){color:#f18b97!important}
+
+/* Contêineres grandes: Visão Geral, Educação, RH, auditoria e detalhamento. */
+.rh-shell :is(
+ .vg-card,.vg-month,.vg-error,
+ .edu-panel,.edu-stat,.edu-location,.edu-reference,.edu-counter,.edu-search,.edu-month-selector,
+ .edu-dimension-stats>div,.edu-dimension-details,.edu-rh-summary,.edu-role-list>div,
+ .rh26-months,.rh26-filter-box,.rh26-panel,.rh26-cards article,
+ .rh26-dropdown-trigger,.rh26-dropdown-pop,.rh26-modal,
+ .rh26-ring-hole,.rh26-details>div,
+ .rh-a-panel,.rh-a-expanded,.rh-a-person,.rh-a-person-detail,.rh-a-fiscal-top article,
+ .rh-a-distribution,.rh-a-fiscal-notice,.rh-a-limit,.rh-a-cargo-tools label,.rh-a-school-law,
+ .rh-a-rubricas,.rh-a-card,.rh-a-count,
+ .rhd-panel,.rhd-kpis article,.rhd-period,.rhd-foot
+){
+ background:#171b22!important;border-color:#303845!important;color:#eaf0f6!important;
+ box-shadow:none!important;
+}
+/* Cards coloridos mantêm faixas originais (border-top-color inline) */
+.rh-shell .vg-card{border-top-width:4px!important}
+.rh-shell .vg-card:hover{background:#1d242d!important;border-left-color:#465266!important;border-right-color:#465266!important;border-bottom-color:#465266!important;box-shadow:0 10px 30px #0004!important}
+.rh-shell .vg-card-info>div{background:#222932!important;border-color:#323c4b!important}
+.rh-shell .vg-card-footer{border-color:#303845!important}
+.rh-shell :is(.vg-card h2,.vg-heading h1,.vg-card-info strong,
+ .edu-heading h1,.edu-stat>strong,.edu-panel-heading h2,.edu-table td b,.edu-rh-summary b,.edu-role-list b,
+ .rh-page h1,.rh26-box-head h2,.rh26-cards strong,.rh26-panel-head h2,
+ .rh-a-head h2,.rh-a-expanded-head h3,.rh-a-card h3,.rh-a-person strong,
+ .rh-a-fiscal-top strong,.rh-a-dist-head h3,.rh-a-dist strong,
+ .rhd-head h1,.rhd-panel h2,.rhd-kpis strong,.rhd-person strong,
+ .edu-dimension-stats strong
+ ){color:#f2f5fa!important}
+.rh-shell :is(.vg-heading p,.vg-card-info span,.vg-card-tag,.vg-card-footer>span,.vg-outros,
+ .edu-heading p,.edu-stat-top,.edu-stat-meta,.edu-stat p,.edu-reference,.edu-table-notice,.edu-table td,
+ .edu-panel-heading p,.edu-role-list span,.edu-dimension-stats span,.edu-rh-summary span,
+ .rh26-month-title span,.rh26-filter-box label,.rh26-cards span,.rh26-cards small,
+ .rh26-panel-head p,.rh26-table-scroll td,.rh26-muted,.rh26-trend-item>span,.rh26-legend button,
+ .rh-a-note,.rh-a-card p,.rh-a-card small,.rh-a-person small,.rh-a-dist small,.rh-a-dist-head p,
+ .rhd-head p,.rhd-panel-head p,.rhd-person small,.rhd-foot p
+ ){color:#aabaca!important}
+
+/* Menus, filtros, caixas de busca, tabelas e modais */
+.rh-shell :is(input,select,textarea){color:#edf2f7!important;caret-color:#ef8795}
+.rh-shell :is(input,textarea)::placeholder{color:#8192a5!important;opacity:1}
+.rh-shell :is(input,select,textarea,option){color-scheme:dark}
+.rh-shell :is(
+ .vg-month select,.edu-search input,.edu-searchrow select,
+ .rh26-filters select,.rh26-search,.rh26-search input,
+ .rh26-dropdown-pop label,.rh26-dropdown-tools,.rh26-dropdown-close,
+ .rh28-combobox,.rh28-combobox-control,.rh28-options,.rh28-option,
+ .rh29-table-search,.rh-a-cargo-tools input,.rhd-search,.rhd-search input,
+ .rh-bot-form,.rh-bot-form input,.rh-bot-context select
+ ){background:#1e242d!important;border-color:#374354!important;color:#eaf0f6!important}
+.rh-shell :is(.rh26-dropdown-pop label:hover,.rh28-option:hover,.rh28-focused,.rh26-legend button:hover,.rh26-legend button.active){background:#303443!important;color:#f2f5fa!important}
+.rh-shell :is(
+ .edu-table th,.edu-dimension-table th,.rh26-table-scroll th,.rh-a-cargo-table th,
+ .rh-a-school-table th,.data-table th,.rhd-table th
+ ){background:#232b36!important;color:#c2cedb!important;border-color:#374354!important}
+.rh-shell :is(
+ .edu-table td,.rh26-table-scroll td,.rh-a-cargo-table td,
+ .rh-a-school-table td,.rhd-person,.rhd-list button
+ ){border-color:#303845!important;color:#cfdae6!important}
+.rh-shell :is(.edu-table tr:hover,.rh26-table-scroll tbody tr:hover){background:#232a35!important}
+.rh-shell :is(.rh26-chart-grid,.rh26-trend,.rh26-legend,.rh26-donut-layout){color:#dae2ec!important}
+.rh-shell :is(.rh26-ring-hole,.rh26-bar-track,.rh26-trend-track,.rh-a-track,.rh-a-limit-track){
+ background:#2d3542!important;
+}
+.rh-shell .rh26-ring-hole{background:#171b22!important}
+.rh-shell :is(.rh26-pagination button,.rh26-view,.rh26-box-head>button,
+ .rh-a-expanded-head button,.rh-a-person>button,.rhd-pagination button,.rhd-list button
+ ){background:transparent!important;color:#d9e3ef!important;border-color:#3d4655!important}
+.rh-shell :is(.rh26-pagination button:hover,.rh-a-person>button:hover,.rhd-list button:hover){background:#232b35!important}
+.rh-shell .rhd-list button.selected{background:#34262f!important;border-color:#894957!important}
+.rh-shell .rh26-overlay{background:#000a!important}
+.rh-shell :is(.rh26-modal-head,.rh-a-expanded-head,.rhd-panel-head,.rhd-person){border-color:#354051!important}
+.rh-shell .rh-a-card.warning{border-left-color:#e6ac55!important}
+.rh-shell .rh-a-card.critical{border-left-color:#e37685!important}
+.rh-shell .rh-a-card.neutral{border-left-color:#7b9fce!important}
+.rh-shell .rh-a-card.active{background:#232b36!important}
+.rh-shell :is(.rh-a-no-reference,.rh-a-legal-school,.rh-a-school-estimate){
+ background:#293343!important;color:#bdd5e7!important
+}
+.rh-shell :is(.rh-a-fiscal-notice,.edu-reference,.edu-table-notice,.rhd-foot,.vg-error){
+ background:#1b222b!important;border-color:#323e4b!important
+}
+.rh-shell .rh-a-source{color:#a9baca!important}
+.rh-shell :is(.rh-a-source a,.rh-a-doclinks a,.rh-a-dist-link:hover>span){color:#ef8f9c!important}
+.rh-shell .rh-a-dist-link:hover{background:#222b36!important}
+.rh-shell .edu-dimension-details{background:#1b222b!important}
+.rh-shell .edu-dimension-details summary{color:#9dc9da!important}
+.rh-shell .edu-rh-summary,.rh-shell .edu-dimension-stats>div{background:#212936!important}
+
+/* O chat acompanha o tema escuro com cabeçalho vinho. */
+.rh-shell .rh-bot-panel{background:#171b22!important;border-color:#394352!important;color:#eaf0f6!important;box-shadow:0 20px 48px #0008!important}
+.rh-shell .rh-bot-head{background:#9d3a4b!important}
+.rh-shell .rh-bot-feed{background:#151a22!important}
+.rh-shell .rh-bot-msg{background:#242d38!important;color:#e4ebf4!important}
+.rh-shell .rh-bot-msg.user{background:#49303b!important;color:#f3ebef!important}
+.rh-shell .rh-bot-msg p{color:inherit!important}
+.rh-shell .rh-bot-context,.rh-shell .rh-bot-examples,.rh-shell .rh-bot-form{background:#171b22!important;border-color:#394352!important}
+.rh-shell .rh-bot-examples button{background:#242e36!important;border-color:#354957!important;color:#c5e5dd!important}
+.rh-shell .rh-bot-examples button:hover{background:#2f4149!important}
+.rh-shell .rh-bot-form input{background:#1e252f!important}
+.rh-shell .rh-bot-disclaimer{color:#a1b1c4!important;background:#171b22!important}
+.rh-shell .rh-bot-trigger{background:#ad4051!important}
+.rh-shell :is(.rhd-list button strong,.rhd-person>b,.rhd-kpis span){color:#f0f3f9!important}
+.rh-shell :is(.rhd-list button small,.rhd-note){color:#9eafc0!important}
+/* Tailwind/default outline utility still visible against dark backgrounds */
+.rh-shell :is(a,button,input,select,textarea):focus-visible{outline:2px solid #e8879a;outline-offset:2px}
+@media(max-width:650px){.rh-shell .content{padding:18px 14px!important}}
