@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,ChevronDown,ChevronUp,ExternalLink,Info,Scale,Search,ShieldAlert,Users,Wallet} from 'lucide-react';
 import {api,brl,num} from '../lib/api';
-import {unidadesEscolares} from '../lib/educacao-dados';
+import {parametroPorCargo} from '../lib/dimensionamento-escolar';
 
 type Rubrica={codigo:string;nome:string;categoria:string;valor:number};
 type Ocorrencia={id:string;nome:string;matricula:string;cargo:string;departamento:string;rubricas:Rubrica[];detalhes?:string;bruto:number;diferenca_bruto:number;diferenca_descontos:number;diferenca_liquido:number};
@@ -24,57 +24,6 @@ function rubricasDetalhe(items:Rubrica[]){
  return <div className="rh-a-rubricas"><div className="rh-a-rub-title">Rubricas do pagamento</div>
  {items.map((x,i)=><div key={x.codigo+'-'+i}><span>{x.nome}<small>Código {x.codigo} · {x.categoria}</small></span><strong>{brl(x.valor)}</strong></div>)}</div>;
 }
-// Referências de dimensionamento POR ESCOLA do Anexo V da Lei municipal
-// nº 1.368/1999, na redação da Lei nº 3.003/2023. Não são vagas
-// autorizadas no quadro geral. Para usar é preciso cruzar turmas de cada unidade.
-const referencialEscolar=(cargo:string):'auxiliar'|'infantil'|'professor'|'administrativo'|null=>{
- const n=cargo.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
- if(n.includes('AUXILIAR DE SERVICO ESCOLAR'))return 'auxiliar';
- if(n.includes('AUXILIAR DE EDUCACAO INFANTIL'))return 'infantil';
- if(/^PROFESSOR (I|II|III)$/.test(n.trim()))return 'professor';
- if(n.includes('ASSISTENTE ADM ESCOLAR')||n.includes('ASSISTENTE ADMINISTRATIVO ESCOLAR'))return 'administrativo';
- return null;
-};
-const turmasFaixas=['Até 6','7–10','11–14','15–19','20–25','26–30','A partir de 30*'];
-const normasPorTurmas=[
- {cargo:'Auxiliar de Serviço Escolar',quantidades:[4,5,6,8,14,14,16]},
- {cargo:'Assistente Administrativo Escolar',quantidades:[1,1,2,4,6,6,6]},
- {cargo:'Professor eventual',quantidades:[1,1,2,2,2,2,2]}
-];
-
-/*
- * Simulação escolar a partir das turmas de 2025 nas 18 unidades cadastrais.
- * Não representa vagas criadas por lei nem permite inferir excedentes de 2026.
- * A faixa de 30 turmas é ambígua no texto disponível: não calcular nesse caso.
- */
-const indiceFaixa=(turmas:number|null):number|null=>{
- if(turmas==null||turmas<=0)return null;
- if(turmas<=6)return 0;
- if(turmas<=10)return 1;
- if(turmas<=14)return 2;
- if(turmas<=19)return 3;
- if(turmas<=25)return 4;
- if(turmas<=29)return 5;
- if(turmas===30)return null;
- return 6;
-};
-const unidadesComFaixas=unidadesEscolares.map(e=>({
- ...e,indice:indiceFaixa(e.turmas),auxiliar:e.turmas===null?null:indiceFaixa(e.turmas)===null?null:normasPorTurmas[0].quantidades[indiceFaixa(e.turmas)!],
- administrativo:e.turmas===null?null:indiceFaixa(e.turmas)===null?null:normasPorTurmas[1].quantidades[indiceFaixa(e.turmas)!]
-}));
-const referenciaCompleta=unidadesComFaixas.length>0&&unidadesComFaixas.every(e=>e.indice!=null);
-const totalAuxiliar=referenciaCompleta?unidadesComFaixas.reduce((acc,e)=>acc+(e.auxiliar||0),0):null;
-const totalAdministrativo=referenciaCompleta?unidadesComFaixas.reduce((acc,e)=>acc+(e.administrativo||0),0):null;
-const totalTurmas=unidadesEscolares.reduce((acc,e)=>acc+(e.turmas||0),0);
-const parametroEscolar=(cargo:string):{valor:number|null;descricao:string}|null=>{
- const tipo=referencialEscolar(cargo);
- if(tipo==='auxiliar')return {valor:totalAuxiliar,descricao:'Parâmetro indicativo em 18 escolas, turmas do Censo 2025; não equivale a vagas legais'};
- if(tipo==='administrativo')return {valor:totalAdministrativo,descricao:'Parâmetro indicativo em 18 escolas, turmas do Censo 2025; não equivale a vagas legais'};
- if(tipo==='professor')return {valor:null,descricao:'Referência de '+totalTurmas+' turmas, mas sem distribuição por etapa, horas-aula e jornada; não é possível derivar vagas de professor'};
- if(tipo==='infantil')return {valor:null,descricao:'Exige turmas infantis, turno e jornada separados por escola'};
- return null;
-};
-
 const pct=(v:number|null|undefined)=>v==null?'—':v.toFixed(2).replace('.',',')+'%';
 export default function RHAuditoria({mes}:{mes:string}){
  const [d,setD]=useState<Auditoria|null>(null),[f,setF]=useState<Fiscal|null>(null);
@@ -140,12 +89,13 @@ export default function RHAuditoria({mes}:{mes:string}){
     <div className="rh-a-cargo-wrap"><table className="rh-a-cargo-table">
       <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Parâmetro escolar (2025)</th><th>Vagas legais</th><th>Excedentes</th></tr></thead>
       <tbody>{cargosVisiveis.slice(0,50).map((c,i)=>{
-        const referencia=parametroEscolar(c.cargo);
+        const referencia=parametroPorCargo(c.cargo);
         return <tr key={c.cargo+'-'+c.jornada+'-'+i}>
          <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
          <td>{num(c.vinculos_folha)}</td>
-         <td>{referencia?.valor!=null?<span className="rh-a-school-estimate" title={referencia.descricao}>{num(referencia.valor)} <small>indicativo*</small></span>:
-           referencia?<span className="rh-a-legal-school" title={referencia.descricao}>Regra depende da lotação</span>:<span className="rh-a-muted">—</span>}</td>
+         <td>{referencia?.valor!=null?
+           <span className="rh-a-school-estimate" title={referencia.descricao}>{num(referencia.valor)} <small>calculado · 2025</small></span>:
+           <span className="rh-a-muted" title={referencia?.descricao||'Sem parâmetro escolar aplicável'}>—</span>}</td>
          <td>{c.vagas_legais!=null?num(c.vagas_legais):c.situacao==='cargo_em_extincao'?<span className="rh-a-no-reference" title={c.norma_quadro||''}>Extinção parcial</span>:<span className="rh-a-no-reference">A validar</span>}</td>
          <td>{c.excedentes!=null?num(c.excedentes):<span className="rh-a-muted">—</span>}</td>
         </tr>;
