@@ -97,10 +97,10 @@ export default function RecursosHumanos(){
  const top=itens.reduce((v,x)=>Math.max(v,x.indicadores?.bruto||0),1);
  return <div className="rh-page rh26-page">
   <div className="rh-kicker">VIÇO GOV / RECURSOS HUMANOS</div>
-  <div className="rh-page-title"><div><h1>Inteligência de Recursos Humanos</h1><p>Prefeitura de Viçosa/MG · folha de pagamento de janeiro a julho de 2026</p></div>
+  <div className="rh-page-title"><div><h1>Inteligência de Recursos Humanos</h1></div>
     <a href={portal} target="_blank" rel="noopener noreferrer">Portal oficial <ExternalLink size={14}/></a></div>
   <section className="rh26-months">
-    <div className="rh26-month-title"><CalendarDays size={18}/><div><strong>Competências da folha</strong><span>Escolha um ou vários meses para analisar e comparar.</span></div></div>
+    <div className="rh26-month-title"><CalendarDays size={18}/><div><strong>Competências da folha</strong></div></div>
     <div className="rh26-dropdown-wrap"><button type="button" className="rh26-dropdown-trigger" onClick={()=>setAberto(v=>!v)} aria-expanded={aberto} aria-label="Selecionar meses">
       <span>{labelSelecionados}</span><span className="rh26-count">{selecionados.length} {selecionados.length===1?'mês':'meses'}</span><ChevronDown size={17}/></button>
       {aberto&&<div className="rh26-dropdown-pop"><div className="rh26-dropdown-tools">
