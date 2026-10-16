@@ -85,3 +85,12 @@
 .edu-dimension-links{display:flex;flex-wrap:wrap;gap:14px;margin-top:13px}
 .edu-dimension-links a{display:inline-flex;gap:5px;align-items:center;color:#a83d49;font-size:11px;font-weight:740}
 @media(max-width:900px){.edu-dimension-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Critérios docentes segundo Anexo V — composição limpa, institucional. */
+.edu-docentes-formulas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}
+.edu-docentes-formulas>div{display:flex;flex-direction:column;gap:7px;border:1px solid #e2e7ec;background:#f8f9fb;padding:13px 15px;border-radius:8px}
+.edu-docentes-formulas strong{font-size:11px;font-weight:700;color:#324557}
+.edu-docentes-formulas span{font-size:11px;color:#66798b;line-height:1.5}
+.edu-dimension-brief{font-size:10.5px;color:#798a9a;margin:14px 0 0}
+@media(max-width:700px){.edu-docentes-formulas{grid-template-columns:1fr}}
