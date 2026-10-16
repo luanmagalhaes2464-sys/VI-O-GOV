@@ -38,7 +38,7 @@ export const totaisDimensionamento:Record<CampoDimensionamento,number|null>={
   unidadesDimensionamento.reduce((x,u)=>x+(u.eventual||0),0):null
 };
 const normalizar=(nome:string)=>nome.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
-export function parametroPorCargo(cargo:string):{valor:number|null;descricao:string}|null{
+export function parametroPorCargo(cargo:string):{valor:number|null;regra?:string;descricao:string}|null{
  const n=normalizar(cargo);
  if(n.includes('AUXILIAR DE SERVICO ESCOLAR'))
   return {valor:totaisDimensionamento.auxiliar,descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
@@ -46,8 +46,12 @@ export function parametroPorCargo(cargo:string):{valor:number|null;descricao:str
   return {valor:totaisDimensionamento.administrativo,descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
  if(n.includes('PROFESSOR EVENTUAL'))
   return {valor:totaisDimensionamento.eventual,descricao:'Referência de professor eventual calculada por faixa de turmas (Censo 2025), não número de vagas legais.'};
- if(/^PROFESSOR (I|II|III)$/.test(n))
-  return {valor:null,descricao:'Sem dados de carga horária por turma, etapa e jornada suficientes para dimensionar esta categoria.'};
+ if(/^PROFESSOR (I|II)$/.test(n))
+  return {valor:null,regra:'1 por turma',
+   descricao:'O Anexo V da Lei municipal nº 1.368/1999 prevê 1 PEB-I ou 1 PEB-II por turma, conforme etapa. Sem número de turmas por etapa e equivalência confirmada dos cargos da folha, não é possível calcular quantitativos separados.'};
+ if(n==='PROFESSOR III')
+  return {valor:null,regra:'Horas-aula ÷ jornada',
+   descricao:'PEB-III: Anexo V da Lei 1.368/1999 exige total de horas-aula da rede dividido pela carga horária básica, considerando extensões do art. 88. Esses dados ainda não integram a base.'};
  if(n.includes('AUXILIAR DE EDUCACAO INFANTIL'))
   return {valor:null,descricao:'Faltam distribuição das turmas por idade, turno e jornada da unidade.'};
  return null;
