@@ -32,7 +32,7 @@ const referencialEscolar=(cargo:string):'auxiliar'|'infantil'|'professor'|'admin
  if(n.includes('ASSISTENTE ADM ESCOLAR')||n.includes('ASSISTENTE ADMINISTRATIVO ESCOLAR'))return 'administrativo';
  return null;
 };
-const turmasFaixas=['Até 6','7–10','11–14','15–19','20–25','26–30','30 ou mais*'];
+const turmasFaixas=['Até 6','7–10','11–14','15–19','20–25','26–30','A partir de 30*'];
 const normasPorTurmas=[
  {cargo:'Auxiliar de Serviço Escolar',quantidades:[4,5,6,8,14,14,16]},
  {cargo:'Assistente Administrativo Escolar',quantidades:[1,1,2,4,6,6,6]},
@@ -120,7 +120,7 @@ export default function RHAuditoria({mes}:{mes:string}){
        <thead><tr><th>Função / turmas na unidade</th>{turmasFaixas.map(x=><th key={x}>{x}</th>)}</tr></thead>
        <tbody>{normasPorTurmas.map(x=><tr key={x.cargo}><td><strong>{x.cargo}</strong></td>{x.quantidades.map((n,i)=><td key={i}>{n}</td>)}</tr>)}</tbody>
       </table></div>
-      <p className="rh-a-note">* Última coluna corresponde a 30 turmas ou mais, conforme o texto do anexo. Há regras específicas para tempo integral e autorização pela Secretaria de Educação. Para professor PEB I e II, a referência legal é de 1 por turma; o PEB III depende do total de horas-aula. Para auxiliar de educação infantil, a norma prevê critério por turma e jornada. Nenhum desses parâmetros autoriza concluir excesso municipal sem identificar cada escola e suas turmas.</p>
+      <p className="rh-a-note">* O texto publicado usa as faixas '26 a 30' e 'a partir de 30', que se sobrepõem em 30 turmas; nesse caso, a interpretação exata deve ser confirmada com o órgão competente. Há regras específicas para tempo integral e autorização pela Secretaria de Educação. Para professor PEB I e II, a referência legal é de 1 por turma; o PEB III depende do total de horas-aula. Para auxiliar de educação infantil, a norma prevê critério por turma e jornada. Nenhum desses parâmetros autoriza concluir excesso municipal sem identificar cada escola e suas turmas.</p>
       <div className="rh-a-doclinks">
        <a href="https://leismunicipais.com.br/estatuto-do-magisterio-vicosa-mg" rel="noopener noreferrer" target="_blank">Consultar texto consolidado do Estatuto <ExternalLink size={12}/></a>
        <a href="https://www.vicosa.mg.leg.br/comunicacao/noticias/2023/06-2023/vereador-celebra-conquista-da-educacao-e-aprova-mocao-dos-60-anos-da-aspuv" rel="noopener noreferrer" target="_blank">Câmara de Viçosa — Lei 3.003/2023 <ExternalLink size={12}/></a>
