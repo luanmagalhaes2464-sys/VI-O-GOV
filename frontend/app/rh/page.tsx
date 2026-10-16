@@ -8,7 +8,7 @@ type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
 type Grupo={nome:string;quantidade:number;bruto?:number;media_bruta?:number;maior_remuneracao?:number};
 type Row={id:number;mes:string;matricula:string;nome:string;admissao:string|null;cargo:string;vinculo:string;departamento:string;local:string;jornada:string;bruto:number;liquido:number;quinquenio:number;inclusoes_pagamento:number};
-type Painel={meses:string[];competencias:Mes[];cobertura:number;totais:KPIs;por_departamento:Grupo[];por_cargo:Grupo[];maiores_salarios:Grupo[];por_vinculo:Grupo[];pessoas:Row[];pagina:number;opcoes:Record<string,string[]>;criterio_salario:string;aviso:string};
+type Painel={meses:string[];competencias:Mes[];cobertura:number;totais:KPIs;por_departamento:Grupo[];por_cargo:Grupo[];maiores_salarios:Grupo[];por_vinculo:Grupo[];pessoas:Row[];total_pessoas:number;pagina:number;opcoes:Record<string,string[]>;criterio_salario:string;aviso:string};
 const portal='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
 const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
 const codigo=(i:number)=>'2026-'+String(i+1).padStart(2,'0');
@@ -48,19 +48,31 @@ export default function RecursosHumanos(){
  const [aberto,setAberto]=useState(false),[f,setF]=useState<Filtros>(vazio),[pagina,setPagina]=useState(1);
  const [dados,setDados]=useState<Painel|null>(null),[carregando,setCarregando]=useState(true),[erro,setErro]=useState('');
  const [pessoa,setPessoa]=useState<Row|null>(null);
+ const [buscaTabela,setBuscaTabela]=useState('');
+ const [buscaTabelaAplicada,setBuscaTabelaAplicada]=useState('');
+ useEffect(()=>{
+  const timer=window.setTimeout(()=>setBuscaTabelaAplicada(buscaTabela.trim()),300);
+  return ()=>window.clearTimeout(timer);
+ },[buscaTabela]);
  const consulta=useMemo(()=>{
   const qs=new URLSearchParams({meses:[...selecionados].sort().join(','),pagina:String(pagina)});
   for(const [key,value] of Object.entries(f))if(value)qs.set(key,value);
   return qs.toString();
  },[selecionados,f,pagina]);
+ // A busca da tabela não modifica os cards, gráficos ou filtros gerais.
+ const consultaTabela=useMemo(()=>{
+  const query=new URLSearchParams(consulta);
+  if(buscaTabelaAplicada)query.set('tabela_busca',buscaTabelaAplicada);
+  return query.toString();
+ },[consulta,buscaTabelaAplicada]);
  useEffect(()=>{
   let active=true;setCarregando(true);setErro('');
-  fetch('/api/rh/painel?'+consulta,{cache:'no-store'}).then(async r=>{const obj=await r.json();if(!r.ok)throw new Error(obj.error||'Erro HTTP '+r.status);return obj as Painel})
+  fetch('/api/rh/painel?'+consultaTabela,{cache:'no-store'}).then(async r=>{const obj=await r.json();if(!r.ok)throw new Error(obj.error||'Erro HTTP '+r.status);return obj as Painel})
    .then(x=>{if(active)setDados(x)})
    .catch(e=>{if(active)setErro(e instanceof Error?e.message:'Não foi possível carregar os dados.')})
    .finally(()=>{if(active)setCarregando(false)});
   return ()=>{active=false};
- },[consulta]);
+ },[consultaTabela]);
  const itens=dados?.competencias||[];
  const filtrados=dados?.totais;
  const labelSelecionados=selecionados.length===7?'Janeiro a julho de 2026':selecionados.length===1?meses[Number(selecionados[0].slice(-2))-1]+' de 2026':selecionados.map(abreviado).join(', ')+'/2026';
@@ -128,13 +140,25 @@ export default function RecursosHumanos(){
   </section>
   <section className="rh26-panel rh26-table-panel">
    <div className="rh26-box-head"><div><Users size={17}/><h2>Servidores e remunerações</h2></div><span>Detalhamento por competência</span></div>
+   <div className="rh29-table-tools">
+    <label className="rh29-table-search">
+     <Search size={16}/>
+     <input type="search" value={buscaTabela} aria-label="Pesquisar na tabela de servidores e remunerações"
+      placeholder="Buscar nome, matrícula, cargo ou departamento..."
+      onChange={e=>{setBuscaTabela(e.target.value);setPagina(1)}}/>
+     {buscaTabela&&<button type="button" aria-label="Limpar pesquisa da tabela"
+        onClick={()=>{setBuscaTabela('');setBuscaTabelaAplicada('');setPagina(1)}}><X size={15}/></button>}
+    </label>
+    <span aria-live="polite">{carregando?'Pesquisando…':num(dados?.total_pessoas??0)+' registros encontrados'}</span>
+   </div>
    <div className="rh26-table-scroll"><table><thead><tr><th>Competência</th><th>Servidor / matrícula</th><th>Cargo e departamento</th><th>Bruto</th><th>Líquido</th><th>Quinquênio</th><th></th></tr></thead>
      <tbody>{(dados?.pessoas||[]).map(r=><tr key={r.id}>
       <td>{r.mes.slice(-2)+'/2026'}</td><td><b>{r.nome}</b><small>Matrícula {r.matricula}</small></td>
       <td>{r.cargo}<small>{r.departamento}</small></td>
       <td>{brl(r.bruto)}</td><td>{brl(r.liquido)}</td><td>{brl(r.quinquenio)}</td>
       <td><button type="button" onClick={()=>setPessoa(r)} className="rh26-view">Ver <ChevronRight size={14}/></button></td></tr>)}</tbody></table></div>
-   <div className="rh26-pagination"><button onClick={()=>setPagina(x=>Math.max(1,x-1))} disabled={pagina===1}><ChevronLeft size={15}/>Anterior</button><span>Página {pagina}</span><button onClick={()=>setPagina(x=>x+1)} disabled={!dados||dados.pessoas.length<20}>Próxima<ChevronRight size={15}/></button></div>
+   {!carregando&&dados?.pessoas.length===0&&<div className="rh29-table-empty">Nenhum servidor encontrado. Tente outro nome, matrícula, cargo ou departamento.</div>}
+   <div className="rh26-pagination"><button onClick={()=>setPagina(x=>Math.max(1,x-1))} disabled={pagina===1||carregando}><ChevronLeft size={15}/>Anterior</button><span>Página {pagina} de {Math.max(1,Math.ceil((dados?.total_pessoas??0)/20))}</span><button onClick={()=>setPagina(x=>x+1)} disabled={carregando||!dados||(pagina*20>=dados.total_pessoas)}>Próxima<ChevronRight size={15}/></button></div>
   </section>
   <div className="rh26-method"><Info size={17}/>{dados?.aviso||'Dados extraídos dos relatórios oficiais, com agrupamento de inclusões de pagamento por vínculo e competência.'}</div>
   {pessoa&&<div className="rh26-overlay" onClick={()=>setPessoa(null)}><div className="rh26-modal" role="dialog" aria-modal="true" aria-label="Ficha do vínculo" onClick={e=>e.stopPropagation()}>
