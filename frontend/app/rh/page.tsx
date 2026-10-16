@@ -48,7 +48,7 @@ function Rosca({dados}:{dados:Grupo[]}){
 }
 export default function RecursosHumanos(){
  const [selecionados,setSelecionados]=useState<string[]>(['2026-01']);
- const [aberto,setAberto]=useState(false),[f,setF]=useState<Filtros>(vazio),[pagina,setPagina]=useState(1);
+ const [aberto,setAberto]=useState(false),[filtrosAbertos,setFiltrosAbertos]=useState(true),[f,setF]=useState<Filtros>(vazio),[pagina,setPagina]=useState(1);
  const [dados,setDados]=useState<Painel|null>(null),[carregando,setCarregando]=useState(true),[erro,setErro]=useState('');
  const [pessoa,setPessoa]=useState<Row|null>(null);
  const [buscaTabela,setBuscaTabela]=useState('');
@@ -110,8 +110,11 @@ export default function RecursosHumanos(){
   <div className="rh26-source"><Info size={16}/><span><b>7 competências no banco.</b> Os dados de fevereiro a julho foram importados dos CSVs fornecidos; a coleta automática do portal ainda não está habilitada. A folha de janeiro mantém ressalva de conciliação.</span></div>
   {erro&&<div className="rh-import-error"><AlertTriangle size={17}/>{erro}</div>}
   <section className="rh26-filter-box">
-   <div className="rh26-box-head"><div><Filter size={17}/><h2>Filtros de análise</h2></div><button type="button" onClick={()=>{setF({...vazio});setPagina(1)}}><RefreshCcw size={14}/> Limpar filtros</button></div>
-   <div className="rh26-filters">
+   <div className="rh26-box-head"><button type="button" className="rh26-filter-toggle" onClick={()=>setFiltrosAbertos(v=>!v)} aria-expanded={filtrosAbertos} aria-controls="rh26-filtros">
+    <Filter size={17}/><h2>Filtros de análise</h2><span>{filtrosAbertos?'Recolher':'Expandir'}</span>{filtrosAbertos?<ChevronDown size={16} className="rh26-rotate"/>:<ChevronDown size={16}/>}</button>
+    {filtrosAbertos&&<button type="button" onClick={()=>{setF({...vazio});setPagina(1)}}><RefreshCcw size={14}/> Limpar filtros</button>}
+   </div>
+   {filtrosAbertos&&<div id="rh26-filtros" className="rh26-filters">
     <label>Pesquisar servidor ou matrícula<div className="rh26-search"><Search size={14}/><input value={f.busca} placeholder="Nome ou matrícula" onChange={e=>update('busca',e.target.value)}/></div></label>
     {optionsFor('departamento','Secretaria / departamento','Todos os departamentos')}
     {optionsFor('cargo','Cargo / função','Todos os cargos')}
@@ -128,7 +131,7 @@ export default function RecursosHumanos(){
     <FiltroPesquisavel label="Base salarial" placeholder="Escolher base salarial" value={f.base}
       options={[{value:'bruto',label:'Remuneração bruta'},{value:'liquido',label:'Remuneração líquida'}]}
       onChange={value=>update('base',value||'bruto')}/>
-   </div>
+   </div>}
   </section>
   <div className="rh26-cards">
     <article><span><Users size={16}/> Vínculos-mês</span><strong>{carregando?'…':num(filtrados?.vinculos_mes)}</strong><small>Soma dos vínculos nos meses selecionados</small></article>
