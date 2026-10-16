@@ -76,12 +76,12 @@ export default function Educacao(){
   </section>
   <section className="edu-panel">
    <div className="edu-panel-heading"><div><h2><Users size={18}/> Professores identificados na folha do RH</h2>
-    <p>Mesma base de matrículas funcionais utilizada em Recursos Humanos. Inclusões repetidas do mesmo vínculo no mês são consolidadas.</p></div>
+    </div>
     <label className="edu-month-selector"><CalendarDays size={15}/><select aria-label="Selecionar mês da folha dos professores" value={mesRH} onChange={e=>setMesRH(e.target.value)}>{meses.map((m,i)=><option key={m} value={'2026-'+String(i+1).padStart(2,'0')}>{m} / 2026</option>)}</select></label></div>
    {erroDocentes&&<p className="edu-query-error">{erroDocentes}</p>}
    {!carregando&&docentes&&<><div className="edu-rh-summary"><b>{formatar(docentes.total)}</b><span>matrículas funcionais distintas com cargo de professor nesta competência</span></div>
     <div className="edu-role-list">{docentes.cargos.map(c=><div key={c.cargo}><span>{c.cargo}</span><b>{formatar(c.vinculos)}</b></div>)}</div>
-    <p className="edu-table-notice">{docentes.ressalva}</p></>}
+    </>}
    {carregando&&<p className="edu-table-notice">Buscando dados da folha...</p>}
   </section>
  </div>;
