@@ -114,4 +114,8 @@
 @media(max-width:650px){.fin-details-overlay{padding:7px}.fin-details-head{padding:17px}.fin-details-summary{padding:12px}.fin-details-table th,.fin-details-table td{padding:12px}.fin-details-footer{padding:12px;flex-direction:column;align-items:stretch}}
 
 
-.fin-page{font-family:"Open Sans","Segoe UI",Arial,sans-serif}
+.fin-page{font-family:"Roboto",Arial,sans-serif}
+
+.fin-page{font-family:"Roboto",Arial,sans-serif}
+.fin-panel-head h2{font-weight:600}
+.fin-page :is(button,select,input,table){font-family:inherit}
