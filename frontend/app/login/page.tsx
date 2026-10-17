@@ -28,22 +28,24 @@ export default function Login(){
   finally{setEnviando(false)}
  }
  return <main className="vico-acesso">
-  <section className="vico-acesso-hero">
-   <div className="vico-acesso-brand"><span className="vico-acesso-v">V</span><div><strong>VIÇO GOV</strong><small>INTELIGÊNCIA MUNICIPAL</small></div></div>
-   <div className="vico-acesso-hero-copy"><span>PLATAFORMA DE GESTÃO PÚBLICA</span>
-    <h1>Informação para decisões mais eficientes.</h1>
-    <p>Indicadores públicos, recursos humanos, educação e finanças em uma única plataforma.</p>
+  <header className="vico-acesso-cabecalho">
+   <div className="vico-acesso-identidade">
+    <span className="vico-acesso-v" aria-hidden="true">V</span>
+    <div><strong>VIÇO GOV</strong><small>Inteligência Municipal</small></div>
    </div>
-   <div className="vico-acesso-hero-footer">VIÇO GOV · 2026</div>
-  </section>
+   <span className="vico-acesso-cabecalho-label">Plataforma de gestão pública</span>
+  </header>
   <section className="vico-acesso-area">
    <div className="vico-acesso-box">
-    <div className="vico-acesso-emblema"><img alt="Brasão de Viçosa" src="/brasao-prefeitura-vicosa.svg"/></div>
-    <div className="vico-acesso-kicker">ACESSO À PLATAFORMA</div>
-    <h2>Entrar no Viço Gov</h2>
-    <p className="vico-acesso-sub">Informe as credenciais da sua conta.</p>
+    <div className="vico-acesso-intro">
+     <div className="vico-acesso-emblema"><img alt="Brasão de Viçosa" src="/brasao-prefeitura-vicosa.svg"/></div>
+     <div><span className="vico-acesso-kicker">Acesso à plataforma</span>
+      <h1>Entrar no Viço Gov</h1>
+      <p className="vico-acesso-sub">Entre com seu e-mail e senha.</p>
+     </div>
+    </div>
     <form onSubmit={entrar} className="vico-acesso-form">
-     <label>E-mail institucional<input type="email" required autoComplete="username"
+     <label>E-mail<input type="email" required autoComplete="username"
       value={email} onChange={e=>setEmail(e.target.value)} placeholder="seu.email@exemplo.com"/></label>
      <label>Senha<div className="vico-acesso-password">
       <input type={mostrar?'text':'password'} required autoComplete="current-password"
@@ -57,12 +59,12 @@ export default function Login(){
     </form>
     {status&&(!status.cadastrado||!status.ativo)&&
      <div className="vico-acesso-config">
-      {!status.cadastrado?<><strong>Primeiro acesso</strong><span>É necessário configurar o administrador inicial.</span>
-       <a href="/configurar-acesso">Configurar acesso inicial</a></>:
-       !status.ativo?<><strong>Ativação pendente</strong><span>O administrador foi cadastrado. Ative o controle de acesso no Render antes de usar o login.</span></>:null}
+      {!status.cadastrado?<><strong>Primeiro acesso</strong>
+       <a href="/configurar-acesso">Configurar administrador <ArrowRight size={14}/></a></>:
+       !status.ativo?<><strong>Ativação pendente</strong><span>Ative o controle de acesso no Render após configurar sua conta.</span></>:null}
      </div>}
    </div>
-   <footer className="vico-acesso-footer">VIÇO GOV · GESTÃO E INTELIGÊNCIA MUNICIPAL</footer>
+   <footer className="vico-acesso-footer">VIÇO GOV · Gestão e Inteligência Municipal</footer>
   </section>
  </main>;
 }
