@@ -117,3 +117,27 @@ html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table){
  .rh-shell .topbar-prefeitura-brasao img{width:59px;height:42px}
  .rh-shell .breadcrumb{font-size:11px}
 }
+
+
+/* Recolher totalmente: nenhuma coluna de ícones permanece no desktop. */
+.rh-shell .topbar-sidebar-toggle{
+ display:inline-flex;align-items:center;justify-content:center;
+ flex-shrink:0;width:33px;height:33px;
+ border:1px solid #82909d;border-radius:7px;
+ background:#657381;color:#fff;cursor:pointer;
+ margin-right:9px;transition:background .18s ease;
+}
+.rh-shell .topbar-sidebar-toggle:hover{background:#758493}
+.rh-shell .topbar-sidebar-toggle:focus-visible{outline:2px solid #f0c2ca;outline-offset:2px}
+@media(min-width:851px){
+ .rh-shell.sidebar-collapsed .sidebar{
+  width:0!important;min-width:0!important;
+  border-right:0!important;opacity:0;visibility:hidden;
+  overflow:hidden;pointer-events:none;
+ }
+ .rh-shell.sidebar-collapsed .main-layout{margin-left:0!important}
+}
+@media(max-width:850px){
+ .rh-shell .topbar-sidebar-toggle{display:none}
+ .rh-shell.sidebar-collapsed .sidebar{visibility:visible;opacity:1;pointer-events:auto}
+}
