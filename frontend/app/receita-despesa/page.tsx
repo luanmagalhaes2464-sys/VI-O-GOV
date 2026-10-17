@@ -5,7 +5,8 @@ import './receita-despesa.css';
 
 type Mensal={mes:string;categoria:string;centavos:number};
 type Anual={grupo:string;indicador:string;centavos:number};
-type Financas={ano:number;mensal:Mensal[];anual:Anual[]};
+type Conciliacao={mes:string;ops_coincidentes:number;centavos_coincidentes:number;ops_exclusivas_ordem:number;centavos_exclusivas_ordem:number};
+type Financas={ano:number;mensal:Mensal[];anual:Anual[];conciliacao:Conciliacao[]};
 const meses=[['2026-01','Janeiro'],['2026-02','Fevereiro'],['2026-03','Março'],['2026-04','Abril'],['2026-05','Maio'],['2026-06','Junho'],['2026-07','Julho'],['2026-08','Agosto'],['2026-09','Setembro'],['2026-10','Outubro']] as const;
 const moeda=(n:number|undefined|null)=>n==null?'—':new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',minimumFractionDigits:2,maximumFractionDigits:2}).format(n/100);
 const categoriaReceita=['receita_orc','receita_extra','receita_estorno'];
@@ -50,6 +51,15 @@ export default function ReceitaDespesa(){
  const receitaTotal=somar(categoriaReceita),pagamentoTotal=somar(categoriaPagamentos);
  const anual=(grupo:string,indicador:string)=>dados?.anual.find(x=>x.grupo===grupo&&x.indicador===indicador)?.centavos;
  const previsto=(indicador:string)=>['receitas_correntes','receitas_capital','receitas_intra'].reduce((t,g)=>t+(anual(g,indicador)||0),0);
+ const conciliado=useMemo(()=>{
+  const linhas=(dados?.conciliacao||[]).filter(x=>periodo==='todos'||x.mes===periodo);
+  const encontrados=linhas.reduce((v,x)=>v+x.ops_coincidentes,0);
+  const exclusivos=linhas.reduce((v,x)=>v+x.ops_exclusivas_ordem,0);
+  const valorRepetidoFontes=linhas.reduce((v,x)=>v+x.centavos_coincidentes,0);
+  const valorExclusivo=linhas.reduce((v,x)=>v+x.centavos_exclusivas_ordem,0);
+  return {encontrados,exclusivos,valorRepetidoFontes,valorExclusivo,
+   totalBase:valorRepetidoFontes+valorExclusivo,registros:encontrados+exclusivos};
+ },[dados,periodo]);
  const maxSerie=Math.max(1,...serie.flatMap(x=>[x.receita,x.pagamentos]));
  return <div className="fin-page">
   <div className="fin-top">
@@ -67,6 +77,24 @@ export default function ReceitaDespesa(){
    <article className="fin-highlight fin-despesa"><div className="fin-hl-header"><span>Pagamentos realizados</span><ArrowUpRight size={21}/></div><strong>{carregando?'…':moeda(pagamentoTotal)}</strong></article>
    <article className="fin-highlight fin-diarias"><div className="fin-hl-header"><span>Diárias</span><Wallet size={20}/></div><strong>{carregando?'…':moeda(totais.diarias||0)}</strong></article>
   </div>
+
+  <section className="fin-panel fin-recon-panel" aria-label="Conciliação de pagamentos">
+   <header className="fin-panel-head">
+    <h2><FileText size={17}/> Conciliação de pagamentos</h2>
+    <span>2026</span>
+   </header>
+   <div className="fin-recon-grid">
+    <div><span>OPs na base principal</span><strong>{conciliado.registros.toLocaleString('pt-BR')}</strong></div>
+    <div><span>Coincidentes entre relatórios</span><strong>{conciliado.encontrados.toLocaleString('pt-BR')}</strong><small>{moeda(conciliado.valorRepetidoFontes)}</small></div>
+    <div><span>Somente na Ordem Cronológica</span><strong>{conciliado.exclusivos.toLocaleString('pt-BR')}</strong><small>{moeda(conciliado.valorExclusivo)}</small></div>
+    <div><span>Base sem soma duplicada</span><strong className="fin-recon-sum">{moeda(conciliado.totalBase)}</strong></div>
+   </div>
+   <div className="fin-recon-foot">
+    <span>Fonte principal: Ordem Cronológica de Pagamentos</span>
+    <span>Mesmo número de OP e mesmo valor = mesma ocorrência entre relatórios</span>
+    <span>Duplicidade de pagamento ao credor: não comprovada</span>
+   </div>
+  </section>
   <div className="fin-columns">
    <section className="fin-panel">
     <header className="fin-panel-head"><h2><Landmark size={17}/> Receita</h2><span>{moeda(receitaTotal)}</span></header>
