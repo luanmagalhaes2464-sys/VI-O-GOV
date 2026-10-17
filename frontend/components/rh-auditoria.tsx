@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {AlertCircle,CheckCircle2,ChevronDown,ChevronUp,ExternalLink,Info,Scale,Search,ShieldAlert,Users,Wallet} from 'lucide-react';
 import {api,brl,num} from '../lib/api';
-import {parametroPorCargo} from '../lib/dimensionamento-escolar';
+import {parametroPorCargo,totalTurmas,unidadesDimensionamento} from '../lib/dimensionamento-escolar';
 
 type Rubrica={codigo:string;nome:string;categoria:string;valor:number};
 type Ocorrencia={id:string;nome:string;matricula:string;cargo:string;departamento:string;rubricas:Rubrica[];detalhes?:string;bruto:number;diferenca_bruto:number;diferenca_descontos:number;diferenca_liquido:number};
@@ -84,6 +84,11 @@ export default function RHAuditoria({mes}:{mes:string}){
    </>}
    {visivel==='cargos'&&<>
     {quadroErro&&<p className="rh-a-error"><AlertCircle size={14}/>{quadroErro}</p>}
+    <div className="rh-a-school-summary">
+     <strong>{num(totalTurmas)} turmas</strong>
+     <span>cadastradas em {num(unidadesDimensionamento.length)} escolas municipais (2025)</span>
+     <small>Para calcular Professores I e II por cargo, faltam as turmas por etapa; para Professor III, as horas-aula por disciplina.</small>
+    </div>
     <div className="rh-a-cargo-tools"><label><Search size={15}/><input type="search" aria-label="Pesquisar cargo e jornada" value={filtroCargo} onChange={e=>setFiltroCargo(e.target.value)} placeholder="Pesquisar cargo ou jornada..."/></label>
      <small>{num(quadro?.grupos)} combinações de cargo e jornada na folha</small></div>
     <div className="rh-a-cargo-wrap"><table className="rh-a-cargo-table">
