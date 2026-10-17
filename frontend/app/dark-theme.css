@@ -141,3 +141,19 @@ html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table){
  .rh-shell .topbar-sidebar-toggle{display:none}
  .rh-shell.sidebar-collapsed .sidebar{visibility:visible;opacity:1;pointer-events:auto}
 }
+
+
+/* Tipografia institucional com proporções próximas ao Portal da Transparência. */
+html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table),
+.rh-shell :is(h1,h2,h3,h4,.page-heading h1,.rh26-heading h1,.edu-heading h1,.vg-heading h1,.rh-a-head h2){
+ font-family:"Open Sans","Segoe UI",Arial,sans-serif!important;
+ letter-spacing:normal!important;
+}
+.rh-shell :is(h1,h2,h3,.fin-top h1){font-weight:700!important}
+.rh-shell .vico-logout{
+ display:inline-flex;align-items:center;gap:7px;margin-left:8px;padding:8px 11px;
+ color:#fff;background:#495663;border:1px solid #82909c;border-radius:6px;
+ font-family:inherit;font-size:11px;font-weight:650;cursor:pointer;white-space:nowrap
+}
+.rh-shell .vico-logout:hover{background:#6a7886}
+@media(max-width:800px){.rh-shell .vico-logout span{display:none}.rh-shell .vico-logout{padding:8px}}
