@@ -255,3 +255,15 @@ button.rh-a-school-detail-trigger:hover,button.rh-a-school-detail-trigger:focus-
 .rh-a-calc-rules small{font-size:9px;color:#758c9d;text-align:center;line-height:1.35}
 .rh-a-calc-rules b{font-size:14px;color:#2c596b}
 @media(max-width:700px){.rh-a-calc-overlay{padding:9px}.rh-a-calc-head{padding:14px}.rh-a-calc-stats{padding:11px;gap:6px}.rh-a-calc-stats>div{padding:9px}.rh-a-calc-stats b{font-size:17px}.rh-a-calc-table-wrap{padding:0 11px}.rh-a-calc-rules{grid-template-columns:repeat(4,minmax(0,1fr))}.rh-a-calc-formula{padding:13px}}
+
+
+/* Parâmetro escolar − vínculos da folha: saldo indicativo, não excedente legal. */
+.rh-a-saldo-legend{font-size:10.5px;color:#6b8194;margin:4px 1px 11px;line-height:1.5}
+.rh-a-saldo-legend strong{color:#3b5369}
+.rh-a-school-balance{display:inline-flex;flex-direction:column;align-items:flex-start;
+ gap:4px;padding:6px 9px;border-radius:7px;border:1px solid transparent;
+ font-size:13px;font-weight:750;white-space:nowrap}
+.rh-a-school-balance small{font-size:9.5px;font-weight:550;margin:0;opacity:.95}
+.rh-a-school-balance.below{color:#a66a0a;background:#fff8e9;border-color:#f5e5c4}
+.rh-a-school-balance.above{color:#ad4151;background:#fff0f1;border-color:#f3dbe0}
+.rh-a-school-balance.balanced{color:#16806c;background:#edf7f4;border-color:#d5eee7}
