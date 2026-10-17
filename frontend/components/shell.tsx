@@ -1,20 +1,34 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import {usePathname} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
 import {useEffect,useState} from 'react';
-import {Menu,X,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
+import {Menu,X,PanelLeftClose,PanelLeftOpen,LogOut} from 'lucide-react';
 import RHAssistenteFlutuante from './rh-assistente-flutuante';
 import {menu} from './navigation';
 
 const STORAGE_KEY='vico-gov.sidebar-collapsed';
 export default function Shell({children}:{children:React.ReactNode}){
  const pathname=usePathname();
+ const router=useRouter();
+ const [loginAtivo,setLoginAtivo]=useState(false);
  const [open,setOpen]=useState(false);
  const [collapsed,setCollapsed]=useState(false);
  useEffect(()=>{
   try{setCollapsed(window.localStorage.getItem(STORAGE_KEY)==='true')}catch{/* Sem armazenamento: manter expandida */}
  },[]);
+ useEffect(()=>{
+  let ativo=true;
+  fetch('/api/auth/status',{cache:'no-store'})
+   .then(r=>r.json()).then(d=>{if(ativo)setLoginAtivo(Boolean(d.ativo&&d.configurado&&d.cadastrado))})
+   .catch(()=>undefined);
+  return ()=>{ativo=false};
+ },[]);
+ async function sair(){
+  try{await fetch('/api/auth/logout',{method:'POST'})}catch{/* redirecionar mesmo quando a rede falhar */}
+  router.replace('/login');
+  router.refresh();
+ }
  const toggleCollapsed=()=>{
   setCollapsed(current=>{
    const next=!current;
@@ -22,6 +36,7 @@ export default function Shell({children}:{children:React.ReactNode}){
    return next;
   });
  };
+ if(pathname==='/login'||pathname==='/configurar-acesso')return <>{children}</>;
  return <div className={'app-layout rh-shell'+(collapsed?' sidebar-collapsed':'')}>
   {open&&<div className="overlay" onClick={()=>setOpen(false)}/>}
   <aside id="vico-sidebar" className={'sidebar '+(open?'show':'')} aria-label="Menu lateral">
@@ -57,6 +72,7 @@ export default function Shell({children}:{children:React.ReactNode}){
      <Image src="/brasao-prefeitura-vicosa.svg" alt="Brasão da Prefeitura Municipal de Viçosa" width={74} height={51} unoptimized/>
     </span>
     <span className="topbar-prefeitura-nome">PREFEITURA DE VIÇOSA</span>
+    {loginAtivo&&<button type="button" className="vico-logout" onClick={sair} title="Encerrar sessão" aria-label="Sair do sistema"><LogOut size={17}/><span>Sair</span></button>}
    </div>
    </header>
    <main className="content">{children}</main>
