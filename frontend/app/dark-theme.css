@@ -81,3 +81,10 @@ html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table){
 .rh-shell .brand strong{font-weight:700!important;letter-spacing:-.25px!important}
 .rh-shell .brand small{font-weight:600!important;letter-spacing:1px!important}
 .rh-shell .rh-bot-head{background:#9e4754!important}
+/* Corrige empilhamento ao rolar: o seletor de competências (z-index:30)
+   não pode desenhar sobre o cabeçalho sticky (z-index padrão:10).
+   A sidebar fica acima para preservar o botão lateral de recolher. */
+.rh-shell .topbar{z-index:90!important}
+.rh-shell .sidebar{z-index:110!important}
+.rh-shell .sidebar-collapse-toggle{z-index:115!important}
+
