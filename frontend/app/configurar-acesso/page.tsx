@@ -26,34 +26,46 @@ export default function ConfigurarAcesso(){
   finally{setEnviando(false)}
  }
  return <main className="vico-acesso vico-acesso-setup">
-  <section className="vico-acesso-hero">
-   <div className="vico-acesso-brand"><span className="vico-acesso-v">V</span><div><strong>VIÇO GOV</strong><small>INTELIGÊNCIA MUNICIPAL</small></div></div>
-   <div className="vico-acesso-hero-copy"><span>ADMINISTRAÇÃO DO SISTEMA</span><h1>Segurança e controle de acesso.</h1>
-    <p>Cadastro inicial protegido para administração da plataforma.</p></div>
-   <div className="vico-acesso-hero-footer">VIÇO GOV · 2026</div>
-  </section>
-  <section className="vico-acesso-area"><div className="vico-acesso-box">
-   <div className="vico-acesso-emblema"><ShieldCheck size={34}/></div>
-   <div className="vico-acesso-kicker">CONFIGURAÇÃO INICIAL</div><h2>Criar administrador</h2>
-   {ok?<div className="vico-acesso-success">
-    <strong>Administrador cadastrado.</strong>
-    <p>Agora configure <code>VICO_AUTH_ENABLED=true</code> no Render e aguarde a publicação. Depois entre com o e-mail e a senha cadastrados.</p>
-    <button type="button" onClick={()=>router.push('/login')}>Ir para o login <ArrowRight size={16}/></button>
-   </div>:status?.cadastrado?<div className="vico-acesso-config">
-     <strong>Administrador já cadastrado.</strong><span>Esta etapa só pode ser executada uma vez.</span>
-     <a href="/login">Ir para o login</a>
-    </div>:<>
-    <p className="vico-acesso-sub">Utilize a chave de configuração do Render para cadastrar a primeira conta.</p>
-    <form className="vico-acesso-form" onSubmit={registrar}>
-     <label>Nome<input required minLength={2} maxLength={120} autoComplete="name" value={nome} onChange={e=>setNome(e.target.value)}/></label>
-     <label>E-mail<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
-     <label>Senha de acesso<input required type="password" autoComplete="new-password" minLength={12} value={senha} onChange={e=>setSenha(e.target.value)} placeholder="Mínimo 12 caracteres, letras e números"/></label>
-     <label>Chave inicial do Render<input required type="password" autoComplete="off" value={chave} onChange={e=>setChave(e.target.value)}/></label>
-     {erro&&<p role="alert" className="vico-acesso-error">{erro}</p>}
-     <button type="submit" className="vico-acesso-submit" disabled={enviando}>{enviando?'Registrando...':'Cadastrar administrador'}<ArrowRight size={17}/></button>
-    </form>
-    </>}
-   </div><footer className="vico-acesso-footer">VIÇO GOV · CONTROLE DE ACESSO</footer>
+  <header className="vico-acesso-cabecalho">
+   <div className="vico-acesso-identidade">
+    <span className="vico-acesso-v" aria-hidden="true">V</span>
+    <div><strong>VIÇO GOV</strong><small>Inteligência Municipal</small></div>
+   </div>
+   <span className="vico-acesso-cabecalho-label">Administração do sistema</span>
+  </header>
+  <section className="vico-acesso-area">
+   <div className="vico-acesso-box">
+    <div className="vico-acesso-intro">
+     <div className="vico-acesso-emblema"><ShieldCheck size={30}/></div>
+     <div><span className="vico-acesso-kicker">Configuração inicial</span>
+      <h1>Criar administrador</h1>
+      <p className="vico-acesso-sub">Configure o primeiro acesso ao sistema.</p>
+     </div>
+    </div>
+    {ok?<div className="vico-acesso-success">
+     <strong>Administrador cadastrado.</strong>
+     <p>Ative <code>VICO_AUTH_ENABLED=true</code> no Render e aguarde a publicação. Depois, entre com as credenciais cadastradas.</p>
+     <button type="button" onClick={()=>router.push('/login')}>Ir para o login <ArrowRight size={16}/></button>
+    </div>:status?.cadastrado?<div className="vico-acesso-config">
+      <strong>Administrador já cadastrado.</strong><span>O cadastro inicial só pode ser realizado uma vez.</span>
+      <a href="/login">Ir para o login</a>
+     </div>:<>
+     <form className="vico-acesso-form" onSubmit={registrar}>
+      <label>Nome<input required minLength={2} maxLength={120} autoComplete="name" value={nome} onChange={e=>setNome(e.target.value)}/></label>
+      <label>E-mail<input required type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+      <label>Senha de acesso<input required type="password" autoComplete="new-password" minLength={12}
+       value={senha} onChange={e=>setSenha(e.target.value)} placeholder="Mínimo de 12 caracteres, letras e números"/></label>
+      <label>Chave de configuração do Render<input required type="password" autoComplete="off"
+       value={chave} onChange={e=>setChave(e.target.value)}/></label>
+      {erro&&<p role="alert" className="vico-acesso-error">{erro}</p>}
+      <button type="submit" className="vico-acesso-submit" disabled={enviando}>
+       {enviando?'Registrando...':'Cadastrar administrador'}<ArrowRight size={17}/>
+      </button>
+     </form>
+     </>}
+    <div className="vico-acesso-voltar"><a href="/login">Voltar ao login</a></div>
+   </div>
+   <footer className="vico-acesso-footer">VIÇO GOV · Gestão e Inteligência Municipal</footer>
   </section>
  </main>;
 }
