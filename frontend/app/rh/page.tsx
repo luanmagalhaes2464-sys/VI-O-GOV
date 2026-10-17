@@ -138,10 +138,10 @@ export default function RecursosHumanos(){
    </div>}
   </section>
   <div className="rh26-cards">
-    <article><span><Users size={16}/> Vínculos-mês</span><strong>{carregando?'…':num(filtrados?.vinculos_mes)}</strong><small>Soma dos vínculos nos meses selecionados</small></article>
-    <article><span><Users size={16}/> Vínculos distintos</span><strong>{carregando?'…':num(filtrados?.vinculos_distintos)}</strong><small>Sem repetir o mesmo nome e matrícula entre meses</small></article>
+    <article><span><Users size={16}/> Vínculos-mês</span><strong>{carregando?'…':num(filtrados?.vinculos_mes)}</strong></article>
+    <article><span><Users size={16}/> Vínculos distintos</span><strong>{carregando?'…':num(filtrados?.vinculos_distintos)}</strong></article>
     <article><span><Wallet size={16}/> Remuneração bruta</span><strong>{carregando?'…':brl(filtrados?.bruto)}</strong><small>Acumulado de {selecionados.length} {selecionados.length===1?'mês':'meses'}</small></article>
-    <article><span><Wallet size={16}/> Quinquênios</span><strong>{carregando?'…':brl(filtrados?.quinquenio)}</strong><small>Rubrica de quinquênio · acumulada</small></article>
+    <article><span><Wallet size={16}/> Quinquênios</span><strong>{carregando?'…':brl(filtrados?.quinquenio)}</strong></article>
   </div>
   <RHAuditoria mes={mesReferencia}/>
   <RHExploracao dados={dados} consulta={consulta}/>
