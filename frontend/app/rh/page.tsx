@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X} from 'lucide-react';
+import {CalendarDays,ChevronDown,ChevronRight,ChevronLeft,Search,Filter,BarChart3,Users,Wallet,Info,RefreshCcw,AlertTriangle,ExternalLink,X,ArrowUp,ArrowDown,ArrowDownUp} from 'lucide-react';
 import {brl,num} from '../../lib/api';
 import RHExploracao from '../../components/rh-exploracao';
 import RHAuditoria from '../../components/rh-auditoria';
@@ -9,6 +9,8 @@ type KPIs={vinculos_mes:number;vinculos_distintos:number;nomes_distintos:number;
 type Mes={mes:string;disponivel:boolean;indicadores:{bruto:number;liquido:number;quinquenio:number;vinculos_mes:number}|null;fonte?:string};
 type Grupo={nome:string;quantidade:number;bruto?:number;media_bruta?:number;maior_remuneracao?:number};
 type Row={id:number;mes:string;matricula:string;nome:string;admissao:string|null;cargo:string;vinculo:string;departamento:string;local:string;jornada:string;bruto:number;liquido:number;quinquenio:number;inclusoes_pagamento:number};
+type Ordenacao='mes'|'nome'|'cargo'|'bruto'|'liquido'|'quinquenio';
+type Direcao='asc'|'desc';
 type Painel={meses:string[];competencias:Mes[];cobertura:number;totais:KPIs;por_departamento:Grupo[];por_cargo:Grupo[];maiores_salarios:Grupo[];por_vinculo:Grupo[];pessoas:Row[];total_pessoas:number;pagina:number;opcoes:Record<string,string[]>;criterio_salario:string;aviso:string};
 const portal='https://pmvicosa.cidadesmg.com.br/portaltransparencia/publica/recursosHumanos/recursosHumanos.xhtml';
 const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho'];
@@ -58,6 +60,8 @@ export default function RecursosHumanos(){
  const [pessoa,setPessoa]=useState<Row|null>(null);
  const [buscaTabela,setBuscaTabela]=useState('');
  const [buscaTabelaAplicada,setBuscaTabelaAplicada]=useState('');
+ const [ordenar,setOrdenar]=useState<Ordenacao>('mes');
+ const [direcao,setDirecao]=useState<Direcao>('desc');
  useEffect(()=>{
   const timer=window.setTimeout(()=>setBuscaTabelaAplicada(buscaTabela.trim()),300);
   return ()=>window.clearTimeout(timer);
@@ -71,8 +75,10 @@ export default function RecursosHumanos(){
  const consultaTabela=useMemo(()=>{
   const query=new URLSearchParams(consulta);
   if(buscaTabelaAplicada)query.set('tabela_busca',buscaTabelaAplicada);
+  query.set('ordenar',ordenar);
+  query.set('direcao',direcao);
   return query.toString();
- },[consulta,buscaTabelaAplicada]);
+ },[consulta,buscaTabelaAplicada,ordenar,direcao]);
  useEffect(()=>{
   let active=true;setCarregando(true);setErro('');
   fetch('/api/rh/painel?'+consultaTabela,{cache:'no-store'}).then(async r=>{const obj=await r.json();if(!r.ok)throw new Error(obj.error||'Erro HTTP '+r.status);return obj as Painel})
@@ -90,6 +96,23 @@ export default function RecursosHumanos(){
   return [...prev,mes].sort();
  });setPagina(1)}
  function update(key:keyof Filtros,v:string){setF(old=>({...old,[key]:v}));setPagina(1)}
+ function ordenarColuna(coluna:Ordenacao){
+  if(ordenar===coluna)setDirecao(d=>d==='asc'?'desc':'asc');
+  else{
+   setOrdenar(coluna);
+   setDirecao(['bruto','liquido','quinquenio','mes'].includes(coluna)?'desc':'asc');
+  }
+  setPagina(1);
+ }
+ const tituloOrdenavel=(chave:Ordenacao,titulo:string)=>
+  <th scope="col" aria-sort={ordenar===chave?(direcao==='asc'?'ascending':'descending'):'none'}>
+   <button type="button" className={'rh30-sort-head'+(ordenar===chave?' selected':'')}
+    onClick={()=>ordenarColuna(chave)}
+    title={'Ordenar por '+titulo.toLowerCase()+' em ordem '+(ordenar===chave&&direcao==='asc'?'decrescente':'crescente')}>
+    <span>{titulo}</span>
+    {ordenar===chave?(direcao==='asc'?<ArrowUp size={14}/>:<ArrowDown size={14}/>):<ArrowDownUp size={13}/>}
+   </button>
+  </th>;
  const options=dados?.opcoes||{};
  const optionsFor=(name:keyof Filtros,label:string,placeholder:string)=><FiltroPesquisavel
   label={label} placeholder={placeholder} value={f[name]}
@@ -163,7 +186,14 @@ export default function RecursosHumanos(){
     </label>
     <span aria-live="polite">{carregando?'Pesquisando…':num(dados?.total_pessoas??0)+' registros encontrados'}</span>
    </div>
-   <div className="rh26-table-scroll"><table><thead><tr><th>Competência</th><th>Servidor / matrícula</th><th>Cargo e departamento</th><th>Bruto</th><th>Líquido</th><th>Quinquênio</th><th></th></tr></thead>
+   <div className="rh26-table-scroll"><table><thead><tr>
+     {tituloOrdenavel('mes','Competência')}
+     {tituloOrdenavel('nome','Servidor / matrícula')}
+     {tituloOrdenavel('cargo','Cargo e departamento')}
+     {tituloOrdenavel('bruto','Bruto')}
+     {tituloOrdenavel('liquido','Líquido')}
+     {tituloOrdenavel('quinquenio','Quinquênio')}
+     <th scope="col">Detalhes</th></tr></thead>
      <tbody>{(dados?.pessoas||[]).map(r=><tr key={r.id}>
       <td>{r.mes.slice(-2)+'/2026'}</td><td><b>{r.nome}</b><small>Matrícula {r.matricula}</small></td>
       <td>{r.cargo}<small>{r.departamento}</small></td>
