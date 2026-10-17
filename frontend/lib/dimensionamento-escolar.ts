@@ -39,12 +39,12 @@ export const totaisDimensionamento:Record<CampoDimensionamento,number|null>={
   unidadesDimensionamento.reduce((x,u)=>x+(u.eventual||0),0):null
 };
 const normalizar=(nome:string)=>nome.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
-export function parametroPorCargo(cargo:string):{valor:number|null;regra?:string;descricao:string}|null{
+export function parametroPorCargo(cargo:string):{valor:number|null;campo?:CampoDimensionamento;regra?:string;descricao:string}|null{
  const n=normalizar(cargo);
  if(n.includes('AUXILIAR DE SERVICO ESCOLAR'))
-  return {valor:totaisDimensionamento.auxiliar,descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
+  return {valor:totaisDimensionamento.auxiliar,campo:'auxiliar',descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
  if(n.includes('ASSISTENTE ADM ESCOLAR')||n.includes('ASSISTENTE ADMINISTRATIVO ESCOLAR'))
-  return {valor:totaisDimensionamento.administrativo,descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
+  return {valor:totaisDimensionamento.administrativo,campo:'administrativo',descricao:'Soma automática dos parâmetros por turma das '+unidadesDimensionamento.length+' escolas (Censo 2025). Não equivale a vagas legais.'};
  if(n.includes('PROFESSOR EVENTUAL'))
   return {valor:null,regra:'Faixa de turmas elegíveis',
    descricao:'O Anexo V exige turmas da educação infantil até o 5º ano e condições de turmas integrais do Fundamental II; não calcular a partir das 263 turmas agregadas.'};
