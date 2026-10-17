@@ -98,8 +98,11 @@ export default function RHAuditoria({mes}:{mes:string}){
     </div>
     <div className="rh-a-cargo-tools"><label><Search size={15}/><input type="search" aria-label="Pesquisar cargo e jornada" value={filtroCargo} onChange={e=>setFiltroCargo(e.target.value)} placeholder="Pesquisar cargo ou jornada..."/></label>
      <small>{num(quadro?.grupos)} combinações de cargo e jornada na folha</small></div>
-    <div className="rh-a-cargo-wrap"><table className="rh-a-cargo-table">
-      <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Parâmetro escolar (2025)</th><th>Vagas legais</th><th>Excedentes</th></tr></thead>
+    <div className="rh-a-saldo-legend" aria-label="Regra do saldo escolar">
+      <strong>Saldo:</strong> parâmetro (2025) − vínculos do mês. <b>+</b> abaixo do parâmetro; <b>−</b> acima. Não é excedente legal.
+     </div>
+     <div className="rh-a-cargo-wrap"><table className="rh-a-cargo-table">
+      <thead><tr><th>Cargo / jornada</th><th>Vínculos na folha</th><th>Parâmetro escolar (2025)</th><th>Vagas legais</th><th title="Saldo = parâmetro escolar de 2025 menos vínculos da folha do mês. Não corresponde a excesso legal confirmado.">Saldo escolar</th></tr></thead>
       <tbody>{cargosVisiveis.slice(0,50).map((c,i)=>{
         const referencia=parametroPorCargo(c.cargo);
         return <tr key={c.cargo+'-'+c.jornada+'-'+i}>
@@ -116,7 +119,14 @@ export default function RHAuditoria({mes}:{mes:string}){
            <span className="rh-a-rule" title={referencia.descricao}>{referencia.regra}</span>:
            <span className="rh-a-muted" title={referencia?.descricao||'Sem parâmetro escolar aplicável'}>—</span>}</td>
          <td>{c.vagas_legais!=null?num(c.vagas_legais):c.situacao==='cargo_em_extincao'?<span className="rh-a-no-reference" title={c.norma_quadro||''}>Extinção parcial</span>:<span className="rh-a-no-reference">A validar</span>}</td>
-         <td>{c.excedentes!=null?num(c.excedentes):<span className="rh-a-muted">—</span>}</td>
+         <td>{referencia?.valor!=null&&Number.isFinite(c.vinculos_folha)?(()=>{
+           const saldo=referencia.valor-c.vinculos_folha;
+           return <span className={'rh-a-school-balance '+(saldo>0?'below':saldo<0?'above':'balanced')}
+            title={'Parâmetro 2025 ('+num(referencia.valor)+') − vínculos na folha ('+num(c.vinculos_folha)+') = '+(saldo>0?'+':'')+num(saldo)+'. '+(saldo>0?'Abaixo do parâmetro.':saldo<0?'Acima do parâmetro.':'Igual ao parâmetro.')+' Não representa excedente legal confirmado.'}>
+            {saldo>0?'+':''}{num(saldo)}
+            <small>{saldo>0?'Abaixo do parâmetro':saldo<0?'Acima do parâmetro':'Igual ao parâmetro'}</small>
+           </span>;
+          })():<span className="rh-a-muted" title="Sem parâmetro escolar calculável">—</span>}</td>
         </tr>;
        })}</tbody>
     </table></div>
