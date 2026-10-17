@@ -40,7 +40,7 @@ export async function POST(req:NextRequest){
   const token=await criarSessao(inserido.rows[0].id,email);
   const res=NextResponse.json({ok:true,precisaAtivar:true},{headers:{'Cache-Control':'no-store'}});
   res.cookies.set(COOKIE_SESSAO,token,{
-   httpOnly:true,secure:req.nextUrl.protocol==='https:',sameSite:'lax',
+   httpOnly:true,secure:process.env.NODE_ENV==='production'||req.nextUrl.protocol==='https:',sameSite:'lax',
    path:'/',maxAge:DURACAO_SESSAO
   });
   attempts.delete(ip);
