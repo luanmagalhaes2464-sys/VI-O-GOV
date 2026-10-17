@@ -31,7 +31,7 @@ export async function verificarSessao(token?:string|null):Promise<Sessao|null>{
  const [payload,sig,...extras]=token.split('.');
  if(!payload||!sig||extras.length)return null;
  try{
-  const valido=await crypto.subtle.verify('HMAC',await chaveHmac(),decode(sig),
+  const valido=await crypto.subtle.verify('HMAC',await chaveHmac(),decode(sig).buffer as ArrayBuffer,
    new TextEncoder().encode(payload));
   if(!valido)return null;
   const d=JSON.parse(new TextDecoder().decode(decode(payload))) as Sessao;
