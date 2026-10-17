@@ -49,11 +49,11 @@ export function parametroPorCargo(cargo:string):{valor:number|null;regra?:string
   return {valor:null,regra:'Faixa de turmas elegíveis',
    descricao:'O Anexo V exige turmas da educação infantil até o 5º ano e condições de turmas integrais do Fundamental II; não calcular a partir das 263 turmas agregadas.'};
  if(/^PROFESSOR (I|II)$/.test(n))
-  return {valor:null,regra:'1 por turma',
-   descricao:'O Anexo V da Lei municipal nº 1.368/1999 prevê 1 PEB-I ou 1 PEB-II por turma, conforme etapa. Sem número de turmas por etapa e equivalência confirmada dos cargos da folha, não é possível calcular quantitativos separados.'};
+  return {valor:null,regra:'Etapas não separadas',
+   descricao:'A rede tem '+totalTurmas+' turmas em 2025, mas o cadastro disponível informa somente o total por escola. O PEB I atua na Educação Infantil e o PEB II pode atuar na Educação Infantil ou anos iniciais; a referência legal é um professor por turma da etapa correspondente. O total de turmas da rede NÃO pode ser atribuído integralmente a cada cargo.'};
  if(n==='PROFESSOR III')
-  return {valor:null,regra:'Horas-aula ÷ jornada',
-   descricao:'PEB-III: Anexo V da Lei 1.368/1999 exige total de horas-aula da rede dividido pela carga horária básica, considerando extensões do art. 88. Esses dados ainda não integram a base.'};
+  return {valor:null,regra:'Horas-aula não informadas',
+   descricao:'PEB III: exige as horas-aula dos anos finais por disciplina e a carga horária básica aplicável, inclusive extensões de jornada. O total de '+totalTurmas+' turmas em 2025 não permite o cálculo por especialidade.'};
  if(n.includes('AUXILIAR DE EDUCACAO INFANTIL'))
   return {valor:null,descricao:'Faltam distribuição das turmas por idade, turno e jornada da unidade.'};
  return null;
