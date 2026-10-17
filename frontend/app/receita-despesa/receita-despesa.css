@@ -1,0 +1,67 @@
+
+.fin-page{color:#294159;max-width:1650px;margin:0 auto;font-family:Arial,"Helvetica Neue",sans-serif}
+.fin-top{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin:2px 0 25px}
+.fin-overline{font-size:10px;font-weight:750;letter-spacing:1px;color:#a63e50;margin:0 0 12px}
+.fin-top h1{font-size:28px;font-weight:700;line-height:1.3;margin:0;letter-spacing:-.5px;color:#25435a}
+.fin-period{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #dce5eb;border-radius:10px;padding:10px 14px;color:#70869a;min-width:268px}
+.fin-period>span{font-size:10px;font-weight:650}
+.fin-period>svg{color:#728ba3}
+.fin-period select{flex:1;min-width:120px;border:0;background:transparent;outline:none;font-size:11px;color:#294359;font-weight:700;cursor:pointer}
+.fin-highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-bottom:17px}
+.fin-highlight{min-width:0;padding:21px 22px 23px;border:1px solid #dfe7ed;border-top:4px solid #6989a7;border-radius:12px;background:#fff}
+.fin-highlight.fin-receita{border-top-color:#0c8878}
+.fin-highlight.fin-despesa{border-top-color:#aa4858}
+.fin-highlight.fin-diarias{border-top-color:#497eac}
+.fin-hl-header{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:650;color:#657b90}
+.fin-receita .fin-hl-header svg{color:#0c8878}
+.fin-despesa .fin-hl-header svg{color:#aa4858}
+.fin-diarias .fin-hl-header svg{color:#497eac}
+.fin-highlight strong{display:block;margin-top:17px;font-size:clamp(18px,2.2vw,27px);font-weight:700;color:#23435b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.4px}
+.fin-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-bottom:17px}
+.fin-panel{background:#fff;border:1px solid #dfe7ed;border-radius:12px;min-width:0;margin-bottom:17px;overflow:hidden}
+.fin-columns .fin-panel{margin-bottom:0}
+.fin-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #eaf0f3;padding:18px 20px}
+.fin-panel-head h2{display:inline-flex;align-items:center;gap:9px;color:#2b4960;font-size:14px;line-height:1.4;font-weight:700;margin:0}
+.fin-panel-head svg{color:#ad4658}
+.fin-panel-head>span{font-size:12px;color:#425b70;font-weight:700}
+.fin-lines{padding:4px 20px 7px}
+.fin-line{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #eff2f5;padding:15px 0;min-width:0}
+.fin-line:last-child{border-bottom:0}
+.fin-line>span{color:#698094;font-size:11.5px;line-height:1.5}
+.fin-line>strong{color:#294860;font-size:12.5px;white-space:nowrap;text-align:right}
+.fin-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:13px 20px}
+.fin-two>div{display:flex;flex-direction:column;gap:13px;padding:15px 18px;border:1px solid #e9eef2;border-radius:9px;background:#f8fafb;margin-right:8px}
+.fin-two>div+div{margin-right:0;margin-left:8px}
+.fin-two span{font-size:11px;color:#6a8194}
+.fin-two strong{font-size:clamp(17px,1.9vw,23px);color:#28455a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fin-legend{display:flex;align-items:center;gap:7px;color:#7990a0;font-size:10.5px}
+.fin-dot{display:inline-block;height:9px;width:9px;border-radius:50%}
+.fin-dot.fin-green{background:#0e887c}
+.fin-dot.fin-rose{background:#b55b69}
+.fin-legend .fin-dot:not(:first-child){margin-left:12px}
+.fin-chart{display:flex;flex-direction:column;gap:2px;padding:16px 19px}
+.fin-chart-line{display:grid;grid-template-columns:55px minmax(0,1fr) 151px;gap:17px;align-items:center;width:100%;border:1px solid transparent;border-radius:7px;background:transparent;color:#567185;text-align:left;padding:9px 7px;cursor:pointer;font:inherit}
+.fin-chart-line:hover{background:#f6f9fa}
+.fin-chart-line.selected{background:#fdf0f2;border-color:#eacbd0}
+.fin-chart-label{font-size:11px;font-weight:700}
+.fin-chart-tracks{display:flex;flex-direction:column;gap:5px;min-height:17px;justify-content:center}
+.fin-chart-tracks i{display:block;min-width:0;max-width:100%;height:7px;border-radius:3px;transition:width .2s ease}
+.fin-chart-bar.fin-green{background:#0e887c}
+.fin-chart-bar.fin-rose{background:#b55b69}
+.fin-chart-month-value{font-size:10.5px;color:#4c6880;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.fin-table-wrap{overflow:auto;max-width:100%}
+.fin-table{border-collapse:collapse;min-width:780px;width:100%;text-align:right;font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.fin-table th{color:#6a8195;font-size:10px;font-weight:750;padding:14px 17px;border-bottom:1px solid #e3eaf0;background:#f6f8fa}
+.fin-table td{padding:14px 17px;border-bottom:1px solid #edf1f4;color:#486076}
+.fin-table tr:last-child td{border-bottom:0}
+.fin-table th:first-child,.fin-table td:first-child{text-align:left}
+.fin-table td strong{color:#29495f}
+.fin-table tbody tr{transition:background .15s}
+.fin-table tbody tr:hover{background:#f7f9fb}
+.fin-table tbody tr.selected{background:#fff3f4}
+.fin-annual{margin-top:2px}
+.fin-budget-panel{margin-bottom:50px}
+.fin-error{border:1px solid #eccbd0;background:#fff6f6;padding:13px 16px;border-radius:8px;margin-bottom:16px;color:#9c3d4c;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.fin-error button{border:0;background:none;color:#a43c4b;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
+@media(max-width:1100px){.fin-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-highlight:last-child{grid-column:1/-1}}
+@media(max-width:760px){.fin-top{align-items:stretch;flex-direction:column}.fin-period{width:100%}.fin-columns,.fin-highlights{grid-template-columns:1fr}.fin-highlight:last-child{grid-column:auto}.fin-highlight strong{font-size:23px}.fin-chart-line{grid-template-columns:36px minmax(0,1fr) 104px;gap:7px}.fin-chart-month-value{font-size:9.5px}.fin-two{grid-template-columns:1fr;gap:8px}.fin-two>div,.fin-two>div+div{margin:0}.fin-panel-head{padding:15px}.fin-lines{padding:3px 15px}.fin-chart{padding:12px}.fin-table{min-width:760px}}
