@@ -70,6 +70,18 @@ export async function GET(req:NextRequest){
   ]);
   const page=Number(q.get('pagina')||'1');
   if(!Number.isInteger(page)||page<1||page>500)invalid('Página inválida.');
+  // Ordenação de toda a consulta antes de paginar (nunca apenas os 20 itens carregados).
+  // Expressões SQL de uma lista fixa: parâmetros do usuário não viram SQL arbitrário.
+  const camposOrdenacao:Record<string,string>={
+   mes:'competencia',nome:'LOWER(nome)',cargo:'LOWER(cargo)',
+   bruto:'bruto',liquido:'liquido',quinquenio:'quinquenio'
+  };
+  const ordenar=(q.get('ordenar')||'mes').toLowerCase();
+  const direcao=(q.get('direcao')||'desc').toLowerCase();
+  if(!camposOrdenacao[ordenar]||!['asc','desc'].includes(direcao))invalid('Ordenação inválida.');
+  const ordemSql=camposOrdenacao[ordenar]+' '+direcao.toUpperCase()+
+    (ordenar==='cargo'?', LOWER(departamento) ASC':'')+
+    ', competencia DESC, LOWER(nome) ASC, matricula ASC, id ASC';
   // A pesquisa local da tabela não interfere nos indicadores agregados.
   const buscaTabela=(q.get('tabela_busca')||'').trim();
   if(buscaTabela.length>80)invalid('Pesquisa longa demais.');
@@ -80,7 +92,7 @@ export async function GET(req:NextRequest){
    clausulaTabela+=" AND CONCAT_WS(' ',nome,matricula,cargo,departamento) ILIKE $"+parametrosTabela.length;
   }
   const [records,numeroTabela]=await Promise.all([
-   pool.query("SELECT id,to_char(competencia,'YYYY-MM') AS mes,matricula,nome,to_char(admissao,'DD/MM/YYYY') AS admissao,cargo,vinculo,departamento,local_trabalho AS local,jornada,bruto,liquido,quinquenio,inclusoes_pagamento FROM rh_folha_pessoas_2026 WHERE "+clausulaTabela+" ORDER BY competencia DESC,nome,matricula LIMIT 20 OFFSET $"+(parametrosTabela.length+1),[...parametrosTabela,(page-1)*20]),
+   pool.query("SELECT id,to_char(competencia,'YYYY-MM') AS mes,matricula,nome,to_char(admissao,'DD/MM/YYYY') AS admissao,cargo,vinculo,departamento,local_trabalho AS local,jornada,bruto,liquido,quinquenio,inclusoes_pagamento FROM rh_folha_pessoas_2026 WHERE "+clausulaTabela+" ORDER BY "+ordemSql+" LIMIT 20 OFFSET $"+(parametrosTabela.length+1),[...parametrosTabela,(page-1)*20]),
    pool.query("SELECT COUNT(*)::int AS total FROM rh_folha_pessoas_2026 WHERE "+clausulaTabela,parametrosTabela)
   ]);
   const meta=new Map(statusData.rows.map(x=>[x.mes,x]));
@@ -97,7 +109,7 @@ export async function GET(req:NextRequest){
     meses:selected,competencias:months,cobertura:months.filter(x=>x.disponivel).length,
     totais:totais.rows[0],por_departamento:department.rows,por_cargo:positions.rows,
     maiores_salarios:pay.rows,por_vinculo:groupLinks.rows,
-    pessoas:records.rows,total_pessoas:numeroTabela.rows[0].total,opcoes:options,pagina:page,
+    pessoas:records.rows,total_pessoas:numeroTabela.rows[0].total,opcoes:options,pagina:page,ordenar,direcao,
     criterio_salario:'Média da remuneração bruta de cada vínculo por competência; cargos com ao menos três observações no período.',
     aviso:'Vínculos-mês são registros remuneratórios agrupados por matrícula, pessoa e competência. Um servidor pode ter mais de um vínculo. Janeiro tem divergência histórica entre o PDF e o total exibido no portal. Fevereiro a julho vieram de CSVs fornecidos pelo usuário, não de coletor automático.'
    },{headers:{'Cache-Control':'no-store'}});
