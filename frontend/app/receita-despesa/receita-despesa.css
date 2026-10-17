@@ -65,3 +65,16 @@
 .fin-error button{border:0;background:none;color:#a43c4b;font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer}
 @media(max-width:1100px){.fin-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}.fin-highlight:last-child{grid-column:1/-1}}
 @media(max-width:760px){.fin-top{align-items:stretch;flex-direction:column}.fin-period{width:100%}.fin-columns,.fin-highlights{grid-template-columns:1fr}.fin-highlight:last-child{grid-column:auto}.fin-highlight strong{font-size:23px}.fin-chart-line{grid-template-columns:36px minmax(0,1fr) 104px;gap:7px}.fin-chart-month-value{font-size:9.5px}.fin-two{grid-template-columns:1fr;gap:8px}.fin-two>div,.fin-two>div+div{margin:0}.fin-panel-head{padding:15px}.fin-lines{padding:3px 15px}.fin-chart{padding:12px}.fin-table{min-width:760px}}
+
+
+/* Conciliação entre relatórios: coincidência documental não implica pagamento duplicado. */
+.fin-recon-panel{margin-bottom:17px}
+.fin-recon-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:18px}
+.fin-recon-grid>div{display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-width:0;background:#f8fafb;border:1px solid #e4ebf1;border-radius:9px;padding:15px}
+.fin-recon-grid span{color:#71869a;font-size:11px;line-height:1.45}
+.fin-recon-grid strong{color:#28485e;font-size:clamp(17px,1.8vw,23px);font-weight:700;word-break:break-word}
+.fin-recon-grid small{color:#738a9b;font-size:10.5px}
+.fin-recon-grid .fin-recon-sum{font-size:clamp(15px,1.6vw,21px);color:#0e796e}
+.fin-recon-foot{display:flex;flex-wrap:wrap;gap:7px 20px;padding:0 18px 17px;font-size:10px;color:#8a9aa9}
+@media(max-width:1000px){.fin-recon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.fin-recon-grid{grid-template-columns:1fr;gap:8px;padding:12px}.fin-recon-foot{flex-direction:column;padding:2px 12px 14px}}
