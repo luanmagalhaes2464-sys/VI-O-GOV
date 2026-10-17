@@ -148,7 +148,7 @@ export default function RHAuditoria({mes}:{mes:string}){
   <div className="rh-a-head">
    <div><div className="rh-a-eyebrow"><Wallet size={15}/> INTELIGÊNCIA FISCAL LIGADA À FOLHA</div>
    <h2>O que explica o gasto com pessoal neste mês?</h2>
-   <p>Composição do pagamento importado, evolução mensal e contexto do limite fiscal do Executivo.</p></div>
+   </div>
   </div>
   <div className="rh-a-fiscal-top">
    <article><span>Folha bruta de {mes.slice(-2)}/2026</span><strong>{brl(d?.financeiro.bruto)}</strong><small>Valores registrados no banco do RH</small></article>
