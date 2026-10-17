@@ -50,7 +50,7 @@ export default function Shell({children}:{children:React.ReactNode}){
      aria-expanded={!collapsed} aria-controls="vico-sidebar">
      {collapsed?<PanelLeftOpen size={19}/>:<PanelLeftClose size={19}/>}
     </button>
-    <span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':'Prefeitura Municipal de Viçosa · Visão Geral'}</span>
+    <span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':pathname.startsWith('/receita-despesa')?'Prefeitura Municipal de Viçosa · Receita e Despesa':'Prefeitura Municipal de Viçosa · Visão Geral'}</span>
    </div>
    <div className="topbar-prefeitura" aria-label="Prefeitura Municipal de Viçosa">
     <span className="topbar-prefeitura-brasao">
