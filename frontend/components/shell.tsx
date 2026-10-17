@@ -24,18 +24,12 @@ export default function Shell({children}:{children:React.ReactNode}){
  };
  return <div className={'app-layout rh-shell'+(collapsed?' sidebar-collapsed':'')}>
   {open&&<div className="overlay" onClick={()=>setOpen(false)}/>}
-  <aside className={'sidebar '+(open?'show':'')} aria-label="Menu lateral">
+  <aside id="vico-sidebar" className={'sidebar '+(open?'show':'')} aria-label="Menu lateral">
    <div className="brand">
     <div className="brand-icon" aria-hidden="true">V</div>
     <div className="brand-name"><strong>VIÇO <span>GOV</span></strong><small>INTELIGÊNCIA MUNICIPAL</small></div>
     <button onClick={()=>setOpen(false)} className="mobile-only close-btn" aria-label="Fechar menu"><X size={18}/></button>
    </div>
-   <button type="button" className="sidebar-collapse-toggle" onClick={toggleCollapsed}
-    aria-label={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
-    title={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
-    aria-expanded={!collapsed}>
-    {collapsed?<PanelLeftOpen size={17}/>:<PanelLeftClose size={17}/>}
-   </button>
    <nav aria-label="Navegação principal" className="navigation">
     {menu.map(group=><div className="nav-group" key={group.section}>
      <div className="nav-title">{group.section}</div>
@@ -50,6 +44,12 @@ export default function Shell({children}:{children:React.ReactNode}){
   <div className="main-layout">
    <header className="topbar"><div className="top-left">
     <button onClick={()=>setOpen(true)} className="mobile-only close-btn" aria-label="Abrir menu"><Menu size={21}/></button>
+    <button type="button" className="topbar-sidebar-toggle" onClick={toggleCollapsed}
+     aria-label={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
+     title={collapsed?'Expandir menu lateral':'Recolher menu lateral'}
+     aria-expanded={!collapsed} aria-controls="vico-sidebar">
+     {collapsed?<PanelLeftOpen size={19}/>:<PanelLeftClose size={19}/>}
+    </button>
     <span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':'Prefeitura Municipal de Viçosa · Visão Geral'}</span>
    </div>
    <div className="topbar-prefeitura" aria-label="Prefeitura Municipal de Viçosa">
