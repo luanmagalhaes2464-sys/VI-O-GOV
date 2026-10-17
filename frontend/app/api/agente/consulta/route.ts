@@ -3,6 +3,7 @@ import {Pool} from 'pg';
 import {secretarias} from '../../../../lib/secretarias';
 import {unidadesEscolares} from '../../../../lib/educacao-dados';
 import {adminAutorizado,buscarTrechos} from '../../../../lib/ia-conhecimento';
+import {consultarPessoaRH} from '../../../../lib/consulta-servidor-ia';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -58,6 +59,13 @@ export async function POST(req:NextRequest){
    })):[];
   if(pergunta.length<1||pergunta.length>1500||!/^2026-0[1-7]$/.test(mes))
    return NextResponse.json({error:'Pergunta ou competência inválida.'},{status:422});
+  // Perguntas individuais devem consultar a folha pelo nome antes do modelo
+  // generativo. Evita o retorno genérico de totais de cargos em perguntas salariais.
+  const pessoaRH=await consultarPessoaRH(pool(),pergunta,mes,historico);
+  if(pessoaRH)return NextResponse.json({
+   ...resposta(pessoaRH.ambiguo?'nome_ambiguo':'folha_individual',pessoaRH.resposta,mes,[fonteRH]),
+   documentos:[]
+  },{headers:{'Cache-Control':'no-store'}});
   const registros=await Promise.all([
    pool().query<Dep>({text:`SELECT departamento,COUNT(DISTINCT (nome,matricula))::text vinculos,COALESCE(SUM(bruto),0)::text bruto
         FROM rh_folha_pessoas_2026 WHERE competencia=$1::date
@@ -148,6 +156,7 @@ export async function POST(req:NextRequest){
       }),signal:controller.signal,cache:'no-store'
      });
     }finally{clearTimeout(t)}
+    if(!upstream.ok)console.warn('Viço IA: resposta Gemini não disponível',upstream.status);
     if(upstream.ok){
      const result=await upstream.json();
      const parts=result?.candidates?.[0]?.content?.parts||[];
