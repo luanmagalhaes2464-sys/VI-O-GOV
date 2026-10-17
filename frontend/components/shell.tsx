@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import {usePathname} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import {Menu,X,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
@@ -50,7 +51,14 @@ export default function Shell({children}:{children:React.ReactNode}){
    <header className="topbar"><div className="top-left">
     <button onClick={()=>setOpen(true)} className="mobile-only close-btn" aria-label="Abrir menu"><Menu size={21}/></button>
     <span className="breadcrumb">{pathname.startsWith('/educacao')?'Prefeitura Municipal de Viçosa · Educação':pathname.startsWith('/rh')?'Prefeitura Municipal de Viçosa · Recursos Humanos':'Prefeitura Municipal de Viçosa · Visão Geral'}</span>
-   </div></header>
+   </div>
+   <div className="topbar-prefeitura" aria-label="Prefeitura Municipal de Viçosa">
+    <span className="topbar-prefeitura-brasao">
+     <Image src="/brasao-prefeitura-vicosa.svg" alt="Brasão da Prefeitura Municipal de Viçosa" width={74} height={51} unoptimized/>
+    </span>
+    <span className="topbar-prefeitura-nome">PREFEITURA DE VIÇOSA</span>
+   </div>
+   </header>
    <main className="content">{children}</main>
   </div>
   <RHAssistenteFlutuante/>
