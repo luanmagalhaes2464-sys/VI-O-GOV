@@ -36,3 +36,6 @@
 .vico-acesso-success code{font-family:monospace;font-size:12px}
 .vico-acesso-footer{font-size:10px;font-weight:600;color:#a0adba;margin-top:25px;text-align:center}
 @media(max-width:800px){.vico-acesso{grid-template-columns:1fr}.vico-acesso-hero{min-height:180px;padding:23px}.vico-acesso-hero-copy{display:none}.vico-acesso-hero-footer{display:none}.vico-acesso-hero:after{display:none}.vico-acesso-area{min-height:calc(100vh - 180px);padding:20px}.vico-acesso-box{padding:25px}}
+
+
+.vico-acesso{font-family:"Open Sans","Segoe UI",Arial,sans-serif}
