@@ -1,8 +1,8 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {AlertCircle,CheckCircle2,ChevronDown,ChevronUp,ExternalLink,Info,Scale,Search,ShieldAlert,Users,Wallet} from 'lucide-react';
+import {AlertCircle,CheckCircle2,ChevronDown,ChevronUp,ExternalLink,Info,Scale,Search,ShieldAlert,Users,Wallet,X,ChevronRight} from 'lucide-react';
 import {api,brl,num} from '../lib/api';
-import {parametroPorCargo,totalTurmas,unidadesDimensionamento} from '../lib/dimensionamento-escolar';
+import {parametroPorCargo,totalTurmas,unidadesDimensionamento,faixasTurmas,regrasEscolares,totaisDimensionamento,type CampoDimensionamento} from '../lib/dimensionamento-escolar';
 
 type Rubrica={codigo:string;nome:string;categoria:string;valor:number};
 type Ocorrencia={id:string;nome:string;matricula:string;cargo:string;departamento:string;rubricas:Rubrica[];detalhes?:string;bruto:number;diferenca_bruto:number;diferenca_descontos:number;diferenca_liquido:number};
@@ -30,6 +30,7 @@ export default function RHAuditoria({mes}:{mes:string}){
  const [quadro,setQuadro]=useState<Quadro|null>(null),[quadroErro,setQuadroErro]=useState('');
  const [loading,setLoading]=useState(true),[erro,setErro]=useState(''),[visivel,setVisivel]=useState<Tipo|null>(null);
  const [linha,setLinha]=useState(''),[filtroCargo,setFiltroCargo]=useState('');
+ const [detalheCalculo,setDetalheCalculo]=useState<CampoDimensionamento|null>(null);
  const mesNum=Number(mes.slice(-2)),periodo=Math.ceil(mesNum/4);
  useEffect(()=>{
   let alive=true;setLoading(true);setErro('');setQuadroErro('');
@@ -46,6 +47,12 @@ export default function RHAuditoria({mes}:{mes:string}){
   api<Fiscal>('/api/v1/rh/inteligencia/fiscal?ano=2026&periodo='+periodo).then(r=>{if(alive)setF(r.data)});
   return()=>{alive=false};
  },[periodo]);
+ useEffect(()=>{
+  if(!detalheCalculo)return;
+  const onEsc=(e:KeyboardEvent)=>{if(e.key==='Escape')setDetalheCalculo(null)};
+  window.addEventListener('keydown',onEsc);
+  return ()=>window.removeEventListener('keydown',onEsc);
+ },[detalheCalculo]);
  const cargosVisiveis=useMemo(()=>quadro?.cargos.filter(c=>
   (c.cargo+' '+c.jornada).toLocaleLowerCase('pt-BR').includes(filtroCargo.trim().toLocaleLowerCase('pt-BR')))||[],[quadro,filtroCargo]);
  const nBase=d?.contagens.revisoes_base;
@@ -99,7 +106,12 @@ export default function RHAuditoria({mes}:{mes:string}){
          <td><strong>{c.cargo}</strong><small>{c.jornada||'Jornada não informada'}</small></td>
          <td>{num(c.vinculos_folha)}</td>
          <td>{referencia?.valor!=null?
-           <span className="rh-a-school-estimate" title={referencia.descricao}>{num(referencia.valor)} <small>calculado · 2025</small></span>:
+           <button type="button" className="rh-a-school-estimate rh-a-school-detail-trigger"
+             onClick={()=>setDetalheCalculo(referencia.campo||null)}
+             aria-label={'Ver cálculo e dados por escola de '+c.cargo}
+             title="Abrir memória de cálculo por escola">
+             <strong>{num(referencia.valor)}</strong><small>Ver cálculo <ChevronRight size={12}/></small>
+            </button>:
            referencia?.regra?
            <span className="rh-a-rule" title={referencia.descricao}>{referencia.regra}</span>:
            <span className="rh-a-muted" title={referencia?.descricao||'Sem parâmetro escolar aplicável'}>—</span>}</td>
@@ -172,5 +184,46 @@ export default function RHAuditoria({mes}:{mes:string}){
   {f?.percentual_dtp_executivo==null&&<p className="rh-a-note">Ainda não foi possível confirmar o percentual do RGF para este quadrimestre. Não utilizamos uma porcentagem estimada.</p>}
   <div className="rh-a-source"><a href="https://apidatalake.tesouro.gov.br/docs/siconfi/" target="_blank" rel="noopener noreferrer">Fonte do RGF/SICONFI <ExternalLink size={12}/></a></div>
  </section>
+ {detalheCalculo&&(()=>{
+   const regra=regrasEscolares.find(r=>r.campo===detalheCalculo);
+   const total=totaisDimensionamento[detalheCalculo];
+   const totalConferido=unidadesDimensionamento.reduce((t,u)=>t+(u[detalheCalculo]||0),0);
+   return <div className="rh-a-calc-overlay" role="presentation" onClick={()=>setDetalheCalculo(null)}>
+    <section className="rh-a-calc-modal" role="dialog" aria-modal="true" aria-label={'Memória de cálculo: '+(regra?.cargo||'cargo escolar')} onClick={e=>e.stopPropagation()}>
+     <div className="rh-a-calc-head">
+      <div><small>DIMENSIONAMENTO ESCOLAR · CENSO 2025</small>
+       <h2>{regra?.cargo||'Cargo escolar'}</h2>
+       <p>Memória de cálculo aplicada individualmente às escolas municipais cadastradas.</p></div>
+      <button type="button" onClick={()=>setDetalheCalculo(null)} aria-label="Fechar memória de cálculo"><X size={19}/></button>
+     </div>
+     <div className="rh-a-calc-stats">
+      <div><span>Unidades consideradas</span><b>{num(unidadesDimensionamento.length)}</b></div>
+      <div><span>Turmas consideradas</span><b>{num(totalTurmas)}</b></div>
+      <div><span>Total calculado</span><b>{num(total)}</b></div>
+     </div>
+     <div className="rh-a-calc-table-wrap">
+      <table className="rh-a-calc-table">
+       <thead><tr><th>Escola</th><th>Turmas (2025)</th><th>Faixa aplicada</th><th>Parâmetro por escola</th></tr></thead>
+       <tbody>{unidadesDimensionamento.map(u=><tr key={u.codigo_inep}>
+        <td><strong>{u.nome}</strong><small>INEP {u.codigo_inep}</small></td>
+        <td>{num(u.turmas)}</td>
+        <td>{u.faixa==null?'Não calculável':faixasTurmas[u.faixa]}</td>
+        <td><b>{num(u[detalheCalculo])}</b></td>
+       </tr>)}</tbody>
+       <tfoot><tr><th>Total</th><th>{num(totalTurmas)}</th><th>{num(unidadesDimensionamento.length)} escolas</th><th>{num(totalConferido)}</th></tr></tfoot>
+      </table>
+     </div>
+     <div className="rh-a-calc-formula">
+      <strong>Como o total é obtido</strong>
+      <p>Para cada escola, verifica-se sua quantidade de turmas, identifica-se a faixa correspondente na tabela de dimensionamento e aplica-se o parâmetro dessa faixa. O resultado final é a soma dos valores das escolas.</p>
+      <div className="rh-a-calc-rules">
+       {regra?.quantidades.map((valor,i)=><span key={faixasTurmas[i]}><small>{faixasTurmas[i]} turmas</small><b>{num(valor)}</b></span>)}
+      </div>
+      <p><b>Conferência:</b> soma dos parâmetros por escola = {num(totalConferido)}; total apresentado = {num(total)}.</p>
+      <small>Referência: turmas das unidades cadastradas do Censo Escolar 2025 e faixas de dimensionamento do Estatuto do Magistério. O parâmetro calculado não é a quantidade de vagas legalmente autorizadas nem identifica excedentes.</small>
+     </div>
+    </section>
+   </div>;
+  })()}
  </div>;
 }
