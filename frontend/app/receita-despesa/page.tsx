@@ -1,6 +1,6 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
-import {ArrowDownRight,ArrowUpRight,BarChart3,CalendarDays,Coins,FileText,Landmark,ReceiptText,RefreshCcw,Wallet} from 'lucide-react';
+import {ArrowDownRight,ArrowUpRight,BarChart3,CalendarDays,Coins,FileText,Landmark,ReceiptText,RefreshCcw,Wallet,X,ChevronRight} from 'lucide-react';
 import './receita-despesa.css';
 
 type Mensal={mes:string;categoria:string;centavos:number};
@@ -20,6 +20,7 @@ export default function ReceitaDespesa(){
  const [erro,setErro]=useState('');
  const [carregando,setCarregando]=useState(true);
  const [tentativa,setTentativa]=useState(0);
+ const [detalhe,setDetalhe]=useState<{tipo:'receita'|'pagamentos'|'diarias'|'mes';mes:string|null}|null>(null);
  useEffect(()=>{
   let ativo=true;setCarregando(true);setErro('');
   fetch('/api/receita-despesa',{cache:'no-store'})
@@ -51,6 +52,27 @@ export default function ReceitaDespesa(){
  const anual=(grupo:string,indicador:string)=>dados?.anual.find(x=>x.grupo===grupo&&x.indicador===indicador)?.centavos;
  const previsto=(indicador:string)=>['receitas_correntes','receitas_capital','receitas_intra'].reduce((t,g)=>t+(anual(g,indicador)||0),0);
  const maxSerie=Math.max(1,...serie.flatMap(x=>[x.receita,x.pagamentos]));
+ const detalheLinhas=useMemo(()=>{
+  if(!detalhe)return [];
+  const categorias=detalhe.tipo==='receita'?categoriaReceita:
+   detalhe.tipo==='pagamentos'?categoriaPagamentos:
+   detalhe.tipo==='diarias'?['diarias']:
+   [...categoriaReceita,...categoriaPagamentos,'diarias'];
+  return (dados?.mensal||[])
+   .filter(x=>x.mes.startsWith('2026-')&&categorias.includes(x.categoria)&&
+      (!detalhe.mes||x.mes===detalhe.mes))
+   .sort((a,b)=>b.mes.localeCompare(a.mes)||Math.abs(b.centavos)-Math.abs(a.centavos));
+ },[dados,detalhe]);
+ const detalheTotal=detalheLinhas.reduce((s,x)=>s+x.centavos,0);
+ const nomeMes=(m:string)=>meses.find(x=>x[0]===m)?.[1]||m;
+ const abrirDetalhe=(tipo:'receita'|'pagamentos'|'diarias'|'mes',m?:string|null)=>
+  setDetalhe({tipo,mes:m===undefined?(periodo==='todos'?null:periodo):m});
+ useEffect(()=>{
+  if(!detalhe)return;
+  function fecharEsc(e:KeyboardEvent){if(e.key==='Escape')setDetalhe(null)}
+  window.addEventListener('keydown',fecharEsc);
+  return ()=>window.removeEventListener('keydown',fecharEsc);
+ },[detalhe]);
  return <div className="fin-page">
   <div className="fin-top">
    <div><div className="fin-overline">VIÇO GOV / FINANÇAS</div><h1>Receita e Despesa</h1></div>
@@ -63,9 +85,21 @@ export default function ReceitaDespesa(){
   </div>
   {erro&&<div className="fin-error">{erro}<button onClick={()=>setTentativa(v=>v+1)}><RefreshCcw size={14}/> Atualizar</button></div>}
   <div className="fin-highlights">
-   <article className="fin-highlight fin-receita"><div className="fin-hl-header"><span>Receitas registradas</span><ArrowDownRight size={21}/></div><strong>{carregando?'…':moeda(receitaTotal)}</strong></article>
-   <article className="fin-highlight fin-despesa"><div className="fin-hl-header"><span>Pagamentos realizados</span><ArrowUpRight size={21}/></div><strong>{carregando?'…':moeda(pagamentoTotal)}</strong></article>
-   <article className="fin-highlight fin-diarias"><div className="fin-hl-header"><span>Diárias</span><Wallet size={20}/></div><strong>{carregando?'…':moeda(totais.diarias||0)}</strong></article>
+   <button type="button" className="fin-highlight fin-receita" onClick={()=>abrirDetalhe('receita')} disabled={carregando||!!erro}
+    aria-label="Ver detalhamento das receitas registradas">
+    <div className="fin-hl-header"><span>Receitas registradas</span><ArrowDownRight size={21}/></div>
+    <strong>{carregando?'…':moeda(receitaTotal)}</strong><span className="fin-card-link">Ver detalhamento <ChevronRight size={15}/></span>
+   </button>
+   <button type="button" className="fin-highlight fin-despesa" onClick={()=>abrirDetalhe('pagamentos')} disabled={carregando||!!erro}
+    aria-label="Ver detalhamento dos pagamentos realizados">
+    <div className="fin-hl-header"><span>Pagamentos realizados</span><ArrowUpRight size={21}/></div>
+    <strong>{carregando?'…':moeda(pagamentoTotal)}</strong><span className="fin-card-link">Ver detalhamento <ChevronRight size={15}/></span>
+   </button>
+   <button type="button" className="fin-highlight fin-diarias" onClick={()=>abrirDetalhe('diarias')} disabled={carregando||!!erro}
+    aria-label="Ver detalhamento das diárias">
+    <div className="fin-hl-header"><span>Diárias</span><Wallet size={20}/></div>
+    <strong>{carregando?'…':moeda(totais.diarias||0)}</strong><span className="fin-card-link">Ver detalhamento <ChevronRight size={15}/></span>
+   </button>
   </div>
 
   <div className="fin-columns">
@@ -88,7 +122,7 @@ export default function ReceitaDespesa(){
   <section className="fin-panel">
    <header className="fin-panel-head"><h2><BarChart3 size={17}/> Evolução mensal</h2>
     <div className="fin-legend"><span className="fin-dot fin-green"/> Receita <span className="fin-dot fin-rose"/> Pagamentos</div></header>
-   <div className="fin-chart">{serie.map(x=><button key={x.mes} type="button" onClick={()=>setPeriodo(periodo===x.mes?'todos':x.mes)}
+   <div className="fin-chart">{serie.map(x=><button key={x.mes} type="button" onClick={()=>abrirDetalhe('mes',x.mes)}
      aria-pressed={periodo===x.mes} className={'fin-chart-line '+(periodo===x.mes?'selected':'')}
      title={x.nome+' · Receita: '+(x.temReceita?moeda(x.receita):'sem registro')+' · Pagamentos: '+(x.temPagamento?moeda(x.pagamentos):'sem registro')}>
      <span className="fin-chart-label">{x.nome.slice(0,3)}</span>
@@ -136,5 +170,40 @@ export default function ReceitaDespesa(){
     </tr>)}</tbody>
    </table></div>
   </section>
+
+  {detalhe&&<div className="fin-details-overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setDetalhe(null)}}>
+   <section className="fin-details-panel" role="dialog" aria-modal="true" aria-label="Detalhamento financeiro">
+    <header className="fin-details-head">
+     <div><span>RECEITA E DESPESA · 2026</span>
+      <h2>{detalhe.tipo==='receita'?'Receitas registradas':detalhe.tipo==='pagamentos'?'Pagamentos realizados':detalhe.tipo==='diarias'?'Diárias':'Movimentação mensal'}</h2>
+      <p>{detalhe.mes?nomeMes(detalhe.mes)+' de 2026':'Acumulado de 2026'}</p>
+     </div>
+     <button type="button" onClick={()=>setDetalhe(null)} aria-label="Fechar detalhamento"><X size={19}/></button>
+    </header>
+    <div className="fin-details-summary">
+     {detalhe.tipo==='mes'?<>
+      <div><span>Receita</span><strong>{moeda(detalheLinhas.filter(x=>categoriaReceita.includes(x.categoria)).reduce((n,x)=>n+x.centavos,0))}</strong></div>
+      <div><span>Pagamentos</span><strong>{moeda(detalheLinhas.filter(x=>categoriaPagamentos.includes(x.categoria)).reduce((n,x)=>n+x.centavos,0))}</strong></div>
+      <div><span>Diárias</span><strong>{moeda(detalheLinhas.filter(x=>x.categoria==='diarias').reduce((n,x)=>n+x.centavos,0))}</strong></div>
+     </>:<div><span>Total registrado</span><strong>{moeda(detalheTotal)}</strong></div>}
+    </div>
+    <div className="fin-details-table-wrap">
+     <table className="fin-details-table">
+      <thead><tr><th>Competência</th><th>Natureza</th><th>Valor</th></tr></thead>
+      <tbody>{detalheLinhas.map(x=><tr key={x.mes+':'+x.categoria}>
+       <td>{nomeMes(x.mes)} / 2026</td>
+       <td>{titulo[x.categoria]||'Diárias'}</td>
+       <td>{moeda(x.centavos)}</td>
+      </tr>)}
+      {!detalheLinhas.length&&<tr><td colSpan={3}>Nenhum registro consolidado disponível neste período.</td></tr>}
+      </tbody>
+     </table>
+    </div>
+    <footer className="fin-details-footer">
+     <small>Valores consolidados por mês e natureza. O detalhamento por credor ou lançamento depende da importação dos registros individualizados.</small>
+     <button type="button" onClick={()=>{if(detalhe.mes)setPeriodo(detalhe.mes);setDetalhe(null)}}>{detalhe.mes?'Filtrar este mês':'Fechar'}</button>
+    </footer>
+   </section>
+  </div>}
  </div>;
 }
