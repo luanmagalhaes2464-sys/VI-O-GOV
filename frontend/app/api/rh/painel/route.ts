@@ -69,7 +69,7 @@ export async function GET(req:NextRequest){
    pool.query("SELECT departamento,cargo,vinculo,local_trabalho AS local,jornada FROM rh_folha_pessoas_2026 WHERE competencia=ANY($1::date[]) GROUP BY departamento,cargo,vinculo,local_trabalho,jornada LIMIT 12000",[selected.map(x=>x+'-01')])
   ]);
   const page=Number(q.get('pagina')||'1');
-  if(!Number.isInteger(page)||page<1||page>500)invalid('Página inválida.');
+  if(!Number.isInteger(page)||page<1||page>5000)invalid('Página inválida.');
   // Ordenação de toda a consulta antes de paginar (nunca apenas os 20 itens carregados).
   // Expressões SQL de uma lista fixa: parâmetros do usuário não viram SQL arbitrário.
   const camposOrdenacao:Record<string,string>={
