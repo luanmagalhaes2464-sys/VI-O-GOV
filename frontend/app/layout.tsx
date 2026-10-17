@@ -9,5 +9,5 @@ export const metadata:Metadata={title:'VIÇO GOV | Inteligência Municipal',desc
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="pt-BR"><head>
  <link rel="preconnect" href="https://fonts.googleapis.com"/>
  <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous"/>
- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap"/>
+ <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap"/>
  </head><body><Shell>{children}</Shell></body></html>}
