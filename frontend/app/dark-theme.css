@@ -143,13 +143,6 @@ html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table){
 }
 
 
-/* Tipografia institucional com proporções próximas ao Portal da Transparência. */
-html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table),
-.rh-shell :is(h1,h2,h3,h4,.page-heading h1,.rh26-heading h1,.edu-heading h1,.vg-heading h1,.rh-a-head h2){
- font-family:"Open Sans","Segoe UI",Arial,sans-serif!important;
- letter-spacing:normal!important;
-}
-.rh-shell :is(h1,h2,h3,.fin-top h1){font-weight:700!important}
 .rh-shell .vico-logout{
  display:inline-flex;align-items:center;gap:7px;margin-left:8px;padding:8px 11px;
  color:#fff;background:#495663;border:1px solid #82909c;border-radius:6px;
@@ -157,3 +150,20 @@ html body,.rh-shell,.rh-shell :is(button,input,select,textarea,table),
 }
 .rh-shell .vico-logout:hover{background:#6a7886}
 @media(max-width:800px){.rh-shell .vico-logout span{display:none}.rh-shell .vico-logout{padding:8px}}
+
+
+/* Tipografia neutra: hierarquia moderada, leitura institucional. */
+html body,.rh-shell,
+.rh-shell :is(button,input,select,textarea,table),
+.rh-shell :is(h1,h2,h3,h4,.page-heading h1,.rh26-heading h1,.edu-heading h1,.vg-heading h1,.rh-a-head h2){
+ font-family:"Roboto",Arial,sans-serif!important;
+ letter-spacing:0!important;
+}
+html body{font-weight:400}
+.rh-shell .content{font-size:13px;line-height:1.5}
+.rh-shell :is(h1,h2,h3,.fin-top h1){font-weight:600!important;letter-spacing:0!important}
+.rh-shell :is(.nav-item,.rh26-panel,.edu-panel,.fin-panel,.vg-card,.rh-a-panel){font-weight:400}
+.rh-shell .sidebar .nav-item{font-size:13px;font-weight:400!important}
+.rh-shell .sidebar .nav-item.active{font-weight:600!important}
+.rh-shell :is(.nav-title,.rh26-filter-box label,.fin-panel-head h2){font-weight:600!important}
+.rh-shell :is(table,select,input,button,textarea){font-variant-numeric:tabular-nums}
