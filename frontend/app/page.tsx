@@ -30,11 +30,21 @@ export default function Home(){
   return()=>{ativo=false};
  },[mes]);
  const porSlug=useMemo(()=>new Map((dados?.secretarias||[]).map(s=>[s.slug,s])),[dados]);
+ const secretariasOrdenadas=useMemo(()=>secretarias.map((s,i)=>({s,i,data:porSlug.get(s.slug)}))
+  .sort((a,b)=>{
+   const gastoA=a.data?.bruto;
+   const gastoB=b.data?.bruto;
+   // Valores ausentes são mostrados por último e não são tratados como zero.
+   if(gastoA==null&&gastoB==null)return a.i-b.i;
+   if(gastoA==null)return 1;
+   if(gastoB==null)return -1;
+   return gastoB-gastoA||a.i-b.i;
+  }),[porSlug]);
  return <div className="vg-page">
   <div className="vg-heading">
    <div><div className="vg-eyebrow">VIÇO GOV / VISÃO GERAL</div>
     <h1>Panorama das Secretarias</h1>
-    <p>Servidores identificados e remuneração bruta mensal, com base na folha pública da Prefeitura de Viçosa/MG.</p>
+    
    </div>
    <label className="vg-month"><CalendarDays size={17}/><span>Competência</span>
     <select value={mes} aria-label="Selecionar competência da folha" onChange={e=>setMes(e.target.value)}>
@@ -45,8 +55,7 @@ export default function Home(){
   {erro&&<div className="vg-error"><Info size={17}/>{erro}<button type="button" onClick={()=>{setMes(mes);setCarregando(true);window.location.reload()}} aria-label="Tentar novamente"><RefreshCcw size={15}/> Recarregar</button></div>}
   {dados&&!dados.disponivel&&<div className="vg-error"><Info size={18}/>{dados.aviso}</div>}
   <div className="vg-grid">
-   {secretarias.map((s,i)=>{
-    const data=porSlug.get(s.slug);
+   {secretariasOrdenadas.map(({s,i,data})=>{
     const c=cores[i%cores.length],Icon=icones[i%icones.length];
     const valor=carregando?'…':dados?.disponivel?numero(data?.vinculos):'—';
     const bruto=carregando?'…':dados?.disponivel?moeda(data?.bruto):'—';
