@@ -73,7 +73,11 @@ export async function POST(req:NextRequest){
          SUM((x.item->>'valor')::numeric)::text total
        FROM rh_folha_analitica_2026 a CROSS JOIN LATERAL jsonb_array_elements(a.rubricas::jsonb) AS x(item)
        WHERE a.competencia=$1::date AND COALESCE(UPPER(x.item->>'tipo'),'PROVENTO')<>'DESCONTO'
-       GROUP BY 1,2 ORDER BY SUM((x.item->>'valor')::numeric) DESC LIMIT 35`,values:[mes+'-01']})
+       GROUP BY 1,2 ORDER BY SUM((x.item->>'valor')::numeric) DESC LIMIT 35`,values:[mes+'-01']}),
+   pool().query<{mes:string;categoria:string;centavos:string}>(
+    "SELECT to_char(mes,'YYYY-MM') mes,categoria,centavos::text FROM vico_financas_2026_mensal WHERE mes >= DATE '2026-01-01' AND mes < DATE '2027-01-01' ORDER BY mes,categoria"),
+   pool().query<{grupo:string;indicador:string;centavos:string}>(
+    "SELECT grupo,indicador,centavos::text FROM vico_financas_2026_anual ORDER BY grupo,indicador")
   ]);
   const deps=registros[0].rows;
   const cargos=registros[1].rows;
@@ -96,7 +100,19 @@ export async function POST(req:NextRequest){
     soma_docentes_por_escola:docentesPorUnidade,
     unidades:unidadesEscolares.map(e=>({nome:e.nome,codigo_inep:e.codigo_inep,
      matriculas:e.matriculas,turmas:e.turmas,docentes:e.docentes,localizacao:e.localizacao}))},
-   filtros_da_tela:{departamento:deptoAtual||null},caveats:[
+   financas:{
+     ano:2026,
+     movimentos:registros[4].rows.map(r=>({mes:r.mes,categoria:r.categoria,valor_reais:Number(r.centavos)/100})),
+     anual:registros[5].rows.map(r=>({grupo:r.grupo,indicador:r.indicador,valor_reais:Number(r.centavos)/100})),
+     regras_de_conciliacao:[
+      'Os dois relatórios de pagamentos são o mesmo conjunto e não devem ser somados entre si.',
+      'Diárias e transferências financeiras são indicadores separados, não acrescentar ao total de pagamentos.',
+      'Receita registrada no PDF e arrecadação do CSV de previsão apresentam valores diferentes; não misturar fontes.',
+      'Pagamentos possuem um lançamento em outubro, enquanto o PDF de receitas termina em setembro.',
+      'Diárias agrupadas por mês de partida da viagem.'
+     ]
+    },
+    filtros_da_tela:{departamento:deptoAtual||null},caveats:[
     'Os totais por departamento da folha são por vínculos de nome+matrícula, não pessoas únicas ativas.',
     'Remuneração bruta não equivale a despesa total fiscal nem orçamento integral por secretaria.',
     'Censo de escolas 2025 de fonte secundária: 18 unidades, mas Câmara referiu 19; conciliar antes de conclusão legal.',
