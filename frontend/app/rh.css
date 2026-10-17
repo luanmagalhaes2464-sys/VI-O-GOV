@@ -467,3 +467,18 @@ button.rh27-person:hover,button.rh27-person.selected{background:#f5f8fb}
 .rh26-filter-toggle:hover h2{color:#a93c49}
 .rh26-filter-box:has(.rh26-filter-toggle[aria-expanded="false"]){padding-bottom:14px}
 .rh26-filter-box:has(.rh26-filter-toggle[aria-expanded="false"]) .rh26-box-head{margin-bottom:0}
+
+
+/* Ordenação de servidores: cabeçalhos acessíveis e ação sem interferir na paginação */
+.rh26-table-scroll th{white-space:nowrap}
+.rh30-sort-head{
+ appearance:none;display:inline-flex;align-items:center;gap:7px;
+ width:100%;background:transparent;border:0;color:inherit;
+ font:inherit;font-weight:700;cursor:pointer;text-align:left;
+ padding:3px 1px;
+}
+.rh30-sort-head>svg{color:#91a3b3;flex:0 0 auto}
+.rh30-sort-head:hover,.rh30-sort-head:focus-visible{color:#9f3647}
+.rh30-sort-head.selected{color:#9f3647}
+.rh30-sort-head.selected>svg{color:#9f3647}
+.rh30-sort-head:focus-visible{outline:2px solid #af6774;outline-offset:3px;border-radius:3px}
