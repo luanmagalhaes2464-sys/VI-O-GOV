@@ -28,7 +28,7 @@ export async function POST(req:NextRequest){
   await dbAuth().query('UPDATE vico_auth_usuarios SET ultimo_login_em=now() WHERE id=$1',[conta.id]);
   const res=NextResponse.json({ok:true},{headers:{'Cache-Control':'no-store'}});
   res.cookies.set(COOKIE_SESSAO,token,{
-   httpOnly:true,secure:req.nextUrl.protocol==='https:',sameSite:'lax',
+   httpOnly:true,secure:process.env.NODE_ENV==='production'||req.nextUrl.protocol==='https:',sameSite:'lax',
    path:'/',maxAge:DURACAO_SESSAO
   });
   limite.delete(ip);
