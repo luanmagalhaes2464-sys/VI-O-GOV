@@ -77,11 +77,36 @@ export async function consultarPessoaRH(
  const perguntaHistorico=/\b(HISTORICO|EVOLUCAO|COMPAR|MUDOU|AUMENTOU|DIMINUIU|ANTERIOR|MESES|MES ANTERIOR)\b/.test(p);
  const detalhes=registros.map(r=>{
   const values=['bruto '+moeda(r.bruto),'líquido '+moeda(r.liquido)];
-  if(salBase)values.push('vencimento-base registrado '+moeda(r.salario_base||0));
+  if(salBase&&r.salario_base!==null)values.push('vencimento-base registrado '+moeda(r.salario_base));
   return 'Matrícula '+r.matricula+': '+values.join(', ')+
-   '. Cargo: '+r.cargo+'. Departamento: '+r.departamento+'.'+
-   (Number(r.inclusoes_pagamento)>1?' Inclusões na folha: '+r.inclusoes_pagamento+'.':'');
+   '. Cargo: '+r.cargo+'. Departamento: '+r.departamento+'.';
  }).join(' ');
+ let composicao='';
+ // Múltiplas inclusões em uma mesma competência podem ser 13º, férias e
+ // pagamentos complementares. O bruto mensal já agrega essas inclusões.
+ if(registros.some(r=>Number(r.inclusoes_pagamento)>1)){
+  type RubricaIndividual={tipo?:string;valor?:number;rubrica?:string};
+  const analiticas=await db.query<{tipo_inclusao:string;rubricas:RubricaIndividual[]}>({
+   text:`SELECT tipo_inclusao,rubricas FROM rh_folha_analitica_2026
+    WHERE nome=$1 AND competencia=$2::date ORDER BY tipo_inclusao`,
+   values:[nome,mes+'-01']
+  });
+  const categorias=new Map<string,number>();
+  for(const linha of analiticas.rows){
+   if(linha.tipo_inclusao==='0001')continue;
+   for(const r of linha.rubricas||[]){
+    if((r.tipo||'').toUpperCase()==='DESCONTO'||!Number.isFinite(Number(r.valor)))continue;
+    const categoria=(r.rubrica||'Pagamento complementar').trim();
+    categorias.set(categoria,(categorias.get(categoria)||0)+Number(r.valor));
+   }
+  }
+  if(categorias.size){
+   composicao=' A competência contém '+registros.map(r=>r.inclusoes_pagamento).join(', ')+' inclusões na folha. '+
+    'Rubricas complementares: '+[...categorias].map(([nomeRubrica,valor])=>
+     nomeRubrica+' ('+moeda(valor)+')').join('; ')+'.'+
+    ' Esses valores já fazem parte da remuneração bruta informada e não devem ser somados novamente.';
+  }else composicao=' A competência contém mais de uma inclusão na folha; o valor bruto já é a soma dessas inclusões.';
+ }
  const todos=dados.rows.map(r=>({mes:r.mes,bruto:Number(r.bruto)}));
  let complemento='';
  if(perguntaHistorico){
@@ -94,6 +119,6 @@ export async function consultarPessoaRH(
  }
  return {identificado:true,resposta:
   'Na folha de '+referencia+', '+nome+' apresenta: '+detalhes+
-  complemento+' Fonte: folha municipal de Recursos Humanos integrada ao Viço Gov. '+
+  composicao+complemento+' Fonte: folha municipal de Recursos Humanos integrada ao Viço Gov. '+
   'Os valores são remuneração registrada, não uma confirmação de depósitos bancários.'};
 }
