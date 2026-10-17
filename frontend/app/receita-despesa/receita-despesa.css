@@ -78,3 +78,37 @@
 .fin-recon-foot{display:flex;flex-wrap:wrap;gap:7px 20px;padding:0 18px 17px;font-size:10px;color:#8a9aa9}
 @media(max-width:1000px){.fin-recon-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.fin-recon-grid{grid-template-columns:1fr;gap:8px;padding:12px}.fin-recon-foot{flex-direction:column;padding:2px 12px 14px}}
+
+
+/* Paleta institucional: cards inteiros, não apenas bordas, com navegação interativa. */
+.fin-highlights button.fin-highlight{display:block;text-align:left;width:100%;font-family:inherit;cursor:pointer;border-width:1px;border-style:solid;border-top-width:4px;transition:background .16s,border-color .16s,transform .16s;box-shadow:0 1px 2px #16293a08}
+.fin-highlights button.fin-highlight:hover{transform:translateY(-2px);box-shadow:0 6px 18px #1b354015}
+.fin-highlights button.fin-highlight:focus-visible{outline:3px solid #487f9f;outline-offset:3px}
+.fin-highlight.fin-receita{background:#e9f7f0;border-color:#b8e4cb;border-top-color:#1a9160}
+.fin-highlight.fin-despesa{background:#feeeee;border-color:#f0cdd2;border-top-color:#b24b58}
+.fin-highlight.fin-diarias{background:#edf0f3;border-color:#d8dfe5;border-top-color:#7e8b97}
+.fin-highlight.fin-receita .fin-hl-header,.fin-highlight.fin-receita strong{color:#1e624a}
+.fin-highlight.fin-despesa .fin-hl-header,.fin-highlight.fin-despesa strong{color:#90414b}
+.fin-highlight.fin-diarias .fin-hl-header,.fin-highlight.fin-diarias strong{color:#455769}
+.fin-card-link{display:inline-flex;align-items:center;gap:3px;margin-top:15px;color:#627788;font-size:11px;font-weight:650}
+.fin-chart-line{cursor:pointer}
+.fin-details-overlay{position:fixed;z-index:210;inset:0;background:#15243399;display:flex;align-items:center;justify-content:center;padding:18px}
+.fin-details-panel{width:min(780px,100%);max-height:min(86vh,850px);background:white;display:flex;flex-direction:column;border-radius:11px;box-shadow:0 22px 65px #09111b55;overflow:hidden;color:#264053}
+.fin-details-head{display:flex;justify-content:space-between;align-items:flex-start;padding:24px;border-bottom:1px solid #e0e7ec}
+.fin-details-head>div>span{display:block;color:#b04452;letter-spacing:.6px;font-weight:700;font-size:10px}
+.fin-details-head h2{font-size:22px;line-height:1.4;font-weight:650;margin:6px 0 2px}
+.fin-details-head p{margin:0;color:#78899a;font-size:12px}
+.fin-details-head button{display:grid;place-items:center;border:1px solid #dbe3eb;background:#f7f9fb;width:34px;height:34px;border-radius:6px;color:#4c6072;cursor:pointer}
+.fin-details-summary{display:flex;flex-wrap:wrap;gap:10px;padding:17px 24px;background:#f8fafb}
+.fin-details-summary>div{flex:1;min-width:135px;border:1px solid #e0e8ed;background:white;padding:14px;border-radius:6px;display:flex;flex-direction:column;gap:9px}
+.fin-details-summary span{font-size:11px;color:#6a7e8c}
+.fin-details-summary strong{font-size:clamp(14px,1.7vw,20px);color:#233d51;font-variant-numeric:tabular-nums}
+.fin-details-table-wrap{overflow-y:auto;overflow-x:auto;min-height:100px}
+.fin-details-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.fin-details-table th,.fin-details-table td{padding:13px 25px;text-align:left;border-bottom:1px solid #e8edf1;font-size:12px}
+.fin-details-table th{font-size:11px;position:sticky;top:0;background:#f1f5f8;color:#526b7e}
+.fin-details-table th:last-child,.fin-details-table td:last-child{text-align:right;white-space:nowrap;font-weight:650}
+.fin-details-footer{border-top:1px solid #e5ecf1;padding:17px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.fin-details-footer small{font-size:10px;color:#8192a0;line-height:1.5;max-width:460px}
+.fin-details-footer button{background:#a43d4e;color:white;border:0;border-radius:6px;padding:11px 17px;font-weight:650;font-size:11px;white-space:nowrap;cursor:pointer}
+@media(max-width:650px){.fin-details-overlay{padding:7px}.fin-details-head{padding:17px}.fin-details-summary{padding:12px}.fin-details-table th,.fin-details-table td{padding:12px}.fin-details-footer{padding:12px;flex-direction:column;align-items:stretch}}
